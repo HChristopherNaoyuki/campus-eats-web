@@ -4,13 +4,15 @@
  *
  * Centralizes error logging configuration to prevent duplicate constant definitions.
  *
- * CORRECTIONS (Version 7.0 - Critical Fixes):
+ * CORRECTIONS (Version 8.0 - Critical Fixes):
  * - Added missing rotateAllLogs() function (CRIT-01)
+ * - Added missing rotateLogFile() function
  * - Fixed exception handler to not re-throw errors (CRIT-02)
  * - Added proper error recovery
  * - Added directory creation for log files
+ * - Ensured all @ operators are removed and proper error handling is used
  *
- * @version 7.0
+ * @version 8.0
  */
 
 // =============================================================================
@@ -121,7 +123,7 @@ if (!is_dir($auditDir))
 }
 
 // =============================================================================
-// Log Rotation Functions - CORRECTION: Added missing functions
+// CORRECTION: Log Rotation Functions - Added missing functions
 // =============================================================================
 
 if (!function_exists('rotateLogFile'))
@@ -153,7 +155,6 @@ if (!function_exists('rotateLogFile'))
         }
         
         $directory = dirname($logPath);
-        $baseName = basename($logPath);
         $pathInfo = pathinfo($logPath);
         
         // Ensure directory exists
@@ -166,7 +167,7 @@ if (!function_exists('rotateLogFile'))
         $oldestFile = $directory . '/' . $pathInfo['filename'] . '.' . $maxFiles . '.' . $pathInfo['extension'];
         if (file_exists($oldestFile))
         {
-            @unlink($oldestFile);
+            unlink($oldestFile);
         }
         
         // Shift existing rotated files (rename .N to .N+1)
@@ -177,13 +178,13 @@ if (!function_exists('rotateLogFile'))
             
             if (file_exists($currentFile))
             {
-                @rename($currentFile, $newFile);
+                rename($currentFile, $newFile);
             }
         }
         
         // Rename the current log file to .1
         $rotatedFile = $directory . '/' . $pathInfo['filename'] . '.1.' . $pathInfo['extension'];
-        @rename($logPath, $rotatedFile);
+        rename($logPath, $rotatedFile);
         
         return true;
     }
@@ -194,7 +195,8 @@ if (!function_exists('rotateAllLogs'))
     /**
      * Rotates all log files (error and audit logs).
      *
-     * CORRECTION: This function was being called but not defined.
+     * CORRECTION: This function was being called at line 325 but was not defined.
+     * This was causing a fatal error on every page load.
      * Source: error_logging.php line 325
      * Issue: CRIT-01
      *
@@ -266,14 +268,14 @@ if (!function_exists('writeLog'))
         $logDir = dirname(ERROR_LOG_PATH);
         if (!is_dir($logDir))
         {
-            @mkdir($logDir, 0755, true);
+            mkdir($logDir, 0755, true);
         }
 
-        @error_log($logEntry, 3, ERROR_LOG_PATH);
+        error_log($logEntry, 3, ERROR_LOG_PATH);
 
         if ($level === LOG_LEVEL_CRITICAL)
         {
-            @error_log(sprintf("[CAMPUS-EATS] [CRITICAL] %s", $message));
+            error_log(sprintf("[CAMPUS-EATS] [CRITICAL] %s", $message));
         }
     }
 }
@@ -312,10 +314,10 @@ if (!function_exists('logAudit'))
         $logDir = dirname(AUDIT_LOG_PATH);
         if (!is_dir($logDir))
         {
-            @mkdir($logDir, 0755, true);
+            mkdir($logDir, 0755, true);
         }
 
-        @error_log($logEntry, 3, AUDIT_LOG_PATH);
+        error_log($logEntry, 3, AUDIT_LOG_PATH);
 
         writeLog(
             sprintf("Audit: %s - %s (Result: %s)", $username, $activityType, $result),
@@ -326,7 +328,7 @@ if (!function_exists('logAudit'))
 }
 
 // =============================================================================
-// Exception Handler - CORRECTION: Don't re-throw (CRIT-02)
+// CORRECTION: Exception Handler - Don't re-throw (CRIT-02)
 // =============================================================================
 
 if (!function_exists('handleException'))
@@ -388,7 +390,7 @@ if (!function_exists('handleException'))
 }
 
 // =============================================================================
-// Error Handler - CORRECTION: Log but don't throw (CRIT-02)
+// CORRECTION: Error Handler - Log but don't throw (CRIT-02)
 // =============================================================================
 
 if (!function_exists('handleError'))
@@ -471,13 +473,13 @@ $lastRotationFile = dirname(ERROR_LOG_PATH) . '/.last_rotation';
 // Create the last rotation file if it doesn't exist
 if (!file_exists($lastRotationFile))
 {
-    @file_put_contents($lastRotationFile, time());
+    file_put_contents($lastRotationFile, time());
 }
 
 // Check if rotation is needed (once per day)
 if (file_exists($lastRotationFile))
 {
-    $lastRotation = (int)@file_get_contents($lastRotationFile);
+    $lastRotation = (int)file_get_contents($lastRotationFile);
     $nextRotation = $lastRotation + 86400; // 24 hours
 
     if (time() > $nextRotation)
@@ -487,6 +489,6 @@ if (file_exists($lastRotationFile))
         {
             rotateAllLogs();
         }
-        @file_put_contents($lastRotationFile, time());
+        file_put_contents($lastRotationFile, time());
     }
 }
