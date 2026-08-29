@@ -8,9 +8,15 @@
  * - At least 1 digit
  * - At least 1 special symbol
  *
- * Source: campus-eats-process-document.pdf (Password Policy)
+ * CORRECTIONS (Version 3.0 - Security Fix):
+ * - Added validateAndHashPassword() function for centralized validation (HIGH-05)
+ * - All password-setting operations must use this function
+ * - Added password strength scoring
  *
- * @version 2.0
+ * Source: campus-eats-process-document.pdf (Password Policy)
+ * Source: Scope Note - HIGH-05
+ *
+ * @version 3.0
  */
 
 function validatePasswordPolicy($password)
@@ -56,4 +62,78 @@ function verifyPassword($password, $hash)
 {
     return password_verify($password, $hash);
 }
-?>
+
+// =============================================================================
+// CORRECTION: HIGH-05 - Centralized password validation and hashing
+// All password-setting operations should call this function
+// =============================================================================
+
+function validateAndHashPassword($password, $context = 'user')
+{
+    // Validate password policy
+    $validation = validatePasswordPolicy($password);
+    
+    if (!$validation['valid'])
+    {
+        throw new InvalidArgumentException($validation['message']);
+    }
+    
+    // Hash the password
+    return hashPassword($password);
+}
+
+/**
+ * Calculates password strength score for display.
+ *
+ * @param string $password The password to score
+ * @return array Score and feedback
+ */
+function getPasswordStrength($password)
+{
+    $score = 0;
+    $feedback = array();
+    
+    // Length check
+    if (strlen($password) >= 8) $score++;
+    if (strlen($password) >= 12) $score++;
+    
+    // Uppercase check
+    if (preg_match('/[A-Z]/', $password)) $score++;
+    
+    // Lowercase check
+    if (preg_match('/[a-z]/', $password)) $score++;
+    
+    // Digit check
+    if (preg_match('/[0-9]/', $password)) $score++;
+    
+    // Special character check
+    if (preg_match('/[^a-zA-Z0-9]/', $password)) $score++;
+    
+    // Determine strength level
+    if ($score <= 2)
+    {
+        $level = 'weak';
+        $feedback[] = 'Consider using a longer password with more variety.';
+    }
+    elseif ($score <= 4)
+    {
+        $level = 'fair';
+        $feedback[] = 'Adding more complexity would strengthen this password.';
+    }
+    elseif ($score <= 6)
+    {
+        $level = 'good';
+        $feedback[] = 'This is a good password.';
+    }
+    else
+    {
+        $level = 'strong';
+        $feedback[] = 'This is a strong password.';
+    }
+    
+    return array(
+        'score' => $score,
+        'level' => $level,
+        'feedback' => $feedback
+    );
+}

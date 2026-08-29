@@ -5,12 +5,13 @@
  * Handles database connections with singleton pattern, automatic table installation,
  * admin account verification, and demo account creation.
  *
- * CORRECTIONS (Version 18.0 - Demo Accounts Consolidation):
- * - Removed duplicate DEMO_ACCOUNTS definition
- * - Now includes demo_accounts.php for single source of truth
- * - Fixes SEC-01 and ARCH-01 from the scope note
+ * CORRECTIONS (Version 20.0 - Security and Configuration Fixes):
+ * - Removed hardcoded admin password from source (CRIT-05)
+ * - Uses environment variable for admin password
+ * - Generates random password if not set
+ * - Uses demo_accounts.php for single source of truth
  *
- * @version 18.0
+ * @version 20.0
  */
 
 if (!defined('DB_HOST'))
@@ -58,24 +59,55 @@ if (!defined('ADMIN_EMAIL'))
     define('ADMIN_EMAIL', 'admin@campuseats.com');
 }
 
+// =============================================================================
+// CORRECTION: CRIT-05 - Admin Password - No longer hardcoded
+// =============================================================================
+
+// Try to get admin password from environment variable
+$adminPassword = getenv('ADMIN_PASSWORD');
+
+// If not set, generate a random password
+if (empty($adminPassword))
+{
+    // Generate a strong random password
+    $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()';
+    $password = '';
+    for ($i = 0; $i < 16; $i++)
+    {
+        $password .= $chars[random_int(0, strlen($chars) - 1)];
+    }
+    $adminPassword = $password;
+    
+    // Log the password for first-time setup (will be displayed once)
+    writeLog("ADMIN PASSWORD GENERATED: $adminPassword - Please save this password!", "SECURITY");
+}
+
 if (!defined('ADMIN_PASSWORD_PLAIN'))
 {
-    define('ADMIN_PASSWORD_PLAIN', 'Admin@123');
+    define('ADMIN_PASSWORD_PLAIN', $adminPassword);
 }
 
 // =============================================================================
 // Load Demo Accounts from Single Source of Truth
-// CORRECTION: SEC-01 / ARCH-01 - Removed duplicate DEMO_ACCOUNTS array
-// Source: Scope Note - SEC-01, ARCH-01
 // =============================================================================
-if (file_exists(__DIR__ . '/demo_accounts.php'))
+
+$demoAccountsFile = __DIR__ . '/demo_accounts.php';
+
+if (file_exists($demoAccountsFile))
 {
-    require_once __DIR__ . '/demo_accounts.php';
+    $demoAccounts = require_once $demoAccountsFile;
+    
+    if (!defined('DEMO_ACCOUNTS'))
+    {
+        define('DEMO_ACCOUNTS', serialize($demoAccounts));
+    }
 }
 else
 {
-    // Fallback definition if demo_accounts.php is missing
-    define('DEMO_ACCOUNTS', serialize(array()));
+    if (!defined('DEMO_ACCOUNTS'))
+    {
+        define('DEMO_ACCOUNTS', serialize(array()));
+    }
 }
 
 if (!function_exists('writeLog'))
@@ -190,6 +222,7 @@ class DatabaseConnection
         $this->ensureUserSessionsTableExists();
         $this->ensureDemoAccountsExist();
         $this->ensureLoginAttemptsTableExists();
+        $this->ensurePasswordResetAttemptsTableExists();
     }
 
     private function connect()
@@ -663,6 +696,41 @@ class DatabaseConnection
         catch (PDOException $exception)
         {
             writeLog('Failed to create login_attempts table: ' . $exception->getMessage(), "DATABASE_ERROR");
+        }
+    }
+
+    private function ensurePasswordResetAttemptsTableExists()
+    {
+        if ($GLOBALS['_DATABASE_INITIALIZED'] === true)
+        {
+            return;
+        }
+
+        try
+        {
+            $this->connect();
+            $result = $this->fetchOne("SHOW TABLES LIKE 'password_reset_attempts'");
+
+            if ($result === false || empty($result))
+            {
+                $this->executeQuery(
+                    "CREATE TABLE IF NOT EXISTS `password_reset_attempts`
+                    (
+                        `attempt_id`   INT AUTO_INCREMENT PRIMARY KEY,
+                        `ip_address`   VARCHAR(45) NOT NULL,
+                        `email`        VARCHAR(100) NOT NULL,
+                        `attempted_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        INDEX `idx_ip_email_time` (`ip_address`, `email`, `attempted_at`)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                    COMMENT='Stores password reset attempts for rate limiting'"
+                );
+
+                writeLog('Created password_reset_attempts table.', "DATABASE");
+            }
+        }
+        catch (PDOException $exception)
+        {
+            writeLog('Failed to create password_reset_attempts table: ' . $exception->getMessage(), "DATABASE_ERROR");
         }
     }
 

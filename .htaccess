@@ -2,7 +2,15 @@
 # Campus Eats - Apache Access Control Configuration
 # =============================================================================
 # This file prevents direct access to sensitive directories and files.
-# Version 3.0 - Simplified for compatibility with Apache 2.4 on Windows
+# 
+# CORRECTIONS (Version 3.0 - Critical Fix):
+# - Added protection for all sensitive directories (CRIT-03)
+# - Denies access to Issues/, Documentation/, Solution/config/, Solution/sql/
+# - Denies access to .git/ and .github/
+# - Denies access to sensitive configuration files
+# - Prevents directory listing
+# 
+# @version 3.0
 # =============================================================================
 
 # =============================================================================
@@ -19,7 +27,7 @@ Options +FollowSymLinks
 RewriteEngine On
 
 # =============================================================================
-# Deny access to sensitive directories (RewriteRule method - more compatible)
+# Deny access to sensitive directories
 # =============================================================================
 
 # Deny access to Issues/ directory (contains error logs)
@@ -27,10 +35,6 @@ RewriteRule ^Issues/ - [F,L]
 
 # Deny access to Documentation/ directory (contains process documents)
 RewriteRule ^Documentation/ - [F,L]
-
-# Deny access to .git/ and .github/ directories
-RewriteRule ^\.git/ - [F,L]
-RewriteRule ^\.github/ - [F,L]
 
 # Deny access to Solution/config/ directory (contains configuration files)
 RewriteRule ^Solution/config/ - [F,L]
@@ -40,6 +44,13 @@ RewriteRule ^Solution/sql/ - [F,L]
 
 # Deny access to Solution/data/ directory (contains data files)
 RewriteRule ^Solution/data/ - [F,L]
+
+# Deny access to .git/ and .github/ directories
+RewriteRule ^\.git/ - [F,L]
+RewriteRule ^\.github/ - [F,L]
+
+# Deny access to any directory starting with . (hidden directories)
+RewriteRule ^\..* - [F,L]
 
 # =============================================================================
 # Deny access to specific sensitive files
@@ -67,10 +78,49 @@ RewriteRule ^Solution/data/ - [F,L]
     Require all denied
 </FilesMatch>
 
+# Deny access to log files
+<FilesMatch "\.log$">
+    Require all denied
+</FilesMatch>
+
+# Deny access to .env files
+<Files ".env">
+    Require all denied
+</Files>
+
 # =============================================================================
-# Allow access to all PHP files by default (this is the default behavior)
-# No need to explicitly allow index.php - it's already accessible
+# Allow access to public files
 # =============================================================================
+
+# Allow access to index.php and other public PHP files
+<Files "index.php">
+    Require all granted
+</Files>
+
+<Files "about.php">
+    Require all granted
+</Files>
+
+<Files "faq.php">
+    Require all granted
+</Files>
+
+<Files "help.php">
+    Require all granted
+</Files>
+
+<Files "privacy.php">
+    Require all granted
+</Files>
+
+<Files "terms.php">
+    Require all granted
+</Files>
+
+# Allow access to Solution/ files (modules, includes, api, assets)
+<LocationMatch "^/Solution/(modules|includes|api|assets)/">
+    Require all granted
+</LocationMatch>
 
 # =============================================================================
 # Error Documents
@@ -81,13 +131,6 @@ ErrorDocument 404 /error.php
 ErrorDocument 500 /error.php
 
 # =============================================================================
-# PHP Settings
-# =============================================================================
-
-# Disable display of errors in production (uncomment if needed)
-# php_flag display_errors off
-
-# =============================================================================
 # Security Headers (if mod_headers is enabled)
 # =============================================================================
 
@@ -95,4 +138,5 @@ ErrorDocument 500 /error.php
     Header set X-Frame-Options "DENY"
     Header set X-Content-Type-Options "nosniff"
     Header set Referrer-Policy "strict-origin-when-cross-origin"
+    Header set X-XSS-Protection "1; mode=block"
 </IfModule>

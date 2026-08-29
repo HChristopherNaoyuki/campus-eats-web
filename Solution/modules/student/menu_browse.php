@@ -5,8 +5,8 @@
  * This page displays menu items for a selected vendor.
  * Now fetches real data from the Fake Restaurant API.
  *
- * CORRECTIONS (Version 9.0 - Standard User Access Fix):
- * - Replaced requireStudent() with requireStudentOrStandard()
+ * CORRECTIONS (Version 11.0 - Standard User Access Fix):
+ * - Replaced requireStudent() with requireStudentOrStandard() (HIGH-01)
  * - Standard users can now browse vendor menus
  * - Fixes FUNC-01 from the scope note
  *
@@ -15,7 +15,7 @@
  * SOURCE: Mockups - 21.png, 23.png
  * SOURCE: Scope Note - FUNC-01
  *
- * @version 9.0
+ * @version 11.0
  */
 
 // Load required dependencies
@@ -25,11 +25,11 @@ require_once dirname(__DIR__, 2) . '/includes/api_service.php';
 require_once dirname(__DIR__, 2) . '/config/database.php';
 require_once dirname(__DIR__, 2) . '/config/error_logging.php';
 
-// Start secure session and require student OR standard role
+// Start secure session
 startSecureSession();
 
 // =============================================================================
-// CORRECTION: FUNC-01 - Allow Standard users to browse menus
+// CORRECTION: HIGH-01 - Allow Standard users to browse menus
 // Previous code called requireStudent() which blocked Standard users.
 // Standard users now have full access to menu browsing.
 // Source: Scope Note - FUNC-01

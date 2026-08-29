@@ -1,13 +1,19 @@
 <?php
 /**
- * Order Tracking Page for Students
+ * Order Tracking Page for Students and Standard Users
  *
  * This page displays real-time order tracking information.
  *
+ * CORRECTIONS (Version 18.0 - Standard User Access Fix):
+ * - Replaced requireStudent() with requireStudentOrStandard() (HIGH-02)
+ * - Standard users can now track their orders
+ * - Fixes FUNC-02 from the scope note
+ *
  * SOURCE: campus-eats-process-document.pdf (Section 6.1 - Track order status)
  * SOURCE: Mockups - Order tracking design
+ * SOURCE: Scope Note - FUNC-02
  *
- * @version 15.0
+ * @version 18.0
  */
 
 // Load required dependencies
@@ -16,9 +22,16 @@ require_once dirname(__DIR__, 2) . '/includes/auth.php';
 require_once dirname(__DIR__, 2) . '/config/database.php';
 require_once dirname(__DIR__, 2) . '/config/error_logging.php';
 
-// Start secure session and require student role
+// Start secure session
 startSecureSession();
-requireStudent();
+
+// =============================================================================
+// CORRECTION: HIGH-02 - Allow Standard users to track orders
+// Previous code called requireStudent() which blocked Standard users.
+// Standard users now have full access to order tracking.
+// Source: Scope Note - FUNC-02
+// =============================================================================
+requireStudentOrStandard();
 
 $db = getDB();
 $currentUser = getCurrentUser();

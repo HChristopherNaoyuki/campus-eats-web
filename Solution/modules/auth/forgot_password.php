@@ -4,14 +4,16 @@
  *
  * Handles password reset requests with rate limiting and session invalidation.
  *
- * CORRECTIONS (Version 9.0 - Visual Parity):
- * - Updated layout to match mockup 20.png
- * - Improved responsive behavior
- * - Removed inline styles and moved to public.css
+ * CORRECTIONS (Version 11.0 - Security Fixes):
+ * - Added rate limiting for password reset attempts (HIGH-07)
+ * - Added IP-based rate limiting
+ * - Added MAX_RESET_ATTEMPTS and RESET_ATTEMPT_WINDOW constants
+ * - Added password_reset_attempts table
  *
  * SOURCE: Mockup - 20.png
+ * SOURCE: Scope Note - HIGH-07
  *
- * @version 9.0
+ * @version 11.0
  */
 
 require_once dirname(__DIR__, 2) . '/config/constants.php';
@@ -26,6 +28,94 @@ $error = '';
 $success = '';
 $formData = array('email' => '', 'user_id' => '');
 $csrfToken = getCsrfToken();
+
+// =============================================================================
+// Rate Limiting Constants (if not already defined)
+// =============================================================================
+
+if (!defined('MAX_RESET_ATTEMPTS'))
+{
+    define('MAX_RESET_ATTEMPTS', 5);
+}
+
+if (!defined('RESET_ATTEMPT_WINDOW'))
+{
+    define('RESET_ATTEMPT_WINDOW', 3600);
+}
+
+if (!defined('RESET_ATTEMPT_WINDOW_MINUTES'))
+{
+    define('RESET_ATTEMPT_WINDOW_MINUTES', 60);
+}
+
+// =============================================================================
+// Reset Attempt Tracking Functions
+// =============================================================================
+
+if (!function_exists('getResetAttemptCount'))
+{
+    function getResetAttemptCount($ipAddress, $email)
+    {
+        $db = getDB();
+        
+        $result = $db->fetchOne(
+            "SELECT COUNT(*) as count
+             FROM password_reset_attempts
+             WHERE ip_address = :ip_address
+               AND email = :email
+               AND attempted_at > DATE_SUB(NOW(), INTERVAL :window SECOND)",
+            array(
+                'ip_address' => $ipAddress,
+                'email' => $email,
+                'window' => RESET_ATTEMPT_WINDOW
+            )
+        );
+        
+        return (int)($result['count'] ?? 0);
+    }
+}
+
+if (!function_exists('recordResetAttempt'))
+{
+    function recordResetAttempt($ipAddress, $email)
+    {
+        $db = getDB();
+        
+        $db->insert(
+            "INSERT INTO password_reset_attempts (ip_address, email, attempted_at)
+             VALUES (:ip_address, :email, NOW())",
+            array(
+                'ip_address' => $ipAddress,
+                'email' => $email
+            )
+        );
+        
+        writeLog("Recorded password reset attempt for email: $email from IP: $ipAddress", "AUTH");
+    }
+}
+
+if (!function_exists('clearResetAttempts'))
+{
+    function clearResetAttempts($ipAddress, $email)
+    {
+        $db = getDB();
+        
+        $db->executeQuery(
+            "DELETE FROM password_reset_attempts
+             WHERE ip_address = :ip_address AND email = :email",
+            array(
+                'ip_address' => $ipAddress,
+                'email' => $email
+            )
+        );
+        
+        writeLog("Cleared password reset attempts for email: $email from IP: $ipAddress", "AUTH");
+    }
+}
+
+// =============================================================================
+// Handle Reset Request
+// =============================================================================
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST')
 {
@@ -56,7 +146,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
     }
     else
     {
-        // Rate limiting check for password reset attempts.
+        // =========================================================================
+        // CORRECTION: HIGH-07 - Rate limiting check for password reset attempts
+        // =========================================================================
         $resetAttemptCount = getResetAttemptCount($ipAddress, $email);
 
         if ($resetAttemptCount >= MAX_RESET_ATTEMPTS)
@@ -66,14 +158,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
         }
         else
         {
-            $passwordValidation = validatePasswordPolicy($newPassword);
-
-            if (!$passwordValidation['valid'])
+            // Validate password policy
+            try
             {
-                $error = $passwordValidation['message'];
-            }
-            else
-            {
+                $passwordHash = validateAndHashPassword($newPassword);
+                
                 $db = getDB();
                 $user = $db->fetchOne
                 (
@@ -100,20 +189,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                 }
                 else
                 {
-                    $newPasswordHash = hashPassword($newPassword);
                     $db->executeQuery
                     (
                         "UPDATE users SET password_hash = :password_hash, updated_at = NOW()
                          WHERE email = :email AND unique_id = :user_id",
-                        array('password_hash' => $newPasswordHash, 'email' => $email, 'user_id' => $userIdInput)
+                        array('password_hash' => $passwordHash, 'email' => $email, 'user_id' => $userIdInput)
                     );
 
-                    // Invalidate any existing sessions for this user.
+                    // Invalidate any existing sessions for this user
                     if (!empty($_SESSION['user_id']) && $_SESSION['user_id'] == $user['user_id'])
                     {
                         regenerateSession();
                     }
 
+                    // CORRECTION: HIGH-07 - Clear reset attempts on success
                     clearResetAttempts($ipAddress, $email);
 
                     $success = 'Your password has been reset successfully. You can now log in with your new password.';
@@ -122,6 +211,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
 
                     writeLog("Password reset successful for user ID: {$user['user_id']}", "AUTH");
                 }
+            }
+            catch (InvalidArgumentException $e)
+            {
+                $error = $e->getMessage();
+                recordResetAttempt($ipAddress, $email);
             }
         }
     }

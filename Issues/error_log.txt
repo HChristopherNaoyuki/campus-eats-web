@@ -1098,3 +1098,209 @@ Stack trace:
 [2026-08-18 12:03:51] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/14/menu
 [2026-08-18 12:03:51] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/19/menu (Attempt 1)
 [2026-08-18 12:03:52] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/19/menu
+[2026-08-29 12:27:41] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (CSP with unsafe-inline removed)
+[2026-08-29 12:27:41] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant (Attempt 1)
+[2026-08-29 12:27:43] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant
+[2026-08-29 12:27:43] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] Fetched 31 restaurants from API
+[2026-08-29 12:27:43] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/26/menu (Attempt 1)
+[2026-08-29 12:27:44] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/26/menu
+[2026-08-29 12:27:44] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API cache hit: /api/Restaurant/26/menu
+[2026-08-29 12:27:44] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/25/menu (Attempt 1)
+[2026-08-29 12:27:45] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/25/menu
+[2026-08-29 12:27:45] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/29/menu (Attempt 1)
+[2026-08-29 12:27:46] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/29/menu
+[2026-08-29 12:27:46] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/9/menu (Attempt 1)
+[2026-08-29 12:27:47] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/9/menu
+[2026-08-29 12:27:47] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/4/menu (Attempt 1)
+[2026-08-29 12:27:48] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/4/menu
+[2026-08-29 12:27:48] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/22/menu (Attempt 1)
+[2026-08-29 12:27:49] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/22/menu
+[2026-08-29 12:27:49] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/16/menu (Attempt 1)
+[2026-08-29 12:27:50] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/16/menu
+[2026-08-29 12:27:50] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/11/menu (Attempt 1)
+[2026-08-29 12:27:50] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/11/menu
+[2026-08-29 12:27:50] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/20/menu (Attempt 1)
+[2026-08-29 12:27:51] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/20/menu
+[2026-08-29 12:27:51] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/31/menu (Attempt 1)
+[2026-08-29 12:27:55] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/31/menu
+[2026-08-29 12:27:55] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/10/menu (Attempt 1)
+[2026-08-29 12:27:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/10/menu
+[2026-08-29 12:27:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/12/menu (Attempt 1)
+[2026-08-29 12:27:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/12/menu
+[2026-08-29 12:27:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/2/menu (Attempt 1)
+[2026-08-29 12:27:58] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/2/menu
+[2026-08-29 12:27:58] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/13/menu (Attempt 1)
+[2026-08-29 12:27:59] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/13/menu
+[2026-08-29 12:27:59] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/18/menu (Attempt 1)
+[2026-08-29 12:28:00] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/18/menu
+[2026-08-29 12:28:00] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/15/menu (Attempt 1)
+[2026-08-29 12:28:01] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/15/menu
+[2026-08-29 12:28:01] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/17/menu (Attempt 1)
+[2026-08-29 12:28:03] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/17/menu
+[2026-08-29 12:28:03] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/6/menu (Attempt 1)
+[2026-08-29 12:28:04] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/6/menu
+[2026-08-29 12:28:04] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/21/menu (Attempt 1)
+[2026-08-29 12:28:13] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/21/menu
+[2026-08-29 12:28:13] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/23/menu (Attempt 1)
+[2026-08-29 12:28:15] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/23/menu
+[2026-08-29 12:28:15] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/1/menu (Attempt 1)
+[2026-08-29 12:28:16] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/1/menu
+[2026-08-29 12:28:16] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/28/menu (Attempt 1)
+[2026-08-29 12:28:16] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/28/menu
+[2026-08-29 12:28:16] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/24/menu (Attempt 1)
+[2026-08-29 12:28:18] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/24/menu
+[2026-08-29 12:28:18] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/5/menu (Attempt 1)
+[2026-08-29 12:28:22] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/5/menu
+[2026-08-29 12:28:22] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/30/menu (Attempt 1)
+[2026-08-29 12:28:25] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/30/menu
+[2026-08-29 12:28:25] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/27/menu (Attempt 1)
+[2026-08-29 12:28:26] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/27/menu
+[2026-08-29 12:28:26] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/8/menu (Attempt 1)
+[2026-08-29 12:28:27] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/8/menu
+[2026-08-29 12:28:27] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/3/menu (Attempt 1)
+[2026-08-29 12:28:28] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/3/menu
+[2026-08-29 12:28:28] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/7/menu (Attempt 1)
+[2026-08-29 12:28:31] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/7/menu
+[2026-08-29 12:28:31] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/14/menu (Attempt 1)
+[2026-08-29 12:28:32] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/14/menu
+[2026-08-29 12:28:32] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/19/menu (Attempt 1)
+[2026-08-29 12:28:33] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/19/menu
+[2026-08-29 12:29:36] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] Security headers set (CSP with unsafe-inline removed)
+[2026-08-29 12:29:47] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (CSP with unsafe-inline removed)
+[2026-08-29 12:29:47] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant (Attempt 1)
+[2026-08-29 12:29:48] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant
+[2026-08-29 12:29:48] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] Fetched 31 restaurants from API
+[2026-08-29 12:29:48] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/26/menu (Attempt 1)
+[2026-08-29 12:29:49] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/26/menu
+[2026-08-29 12:29:49] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API cache hit: /api/Restaurant/26/menu
+[2026-08-29 12:29:49] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/25/menu (Attempt 1)
+[2026-08-29 12:29:50] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/25/menu
+[2026-08-29 12:29:50] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/29/menu (Attempt 1)
+[2026-08-29 12:29:55] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/29/menu
+[2026-08-29 12:29:55] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/9/menu (Attempt 1)
+[2026-08-29 12:29:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/9/menu
+[2026-08-29 12:29:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/4/menu (Attempt 1)
+[2026-08-29 12:29:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/4/menu
+[2026-08-29 12:29:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/22/menu (Attempt 1)
+[2026-08-29 12:30:02] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/22/menu
+[2026-08-29 12:30:02] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/16/menu (Attempt 1)
+[2026-08-29 12:30:02] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/16/menu
+[2026-08-29 12:30:02] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/11/menu (Attempt 1)
+[2026-08-29 12:30:10] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/11/menu
+[2026-08-29 12:30:10] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/20/menu (Attempt 1)
+[2026-08-29 12:30:11] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/20/menu
+[2026-08-29 12:30:11] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/31/menu (Attempt 1)
+[2026-08-29 12:30:12] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/31/menu
+[2026-08-29 12:30:12] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/10/menu (Attempt 1)
+[2026-08-29 12:30:13] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/10/menu
+[2026-08-29 12:30:13] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/12/menu (Attempt 1)
+[2026-08-29 12:30:14] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/12/menu
+[2026-08-29 12:30:14] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/2/menu (Attempt 1)
+[2026-08-29 12:30:15] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/2/menu
+[2026-08-29 12:30:15] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/13/menu (Attempt 1)
+[2026-08-29 12:30:17] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/13/menu
+[2026-08-29 12:30:17] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/18/menu (Attempt 1)
+[2026-08-29 12:30:19] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/18/menu
+[2026-08-29 12:30:19] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/15/menu (Attempt 1)
+[2026-08-29 12:30:20] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/15/menu
+[2026-08-29 12:30:20] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/17/menu (Attempt 1)
+[2026-08-29 12:30:21] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/17/menu
+[2026-08-29 12:30:21] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/6/menu (Attempt 1)
+[2026-08-29 12:30:22] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/6/menu
+[2026-08-29 12:30:22] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/21/menu (Attempt 1)
+[2026-08-29 12:30:23] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/21/menu
+[2026-08-29 12:30:23] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/23/menu (Attempt 1)
+[2026-08-29 12:30:24] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/23/menu
+[2026-08-29 12:30:24] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/1/menu (Attempt 1)
+[2026-08-29 12:30:26] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/1/menu
+[2026-08-29 12:30:26] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/28/menu (Attempt 1)
+[2026-08-29 12:30:27] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/28/menu
+[2026-08-29 12:30:27] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/24/menu (Attempt 1)
+[2026-08-29 12:30:28] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/24/menu
+[2026-08-29 12:30:28] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/5/menu (Attempt 1)
+[2026-08-29 12:30:29] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/5/menu
+[2026-08-29 12:30:29] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/30/menu (Attempt 1)
+[2026-08-29 12:30:31] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/30/menu
+[2026-08-29 12:30:31] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/27/menu (Attempt 1)
+[2026-08-29 12:30:31] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/27/menu
+[2026-08-29 12:30:31] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/8/menu (Attempt 1)
+[2026-08-29 12:30:33] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/8/menu
+[2026-08-29 12:30:33] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/3/menu (Attempt 1)
+[2026-08-29 12:30:34] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/3/menu
+[2026-08-29 12:30:34] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/7/menu (Attempt 1)
+[2026-08-29 12:30:35] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/7/menu
+[2026-08-29 12:30:35] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/14/menu (Attempt 1)
+[2026-08-29 12:30:36] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/14/menu
+[2026-08-29 12:30:36] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request: GET /api/Restaurant/19/menu (Attempt 1)
+[2026-08-29 12:30:37] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] API request successful: GET /api/Restaurant/19/menu
+[2026-08-29 12:30:55] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] Security headers set (CSP with unsafe-inline removed)
+[2026-08-29 12:31:06] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ln6nc4n5nfpn6ermrnof9i1b29] Security headers set (CSP with unsafe-inline removed)
+[2026-08-29 12:31:33] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Session initialized and ID regenerated
+[2026-08-29 12:31:33] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Secure session started successfully
+[2026-08-29 12:31:33] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] New CSRF token generated (version: 1)
+[2026-08-29 12:31:38] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Secure session started successfully
+[2026-08-29 12:31:39] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Database 'campus_eats' ensured to exist.
+[2026-08-29 12:31:39] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Tables do not exist. Installing...
+[2026-08-29 12:31:39] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Database tables installed successfully.
+[2026-08-29 12:31:39] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Query failed: SQLSTATE[HY000]: General error: 2014 Cannot execute queries while other unbuffered queries are active.  Consider using PDOStatement::fetchAll().  Alternatively, if your code is only ever going to run against mysql, you may enable query buffering by setting the PDO::MYSQL_ATTR_USE_BUFFERED_QUERY attribute. | SQL: SELECT COLUMN_TYPE 
+                 FROM information_schema.COLUMNS 
+                 WHERE TABLE_SCHEMA = :database 
+                   AND TABLE_NAME = 'users' 
+                   AND COLUMN_NAME = 'account_type'
+[2026-08-29 12:31:39] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Failed to ensure schema supports standard user: SQLSTATE[HY000]: General error: 2014 Cannot execute queries while other unbuffered queries are active.  Consider using PDOStatement::fetchAll().  Alternatively, if your code is only ever going to run against mysql, you may enable query buffering by setting the PDO::MYSQL_ATTR_USE_BUFFERED_QUERY attribute.
+[2026-08-29 12:31:39] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Query failed: SQLSTATE[HY000]: General error: 2014 Cannot execute queries while other unbuffered queries are active.  Consider using PDOStatement::fetchAll().  Alternatively, if your code is only ever going to run against mysql, you may enable query buffering by setting the PDO::MYSQL_ATTR_USE_BUFFERED_QUERY attribute. | SQL: SELECT `user_id`, `password_hash`, `is_verified`, `is_active`, `account_type`
+                 FROM `users`
+                 WHERE `username` = :username
+                 LIMIT 1
+[2026-08-29 12:31:39] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Failed to ensure admin account: SQLSTATE[HY000]: General error: 2014 Cannot execute queries while other unbuffered queries are active.  Consider using PDOStatement::fetchAll().  Alternatively, if your code is only ever going to run against mysql, you may enable query buffering by setting the PDO::MYSQL_ATTR_USE_BUFFERED_QUERY attribute.
+[2026-08-29 12:31:39] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Query failed: SQLSTATE[HY000]: General error: 2014 Cannot execute queries while other unbuffered queries are active.  Consider using PDOStatement::fetchAll().  Alternatively, if your code is only ever going to run against mysql, you may enable query buffering by setting the PDO::MYSQL_ATTR_USE_BUFFERED_QUERY attribute. | SQL: SHOW TABLES LIKE 'user_sessions'
+[2026-08-29 12:31:39] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Failed to create user_sessions table: SQLSTATE[HY000]: General error: 2014 Cannot execute queries while other unbuffered queries are active.  Consider using PDOStatement::fetchAll().  Alternatively, if your code is only ever going to run against mysql, you may enable query buffering by setting the PDO::MYSQL_ATTR_USE_BUFFERED_QUERY attribute.
+[2026-08-29 12:31:39] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Query failed: SQLSTATE[HY000]: General error: 2014 Cannot execute queries while other unbuffered queries are active.  Consider using PDOStatement::fetchAll().  Alternatively, if your code is only ever going to run against mysql, you may enable query buffering by setting the PDO::MYSQL_ATTR_USE_BUFFERED_QUERY attribute. | SQL: SELECT `user_id`, `password_hash`, `account_type`, `is_verified`, `is_active`
+                     FROM `users`
+                     WHERE `email` = :email OR `username` = :username
+                     LIMIT 1
+[2026-08-29 12:31:39] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Failed to ensure demo accounts: SQLSTATE[HY000]: General error: 2014 Cannot execute queries while other unbuffered queries are active.  Consider using PDOStatement::fetchAll().  Alternatively, if your code is only ever going to run against mysql, you may enable query buffering by setting the PDO::MYSQL_ATTR_USE_BUFFERED_QUERY attribute.
+[2026-08-29 12:31:39] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Query failed: SQLSTATE[HY000]: General error: 2014 Cannot execute queries while other unbuffered queries are active.  Consider using PDOStatement::fetchAll().  Alternatively, if your code is only ever going to run against mysql, you may enable query buffering by setting the PDO::MYSQL_ATTR_USE_BUFFERED_QUERY attribute. | SQL: SHOW TABLES LIKE 'login_attempts'
+[2026-08-29 12:31:39] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Failed to create login_attempts table: SQLSTATE[HY000]: General error: 2014 Cannot execute queries while other unbuffered queries are active.  Consider using PDOStatement::fetchAll().  Alternatively, if your code is only ever going to run against mysql, you may enable query buffering by setting the PDO::MYSQL_ATTR_USE_BUFFERED_QUERY attribute.
+[2026-08-29 12:31:39] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Database connection established successfully.
+[2026-08-29 12:31:43] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Secure session started successfully
+[2026-08-29 12:32:46] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Secure session started successfully
+[2026-08-29 12:32:46] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] CSRF token validated successfully
+[2026-08-29 12:32:46] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Database 'campus_eats' ensured to exist.
+[2026-08-29 12:32:46] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Tables do not exist. Installing...
+[2026-08-29 12:32:46] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Database tables installed successfully.
+[2026-08-29 12:32:46] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Query failed: SQLSTATE[HY000]: General error: 2014 Cannot execute queries while other unbuffered queries are active.  Consider using PDOStatement::fetchAll().  Alternatively, if your code is only ever going to run against mysql, you may enable query buffering by setting the PDO::MYSQL_ATTR_USE_BUFFERED_QUERY attribute. | SQL: SELECT COLUMN_TYPE 
+                 FROM information_schema.COLUMNS 
+                 WHERE TABLE_SCHEMA = :database 
+                   AND TABLE_NAME = 'users' 
+                   AND COLUMN_NAME = 'account_type'
+[2026-08-29 12:32:46] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Failed to ensure schema supports standard user: SQLSTATE[HY000]: General error: 2014 Cannot execute queries while other unbuffered queries are active.  Consider using PDOStatement::fetchAll().  Alternatively, if your code is only ever going to run against mysql, you may enable query buffering by setting the PDO::MYSQL_ATTR_USE_BUFFERED_QUERY attribute.
+[2026-08-29 12:32:47] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Query failed: SQLSTATE[HY000]: General error: 2014 Cannot execute queries while other unbuffered queries are active.  Consider using PDOStatement::fetchAll().  Alternatively, if your code is only ever going to run against mysql, you may enable query buffering by setting the PDO::MYSQL_ATTR_USE_BUFFERED_QUERY attribute. | SQL: SELECT `user_id`, `password_hash`, `is_verified`, `is_active`, `account_type`
+                 FROM `users`
+                 WHERE `username` = :username
+                 LIMIT 1
+[2026-08-29 12:32:47] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Failed to ensure admin account: SQLSTATE[HY000]: General error: 2014 Cannot execute queries while other unbuffered queries are active.  Consider using PDOStatement::fetchAll().  Alternatively, if your code is only ever going to run against mysql, you may enable query buffering by setting the PDO::MYSQL_ATTR_USE_BUFFERED_QUERY attribute.
+[2026-08-29 12:32:47] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Query failed: SQLSTATE[HY000]: General error: 2014 Cannot execute queries while other unbuffered queries are active.  Consider using PDOStatement::fetchAll().  Alternatively, if your code is only ever going to run against mysql, you may enable query buffering by setting the PDO::MYSQL_ATTR_USE_BUFFERED_QUERY attribute. | SQL: SHOW TABLES LIKE 'user_sessions'
+[2026-08-29 12:32:47] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Failed to create user_sessions table: SQLSTATE[HY000]: General error: 2014 Cannot execute queries while other unbuffered queries are active.  Consider using PDOStatement::fetchAll().  Alternatively, if your code is only ever going to run against mysql, you may enable query buffering by setting the PDO::MYSQL_ATTR_USE_BUFFERED_QUERY attribute.
+[2026-08-29 12:32:47] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Query failed: SQLSTATE[HY000]: General error: 2014 Cannot execute queries while other unbuffered queries are active.  Consider using PDOStatement::fetchAll().  Alternatively, if your code is only ever going to run against mysql, you may enable query buffering by setting the PDO::MYSQL_ATTR_USE_BUFFERED_QUERY attribute. | SQL: SELECT `user_id`, `password_hash`, `account_type`, `is_verified`, `is_active`
+                     FROM `users`
+                     WHERE `email` = :email OR `username` = :username
+                     LIMIT 1
+[2026-08-29 12:32:47] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Failed to ensure demo accounts: SQLSTATE[HY000]: General error: 2014 Cannot execute queries while other unbuffered queries are active.  Consider using PDOStatement::fetchAll().  Alternatively, if your code is only ever going to run against mysql, you may enable query buffering by setting the PDO::MYSQL_ATTR_USE_BUFFERED_QUERY attribute.
+[2026-08-29 12:32:47] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Query failed: SQLSTATE[HY000]: General error: 2014 Cannot execute queries while other unbuffered queries are active.  Consider using PDOStatement::fetchAll().  Alternatively, if your code is only ever going to run against mysql, you may enable query buffering by setting the PDO::MYSQL_ATTR_USE_BUFFERED_QUERY attribute. | SQL: SHOW TABLES LIKE 'login_attempts'
+[2026-08-29 12:32:47] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Failed to create login_attempts table: SQLSTATE[HY000]: General error: 2014 Cannot execute queries while other unbuffered queries are active.  Consider using PDOStatement::fetchAll().  Alternatively, if your code is only ever going to run against mysql, you may enable query buffering by setting the PDO::MYSQL_ATTR_USE_BUFFERED_QUERY attribute.
+[2026-08-29 12:32:47] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Database connection established successfully.
+[2026-08-29 12:32:47] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Query failed: SQLSTATE[HY000]: General error: 2014 Cannot execute queries while other unbuffered queries are active.  Consider using PDOStatement::fetchAll().  Alternatively, if your code is only ever going to run against mysql, you may enable query buffering by setting the PDO::MYSQL_ATTR_USE_BUFFERED_QUERY attribute. | SQL: SELECT COUNT(*) as attempt_count
+             FROM login_attempts
+             WHERE ip_address = :ip_address
+               AND username = :username
+               AND attempted_at > DATE_SUB(NOW(), INTERVAL :window SECOND)
+[2026-08-29 12:32:47] [EXCEPTION] [ERROR] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Uncaught Exception: SQLSTATE[HY000]: General error: 2014 Cannot execute queries while other unbuffered queries are active.  Consider using PDOStatement::fetchAll().  Alternatively, if your code is only ever going to run against mysql, you may enable query buffering by setting the PDO::MYSQL_ATTR_USE_BUFFERED_QUERY attribute. in C:\wamp64\www\campus-eats-web\Solution\config\database.php on line 674
+Stack trace:
+#0 C:\wamp64\www\campus-eats-web\Solution\config\database.php(674): PDO->prepare('SELECT COUNT(*)...')
+#1 C:\wamp64\www\campus-eats-web\Solution\config\database.php(713): DatabaseConnection->executeQuery('SELECT COUNT(*)...', Array)
+#2 C:\wamp64\www\campus-eats-web\Solution\includes\auth.php(398): DatabaseConnection->fetchOne('SELECT COUNT(*)...', Array)
+#3 C:\wamp64\www\campus-eats-web\Solution\includes\auth.php(473): getFailedLoginAttemptCount('127.0.0.1', 'john.doe@exampl...')
+#4 C:\wamp64\www\campus-eats-web\Solution\modules\auth\login.php(64): authenticateUser('john.doe@exampl...', 'AdminPass123!', '9d674599e63b85f...')
+#5 {main}
+[2026-08-29 12:32:47] [AUDIT] [INFO] [IP: 127.0.0.1] [User: guest] [Session: f4v1honv3lnmkale31bqb31h3o] Audit: system - exception (Result: error)

@@ -6,17 +6,18 @@
  * Includes service fee calculation, tax calculation, rounding rules,
  * and student discount (2.5%) for Student role users only.
  *
- * CORRECTIONS (Version 31.0 - Pricing Order Fix):
- * - Reordered financial calculations to match the process document:
- *   1. Subtotal → Service Fee → Tax → Rounding → Student Discount (last)
+ * CORRECTIONS (Version 33.0 - Pricing Order and Order ID Fix):
+ * - Reordered financial calculations to match the process document (HIGH-03)
  * - Student discount is now applied after rounding, not before tax
- * - Fixes FUNC-03 from the scope note
+ * - Fixed order ID generation to match format (HIGH-10)
+ * - Fixes FUNC-03 and FUNC-05 from the scope note
  *
  * SOURCE: campus-eats-process-document.pdf (Section 10.1 - Rule Table)
- * SOURCE: Scope Note - FUNC-03
+ * SOURCE: campus-eats-process-document.pdf (Section 11.2 - Order ID System)
+ * SOURCE: Scope Note - FUNC-03, FUNC-05
  * SOURCE: Mockups - Checkout design
  *
- * @version 31.0
+ * @version 33.0
  */
 
 // Load required dependencies
@@ -38,7 +39,7 @@ $checkoutData = isset($_SESSION['checkout_data']) ? $_SESSION['checkout_data'] :
 
 // =============================================================================
 // Helper Functions for Financial Calculations
-// CORRECTION: FUNC-03 - Reordered to: fee → tax → round → discount
+// CORRECTION: HIGH-03 - Reordered to: fee → tax → round → discount
 // =============================================================================
 
 function calculateServiceFee($subtotal)
@@ -81,6 +82,24 @@ function calculateStudentDiscount($amount, $isStudent)
     return 0.0;
 }
 
+// =============================================================================
+// CORRECTION: HIGH-10 - Generate 8-character uppercase alphanumeric suffix
+// Previous: bin2hex(random_bytes(6)) produced 12-char lowercase hex
+// Correct: 8-char uppercase alphanumeric per Section 11.2
+// Source: Scope Note - FUNC-05
+// =============================================================================
+
+function generateOrderNumber()
+{
+    $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    $suffix = '';
+    for ($i = 0; $i < 8; $i++)
+    {
+        $suffix .= $chars[random_int(0, strlen($chars) - 1)];
+    }
+    return 'ORD-' . date('Ymd') . '-' . $suffix;
+}
+
 function getTableColumns($db, $tableName)
 {
     $allowedTables = array('orders', 'payments', 'users', 'vendors', 'menu_items', 'order_items');
@@ -111,7 +130,7 @@ function getTableColumns($db, $tableName)
 }
 
 // =============================================================================
-// CORRECTION: FUNC-03 - Calculate cart totals in the correct order
+// CORRECTION: HIGH-03 - Calculate cart totals in the correct order
 // Previous order: subtotal → fee → discount → tax → round
 // Correct order (per process document): subtotal → fee → tax → round → discount
 // Source: Scope Note - FUNC-03, Section 10.1 Rule Table
@@ -363,18 +382,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order']))
                             else
                             {
                                 // =========================================================================
-                                // CORRECTION: FUNC-05 - Generate 8-character uppercase alphanumeric suffix
+                                // CORRECTION: HIGH-10 - Generate 8-character uppercase alphanumeric suffix
                                 // Previous: bin2hex(random_bytes(6)) produced 12-char lowercase hex
                                 // Correct: 8-char uppercase alphanumeric per Section 11.2
                                 // Source: Scope Note - FUNC-05
                                 // =========================================================================
-                                $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-                                $suffix = '';
-                                for ($i = 0; $i < 8; $i++)
-                                {
-                                    $suffix .= $chars[random_int(0, strlen($chars) - 1)];
-                                }
-                                $orderNumber = 'ORD-' . date('Ymd') . '-' . $suffix;
+                                $orderNumber = generateOrderNumber();
 
                                 $orderColumns = getTableColumns($db, 'orders');
 
