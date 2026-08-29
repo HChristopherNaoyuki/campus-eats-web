@@ -1,0 +1,24 @@
+/**
+ * Campus Eats Unified Dashboard Styles (Deprecated)
+ *
+ * This file has been deprecated. All dashboard styles are now in:
+ * - apple.css (base styles)
+ * - admin.css (admin-specific)
+ * - vendor.css (vendor-specific)
+ * - student.css (student-specific)
+ *
+ * CORRECTIONS:
+ * - This file now serves as a compatibility shim
+ * - Imports the canonical design system
+ *
+ * @version 5.0
+ * @deprecated Use apple.css and role-specific CSS files instead
+ */
+
+/* Import canonical design system */
+@import url('apple.css');
+
+/* Role-specific styles are now in separate files */
+@import url('admin.css');
+@import url('vendor.css');
+@import url('student.css');

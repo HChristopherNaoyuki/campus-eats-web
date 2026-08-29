@@ -1,0 +1,862 @@
+/**
+ * Administrator-Specific Styles for Campus Eats
+ *
+ * This file contains styles specific to the admin dashboard.
+ * It imports the canonical design system and adds admin-specific overrides.
+ *
+ * CORRECTIONS (Version 14.0 - Complete Implementation):
+ * - Added styles for admin dashboard components that were previously inline.
+ * - Includes status-distribution-grid, dashboard-card-spacing, and utility classes.
+ * - These styles ensure a consistent, responsive, and accessible admin interface.
+ *
+ * SOURCE: campus-eats-process-document.pdf (Section 10.3 - Administrator Interface)
+ * SOURCE: Full Code Review Report - Section 3.3, 3.6
+ *
+ * @version 14.0
+ */
+
+/* Import canonical design system */
+@import url('apple.css');
+
+/* =============================================================================
+   Admin Content - Specific Styles
+   ============================================================================= */
+
+.admin-content
+{
+    flex: 1;
+    padding: var(--space-4) var(--space-5);
+    max-width: 100%;
+    overflow-x: hidden;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+@media (min-width: 640px)
+{
+    .admin-content
+    {
+        padding: var(--space-5) var(--space-6);
+    }
+}
+
+@media (min-width: 1024px)
+{
+    .admin-content
+    {
+        padding: var(--space-6) var(--space-8);
+    }
+}
+
+/* The container inside admin content should fill the space */
+.admin-content .container
+{
+    max-width: 100%;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* =============================================================================
+   Welcome Card
+   ============================================================================= */
+
+.welcome-card
+{
+    background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+    border-radius: var(--radius-lg);
+    padding: var(--space-4) var(--space-5);
+    color: white;
+    margin-bottom: var(--space-5);
+    box-shadow: var(--shadow-sm);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+@media (min-width: 640px)
+{
+    .welcome-card
+    {
+        padding: var(--space-5) var(--space-6);
+        margin-bottom: var(--space-6);
+    }
+}
+
+@media (min-width: 1024px)
+{
+    .welcome-card
+    {
+        padding: var(--space-6) var(--space-8);
+        margin-bottom: var(--space-8);
+    }
+}
+
+.welcome-card h1
+{
+    color: white;
+    margin-bottom: var(--space-2);
+    font-size: 1.125rem;
+}
+
+@media (min-width: 640px)
+{
+    .welcome-card h1
+    {
+        font-size: 1.25rem;
+    }
+}
+
+@media (min-width: 1024px)
+{
+    .welcome-card h1
+    {
+        font-size: 1.5rem;
+    }
+}
+
+.welcome-card p
+{
+    opacity: 0.9;
+    margin-bottom: 0;
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 0.8125rem;
+}
+
+@media (min-width: 1024px)
+{
+    .welcome-card p
+    {
+        font-size: 0.9375rem;
+    }
+}
+
+/* =============================================================================
+   Admin Stats Grid
+   ============================================================================= */
+
+.admin-stats-grid
+{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+    margin-bottom: var(--space-5);
+    width: 100%;
+}
+
+@media (min-width: 480px)
+{
+    .admin-stats-grid
+    {
+        gap: var(--space-4);
+    }
+}
+
+@media (min-width: 768px)
+{
+    .admin-stats-grid
+    {
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--space-5);
+        margin-bottom: var(--space-6);
+    }
+}
+
+@media (min-width: 1024px)
+{
+    .admin-stats-grid
+    {
+        margin-bottom: var(--space-8);
+    }
+}
+
+.admin-stat-card
+{
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: var(--space-3) var(--space-4);
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
+    border: 1px solid var(--gray-100);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+@media (min-width: 480px)
+{
+    .admin-stat-card
+    {
+        padding: var(--space-4) var(--space-5);
+        gap: var(--space-4);
+    }
+}
+
+@media (min-width: 768px)
+{
+    .admin-stat-card
+    {
+        padding: var(--space-5);
+    }
+}
+
+.admin-stat-card:hover
+{
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.admin-stat-icon
+{
+    width: 36px;
+    height: 36px;
+    background: var(--orange-light);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+@media (min-width: 480px)
+{
+    .admin-stat-icon
+    {
+        width: 44px;
+        height: 44px;
+    }
+}
+
+@media (min-width: 768px)
+{
+    .admin-stat-icon
+    {
+        width: 52px;
+        height: 52px;
+    }
+}
+
+.admin-stat-icon i
+{
+    font-size: 1rem;
+    color: var(--orange);
+}
+
+@media (min-width: 480px)
+{
+    .admin-stat-icon i
+    {
+        font-size: 1.25rem;
+    }
+}
+
+@media (min-width: 768px)
+{
+    .admin-stat-icon i
+    {
+        font-size: 1.5rem;
+    }
+}
+
+.stat-content
+{
+    flex: 1;
+    min-width: 0;
+}
+
+.admin-stat-number
+{
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--gray-900);
+    line-height: 1.2;
+}
+
+@media (min-width: 480px)
+{
+    .admin-stat-number
+    {
+        font-size: 1.25rem;
+    }
+}
+
+@media (min-width: 768px)
+{
+    .admin-stat-number
+    {
+        font-size: 1.75rem;
+    }
+}
+
+.admin-stat-label
+{
+    font-size: 0.5625rem;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-top: var(--space-1);
+}
+
+@media (min-width: 480px)
+{
+    .admin-stat-label
+    {
+        font-size: 0.625rem;
+    }
+}
+
+@media (min-width: 768px)
+{
+    .admin-stat-label
+    {
+        font-size: 0.75rem;
+        letter-spacing: 0.02em;
+    }
+}
+
+/* =============================================================================
+   Admin Dashboard Grid
+   ============================================================================= */
+
+.admin-dashboard-grid
+{
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-5);
+    width: 100%;
+}
+
+@media (min-width: 992px)
+{
+    .admin-dashboard-grid
+    {
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-6);
+    }
+}
+
+/* =============================================================================
+   Dashboard Card
+   ============================================================================= */
+
+.dashboard-card
+{
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    border: 1px solid var(--gray-100);
+    transition: box-shadow var(--transition-base);
+    width: 100%;
+}
+
+.dashboard-card:hover
+{
+    box-shadow: var(--shadow-md);
+}
+
+.dashboard-card-header
+{
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--gray-200);
+    background: var(--gray-50);
+    font-weight: 500;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+}
+
+@media (min-width: 640px)
+{
+    .dashboard-card-header
+    {
+        padding: var(--space-4) var(--space-5);
+    }
+}
+
+@media (min-width: 1024px)
+{
+    .dashboard-card-header
+    {
+        padding: var(--space-5) var(--space-6);
+    }
+}
+
+.dashboard-card-header h3
+{
+    margin-bottom: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--gray-800);
+}
+
+@media (min-width: 640px)
+{
+    .dashboard-card-header h3
+    {
+        font-size: 0.9375rem;
+    }
+}
+
+@media (min-width: 1024px)
+{
+    .dashboard-card-header h3
+    {
+        font-size: 1rem;
+    }
+}
+
+.dashboard-card-header h3 i
+{
+    color: var(--orange);
+    margin-right: var(--space-2);
+}
+
+.dashboard-card-body
+{
+    padding: var(--space-3) var(--space-4);
+}
+
+@media (min-width: 640px)
+{
+    .dashboard-card-body
+    {
+        padding: var(--space-4) var(--space-5);
+    }
+}
+
+@media (min-width: 1024px)
+{
+    .dashboard-card-body
+    {
+        padding: var(--space-6);
+    }
+}
+
+/* =============================================================================
+   Admin Dashboard Specific Styles (Moved from inline styles)
+   Source: Full Code Review Report - Section 3.3, 3.6
+   ============================================================================= */
+
+/* Card spacing utility for elements outside the main grid */
+.dashboard-card-spacing
+{
+    margin-top: var(--space-6);
+}
+
+/* Order Status Distribution Widget */
+.status-distribution-grid
+{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--space-3);
+}
+
+.status-distribution-item
+{
+    text-align: center;
+    padding: var(--space-3);
+    background: var(--gray-50);
+    border-radius: var(--radius-md);
+}
+
+.status-distribution-item .count
+{
+    font-size: 1.5rem;
+    font-weight: 700;
+    display: block;
+}
+
+.status-distribution-item .label
+{
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.status-distribution-item.pending .count { color: var(--warning-text); }
+.status-distribution-item.pending { background: var(--warning-bg); }
+
+.status-distribution-item.accepted .count { color: var(--info-text); }
+.status-distribution-item.accepted { background: var(--info-bg); }
+
+.status-distribution-item.preparing .count { color: #007AFF; }
+.status-distribution-item.preparing { background: #E8F0FE; }
+
+.status-distribution-item.ready .count { color: #1B7A3D; }
+.status-distribution-item.ready { background: #E8F5E9; }
+
+.status-distribution-item.completed .count { color: var(--gray-700); }
+.status-distribution-item.completed { background: var(--gray-200); }
+
+.status-distribution-item.cancelled .count { color: var(--error-text); }
+.status-distribution-item.cancelled { background: var(--error-bg); }
+
+/* Revenue Table */
+.revenue-table .total-row
+{
+    font-weight: 600;
+    background: var(--gray-50);
+}
+
+.revenue-table .text-right
+{
+    text-align: right;
+}
+
+/* Inline form for actions (to replace inline styles) */
+.inline-form
+{
+    display: inline;
+}
+
+/* =============================================================================
+   Table Container
+   ============================================================================= */
+
+.table-container
+{
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0;
+    width: 100%;
+}
+
+/* =============================================================================
+   Data Table
+   ============================================================================= */
+
+.data-table
+{
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+    min-width: 500px;
+}
+
+@media (min-width: 640px)
+{
+    .data-table
+    {
+        font-size: 0.8125rem;
+        min-width: auto;
+    }
+}
+
+@media (min-width: 1024px)
+{
+    .data-table
+    {
+        font-size: 0.875rem;
+    }
+}
+
+.data-table th,
+.data-table td
+{
+    padding: var(--space-2) var(--space-3);
+    text-align: left;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+@media (min-width: 640px)
+{
+    .data-table th,
+    .data-table td
+    {
+        padding: var(--space-3) var(--space-4);
+    }
+}
+
+.data-table th
+{
+    background: var(--gray-50);
+    font-weight: 600;
+    font-size: 0.5625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--gray-600);
+    border-bottom: 2px solid var(--gray-200);
+}
+
+@media (min-width: 640px)
+{
+    .data-table th
+    {
+        font-size: 0.625rem;
+    }
+}
+
+@media (min-width: 1024px)
+{
+    .data-table th
+    {
+        font-size: 0.75rem;
+        letter-spacing: 0.02em;
+    }
+}
+
+.data-table tr:last-child td
+{
+    border-bottom: none;
+}
+
+.data-table tr:hover td
+{
+    background: var(--gray-50);
+}
+
+/* =============================================================================
+   Empty State
+   ============================================================================= */
+
+.empty-state
+{
+    text-align: center;
+    padding: var(--space-6) var(--space-4);
+    color: var(--gray-500);
+}
+
+@media (min-width: 640px)
+{
+    .empty-state
+    {
+        padding: var(--space-8) var(--space-6);
+    }
+}
+
+@media (min-width: 1024px)
+{
+    .empty-state
+    {
+        padding: var(--space-12) var(--space-6);
+    }
+}
+
+.empty-state i
+{
+    font-size: 1.5rem;
+    margin-bottom: var(--space-3);
+    color: var(--gray-400);
+}
+
+@media (min-width: 640px)
+{
+    .empty-state i
+    {
+        font-size: 2rem;
+    }
+}
+
+@media (min-width: 1024px)
+{
+    .empty-state i
+    {
+        font-size: 3rem;
+    }
+}
+
+.empty-state p
+{
+    margin-bottom: 0;
+    font-size: 0.8125rem;
+}
+
+@media (min-width: 640px)
+{
+    .empty-state p
+    {
+        font-size: 0.875rem;
+    }
+}
+
+/* =============================================================================
+   Alert Messages
+   ============================================================================= */
+
+.alert
+{
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-4);
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    border: 1px solid transparent;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+@media (min-width: 640px)
+{
+    .alert
+    {
+        padding: var(--space-4) var(--space-5);
+        font-size: 0.875rem;
+        margin-bottom: var(--space-5);
+    }
+}
+
+.alert i
+{
+    font-size: 1.125rem;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.alert-success
+{
+    background: var(--success-bg);
+    color: var(--success-text);
+    border-color: #C8E6C9;
+}
+
+.alert-success i
+{
+    color: var(--success);
+}
+
+.alert-error
+{
+    background: var(--error-bg);
+    color: var(--error-text);
+    border-color: #FFCDD2;
+}
+
+.alert-error i
+{
+    color: var(--error);
+}
+
+/* =============================================================================
+   Responsive Design - Mobile First
+   ============================================================================= */
+
+@media (max-width: 479px)
+{
+    .admin-content
+    {
+        padding: var(--space-2);
+    }
+
+    .admin-stats-grid
+    {
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-2);
+    }
+
+    .admin-stat-card
+    {
+        padding: var(--space-2) var(--space-3);
+    }
+
+    .admin-stat-icon
+    {
+        width: 32px;
+        height: 32px;
+    }
+
+    .admin-stat-icon i
+    {
+        font-size: 0.875rem;
+    }
+
+    .admin-stat-number
+    {
+        font-size: 1rem;
+    }
+
+    .admin-stat-label
+    {
+        font-size: 0.5rem;
+    }
+
+    .dashboard-card-header
+    {
+        padding: var(--space-2) var(--space-3);
+    }
+
+    .dashboard-card-body
+    {
+        padding: var(--space-2) var(--space-3);
+    }
+
+    .welcome-card
+    {
+        padding: var(--space-3) var(--space-4);
+    }
+
+    .welcome-card h1
+    {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 768px)
+{
+    .admin-content
+    {
+        padding: var(--space-3);
+    }
+
+    .admin-stats-grid
+    {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px)
+{
+    .admin-content
+    {
+        padding: var(--space-4);
+    }
+}
+
+/* =============================================================================
+   Print Styles
+   ============================================================================= */
+
+@media print
+{
+    .sidebar,
+    .sidebar-toggle
+    {
+        display: none !important;
+    }
+
+    .main-content,
+    .admin-content
+    {
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        background: white;
+    }
+
+    .welcome-card
+    {
+        background: #333 !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .dashboard-card
+    {
+        border: 1px solid #ccc !important;
+        box-shadow: none !important;
+        break-inside: avoid;
+    }
+
+    .data-table th
+    {
+        background: #f5f5f5 !important;
+    }
+}

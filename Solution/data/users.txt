@@ -1,0 +1,57 @@
+# =============================================================================
+# Campus Eats - Demo User Accounts
+# =============================================================================
+# This file contains hardcoded demo user accounts for system testing and UAT.
+# DO NOT modify these credentials without updating the seeding script.
+# Source: Feature Report - Demo User Accounts
+# Date: 2026-06-24
+# =============================================================================
+#
+# FORMAT: full_name, username, email, password, role
+# ROLES: admin, vendor, standard, student
+#
+# =============================================================================
+
+# =============================================================================
+# ADMIN USERS (2)
+# =============================================================================
+# These accounts have full system access including user management,
+# vendor management, order management, transactions, reports, and feedback.
+# =============================================================================
+
+John Doe, johndoe, john.doe@example.com, AdminPass123!, admin
+Sarah Wilson, sarahw, sarah.wilson@example.com, AdminPass987%, admin
+
+# =============================================================================
+# VENDOR USERS (2)
+# =============================================================================
+# These accounts have access to vendor dashboard, menu management,
+# order processing, and sales reports.
+# =============================================================================
+
+Jane Smith, janesmith, jane.smith@example.com, VendorPass456$, vendor
+Michael Brown, mikeb, mike.brown@example.com, VendorPass789#, vendor
+
+# =============================================================================
+# STANDARD USERS (2)
+# =============================================================================
+# These accounts have access to home, my orders, cart, and feedback.
+# Standard users do NOT receive the 2.5% student discount.
+# =============================================================================
+
+Emily Davis, emilyd, emily.davis@example.com, StandardPass321@, standard
+Robert Taylor, robertt, robert.taylor@example.com, StandardPass654#, standard
+
+# =============================================================================
+# STUDENT USERS (2)
+# =============================================================================
+# These accounts have access to home, my orders, cart, and feedback.
+# Student users receive a 2.5% discount on all purchases.
+# =============================================================================
+
+David Lee, davidl, david.lee@example.com, StudentPass234$, student
+Maria Garcia, mariag, maria.garcia@example.com, StudentPass567%, student
+
+# =============================================================================
+# END OF DEMO ACCOUNTS
+# =============================================================================

@@ -1,0 +1,98 @@
+# =============================================================================
+# Campus Eats - Apache Access Control Configuration
+# =============================================================================
+# This file prevents direct access to sensitive directories and files.
+# Version 3.0 - Simplified for compatibility with Apache 2.4 on Windows
+# =============================================================================
+
+# =============================================================================
+# Options
+# =============================================================================
+
+Options -Indexes
+Options +FollowSymLinks
+
+# =============================================================================
+# Turn on URL rewriting
+# =============================================================================
+
+RewriteEngine On
+
+# =============================================================================
+# Deny access to sensitive directories (RewriteRule method - more compatible)
+# =============================================================================
+
+# Deny access to Issues/ directory (contains error logs)
+RewriteRule ^Issues/ - [F,L]
+
+# Deny access to Documentation/ directory (contains process documents)
+RewriteRule ^Documentation/ - [F,L]
+
+# Deny access to .git/ and .github/ directories
+RewriteRule ^\.git/ - [F,L]
+RewriteRule ^\.github/ - [F,L]
+
+# Deny access to Solution/config/ directory (contains configuration files)
+RewriteRule ^Solution/config/ - [F,L]
+
+# Deny access to Solution/sql/ directory (contains SQL scripts)
+RewriteRule ^Solution/sql/ - [F,L]
+
+# Deny access to Solution/data/ directory (contains data files)
+RewriteRule ^Solution/data/ - [F,L]
+
+# =============================================================================
+# Deny access to specific sensitive files
+# =============================================================================
+
+# Deny access to configuration files
+<Files "constants.php">
+    Require all denied
+</Files>
+
+<Files "database.php">
+    Require all denied
+</Files>
+
+<Files "error_logging.php">
+    Require all denied
+</Files>
+
+<Files "demo_accounts.php">
+    Require all denied
+</Files>
+
+# Deny access to SQL files
+<FilesMatch "\.sql$">
+    Require all denied
+</FilesMatch>
+
+# =============================================================================
+# Allow access to all PHP files by default (this is the default behavior)
+# No need to explicitly allow index.php - it's already accessible
+# =============================================================================
+
+# =============================================================================
+# Error Documents
+# =============================================================================
+
+ErrorDocument 403 /error.php
+ErrorDocument 404 /error.php
+ErrorDocument 500 /error.php
+
+# =============================================================================
+# PHP Settings
+# =============================================================================
+
+# Disable display of errors in production (uncomment if needed)
+# php_flag display_errors off
+
+# =============================================================================
+# Security Headers (if mod_headers is enabled)
+# =============================================================================
+
+<IfModule mod_headers.c>
+    Header set X-Frame-Options "DENY"
+    Header set X-Content-Type-Options "nosniff"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>

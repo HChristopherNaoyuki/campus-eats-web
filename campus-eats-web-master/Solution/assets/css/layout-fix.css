@@ -1,0 +1,123 @@
+/* =============================================================================
+   Layout Fixes - Ensures footer stays at bottom and content fits viewport
+   ============================================================================= */
+
+/* Ensure html and body take full height */
+html, body
+{
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+/* Body as flex container for sticky footer */
+body
+{
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Main content should grow to push footer down */
+main
+{
+    flex: 1 0 auto;
+}
+
+/* Footer should not shrink */
+footer, .app-footer
+{
+    flex-shrink: 0;
+}
+
+/* Dashboard wrapper layout fixes */
+.dashboard-wrapper
+{
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+}
+
+/* Role-specific main content areas - ensure proper flex behavior */
+.admin-main,
+.vendor-main,
+.student-main
+{
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 100vh;
+}
+
+/* Content areas should expand to push footer */
+.admin-content,
+.vendor-content,
+.student-content
+{
+    flex: 1 0 auto;
+}
+
+/* Ensure footer in dashboard pages is properly positioned */
+.dashboard-wrapper > .admin-main > footer,
+.dashboard-wrapper > .vendor-main > footer,
+.dashboard-wrapper > .student-main > footer
+{
+    margin-top: auto;
+}
+
+/* Fix for any overflow issues */
+.admin-content .container,
+.vendor-content .container,
+.student-content .container
+{
+    overflow-x: auto;
+    max-width: 100%;
+}
+
+/* Ensure tables don't cause horizontal overflow on mobile */
+.table-responsive
+{
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Fix sidebar height to prevent overflow */
+.admin-sidebar,
+.vendor-sidebar,
+.student-sidebar
+{
+    height: 100vh;
+    overflow-y: auto;
+    position: sticky;
+    top: 0;
+}
+
+/* Ensure main content area doesn't overflow */
+.admin-main,
+.vendor-main,
+.student-main
+{
+    overflow-x: hidden;
+    width: 100%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px)
+{
+    .admin-sidebar,
+    .vendor-sidebar,
+    .student-sidebar
+    {
+        position: fixed;
+        height: 100vh;
+        z-index: var(--z-high);
+    }
+
+    .admin-main,
+    .vendor-main,
+    .student-main
+    {
+        margin-left: 0;
+        width: 100%;
+    }
+}

@@ -1,0 +1,1100 @@
+[2026-08-16 09:24:37] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set
+[2026-08-16 09:24:37] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant (Attempt 1)
+[2026-08-16 09:24:38] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant
+[2026-08-16 09:24:38] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] Fetched 31 restaurants from API
+[2026-08-16 09:24:38] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/26/menu (Attempt 1)
+[2026-08-16 09:24:39] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/26/menu
+[2026-08-16 09:24:39] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API cache hit: /api/Restaurant/26/menu
+[2026-08-16 09:24:39] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/25/menu (Attempt 1)
+[2026-08-16 09:24:40] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/25/menu
+[2026-08-16 09:24:40] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/29/menu (Attempt 1)
+[2026-08-16 09:24:41] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/29/menu
+[2026-08-16 09:24:41] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/9/menu (Attempt 1)
+[2026-08-16 09:24:42] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/9/menu
+[2026-08-16 09:24:42] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/4/menu (Attempt 1)
+[2026-08-16 09:24:43] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/4/menu
+[2026-08-16 09:24:43] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/22/menu (Attempt 1)
+[2026-08-16 09:24:44] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/22/menu
+[2026-08-16 09:24:44] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/16/menu (Attempt 1)
+[2026-08-16 09:24:44] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/16/menu
+[2026-08-16 09:24:44] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/11/menu (Attempt 1)
+[2026-08-16 09:24:45] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/11/menu
+[2026-08-16 09:24:45] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/20/menu (Attempt 1)
+[2026-08-16 09:24:46] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/20/menu
+[2026-08-16 09:24:46] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/31/menu (Attempt 1)
+[2026-08-16 09:24:47] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/31/menu
+[2026-08-16 09:24:47] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/10/menu (Attempt 1)
+[2026-08-16 09:24:48] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/10/menu
+[2026-08-16 09:24:48] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/12/menu (Attempt 1)
+[2026-08-16 09:24:49] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/12/menu
+[2026-08-16 09:24:49] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/2/menu (Attempt 1)
+[2026-08-16 09:24:49] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/2/menu
+[2026-08-16 09:24:49] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/13/menu (Attempt 1)
+[2026-08-16 09:24:50] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/13/menu
+[2026-08-16 09:24:50] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/18/menu (Attempt 1)
+[2026-08-16 09:24:51] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/18/menu
+[2026-08-16 09:24:51] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/15/menu (Attempt 1)
+[2026-08-16 09:24:52] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/15/menu
+[2026-08-16 09:24:52] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/17/menu (Attempt 1)
+[2026-08-16 09:24:53] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/17/menu
+[2026-08-16 09:24:53] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/6/menu (Attempt 1)
+[2026-08-16 09:24:54] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/6/menu
+[2026-08-16 09:24:54] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/21/menu (Attempt 1)
+[2026-08-16 09:24:54] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/21/menu
+[2026-08-16 09:24:54] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/23/menu (Attempt 1)
+[2026-08-16 09:24:55] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/23/menu
+[2026-08-16 09:24:55] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/1/menu (Attempt 1)
+[2026-08-16 09:24:56] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/1/menu
+[2026-08-16 09:24:56] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/28/menu (Attempt 1)
+[2026-08-16 09:24:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/28/menu
+[2026-08-16 09:24:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/24/menu (Attempt 1)
+[2026-08-16 09:24:58] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/24/menu
+[2026-08-16 09:24:58] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/5/menu (Attempt 1)
+[2026-08-16 09:24:58] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/5/menu
+[2026-08-16 09:24:58] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/30/menu (Attempt 1)
+[2026-08-16 09:24:59] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/30/menu
+[2026-08-16 09:24:59] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/27/menu (Attempt 1)
+[2026-08-16 09:25:00] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/27/menu
+[2026-08-16 09:25:00] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/8/menu (Attempt 1)
+[2026-08-16 09:25:01] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/8/menu
+[2026-08-16 09:25:01] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/3/menu (Attempt 1)
+[2026-08-16 09:25:02] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/3/menu
+[2026-08-16 09:25:02] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/7/menu (Attempt 1)
+[2026-08-16 09:25:02] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/7/menu
+[2026-08-16 09:25:02] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/14/menu (Attempt 1)
+[2026-08-16 09:25:03] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/14/menu
+[2026-08-16 09:25:03] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/19/menu (Attempt 1)
+[2026-08-16 09:25:04] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/19/menu
+[2026-08-16 09:43:51] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set
+[2026-08-16 09:43:51] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant (Attempt 1)
+[2026-08-16 09:43:52] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant
+[2026-08-16 09:43:52] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] Fetched 31 restaurants from API
+[2026-08-16 09:43:52] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/26/menu (Attempt 1)
+[2026-08-16 09:43:52] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/26/menu
+[2026-08-16 09:43:53] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API cache hit: /api/Restaurant/26/menu
+[2026-08-16 09:43:53] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/25/menu (Attempt 1)
+[2026-08-16 09:43:53] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/25/menu
+[2026-08-16 09:43:53] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/29/menu (Attempt 1)
+[2026-08-16 09:43:54] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/29/menu
+[2026-08-16 09:43:54] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/9/menu (Attempt 1)
+[2026-08-16 09:43:55] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/9/menu
+[2026-08-16 09:43:55] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/4/menu (Attempt 1)
+[2026-08-16 09:43:56] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/4/menu
+[2026-08-16 09:43:56] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/22/menu (Attempt 1)
+[2026-08-16 09:43:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/22/menu
+[2026-08-16 09:43:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/16/menu (Attempt 1)
+[2026-08-16 09:43:58] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/16/menu
+[2026-08-16 09:43:58] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/11/menu (Attempt 1)
+[2026-08-16 09:43:58] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/11/menu
+[2026-08-16 09:43:58] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/20/menu (Attempt 1)
+[2026-08-16 09:43:59] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/20/menu
+[2026-08-16 09:43:59] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/31/menu (Attempt 1)
+[2026-08-16 09:44:00] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/31/menu
+[2026-08-16 09:44:00] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/10/menu (Attempt 1)
+[2026-08-16 09:44:01] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/10/menu
+[2026-08-16 09:44:01] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/12/menu (Attempt 1)
+[2026-08-16 09:44:02] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/12/menu
+[2026-08-16 09:44:02] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/2/menu (Attempt 1)
+[2026-08-16 09:44:02] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/2/menu
+[2026-08-16 09:44:02] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/13/menu (Attempt 1)
+[2026-08-16 09:44:04] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/13/menu
+[2026-08-16 09:44:04] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/18/menu (Attempt 1)
+[2026-08-16 09:44:05] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/18/menu
+[2026-08-16 09:44:05] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/15/menu (Attempt 1)
+[2026-08-16 09:44:06] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/15/menu
+[2026-08-16 09:44:06] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/17/menu (Attempt 1)
+[2026-08-16 09:44:07] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/17/menu
+[2026-08-16 09:44:07] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/6/menu (Attempt 1)
+[2026-08-16 09:44:08] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/6/menu
+[2026-08-16 09:44:08] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/21/menu (Attempt 1)
+[2026-08-16 09:44:08] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/21/menu
+[2026-08-16 09:44:08] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/23/menu (Attempt 1)
+[2026-08-16 09:44:09] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/23/menu
+[2026-08-16 09:44:09] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/1/menu (Attempt 1)
+[2026-08-16 09:44:10] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/1/menu
+[2026-08-16 09:44:10] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/28/menu (Attempt 1)
+[2026-08-16 09:44:11] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/28/menu
+[2026-08-16 09:44:11] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/24/menu (Attempt 1)
+[2026-08-16 09:44:12] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/24/menu
+[2026-08-16 09:44:12] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/5/menu (Attempt 1)
+[2026-08-16 09:44:12] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/5/menu
+[2026-08-16 09:44:12] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/30/menu (Attempt 1)
+[2026-08-16 09:44:13] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/30/menu
+[2026-08-16 09:44:13] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/27/menu (Attempt 1)
+[2026-08-16 09:44:14] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/27/menu
+[2026-08-16 09:44:14] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/8/menu (Attempt 1)
+[2026-08-16 09:44:15] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/8/menu
+[2026-08-16 09:44:15] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/3/menu (Attempt 1)
+[2026-08-16 09:44:16] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/3/menu
+[2026-08-16 09:44:16] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/7/menu (Attempt 1)
+[2026-08-16 09:44:17] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/7/menu
+[2026-08-16 09:44:17] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/14/menu (Attempt 1)
+[2026-08-16 09:44:17] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/14/menu
+[2026-08-16 09:44:17] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/19/menu (Attempt 1)
+[2026-08-16 09:44:18] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/19/menu
+[2026-08-16 09:44:22] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 0fk1cer38u9j1p0gvum09pis0k] Session initialized and ID regenerated
+[2026-08-16 09:44:22] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 0fk1cer38u9j1p0gvum09pis0k] Secure session started successfully
+[2026-08-16 09:44:22] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 0fk1cer38u9j1p0gvum09pis0k] New CSRF token generated (version: 1)
+[2026-08-16 09:44:29] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 0fk1cer38u9j1p0gvum09pis0k] Secure session started successfully
+[2026-08-16 09:44:29] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 0fk1cer38u9j1p0gvum09pis0k] Database 'campus_eats' ensured to exist.
+[2026-08-16 09:44:29] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 0fk1cer38u9j1p0gvum09pis0k] Tables already exist.
+[2026-08-16 09:44:30] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 0fk1cer38u9j1p0gvum09pis0k] Admin account verified and correct.
+[2026-08-16 09:44:30] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 0fk1cer38u9j1p0gvum09pis0k] user_sessions table already exists.
+[2026-08-16 09:44:34] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 0fk1cer38u9j1p0gvum09pis0k] Database connection established successfully.
+[2026-08-16 09:44:34] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 0fk1cer38u9j1p0gvum09pis0k] Secure session started successfully
+[2026-08-16 09:44:34] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 0fk1cer38u9j1p0gvum09pis0k] Database 'campus_eats' ensured to exist.
+[2026-08-16 09:44:34] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 0fk1cer38u9j1p0gvum09pis0k] Tables already exist.
+[2026-08-16 09:44:35] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 0fk1cer38u9j1p0gvum09pis0k] Admin account verified and correct.
+[2026-08-16 09:44:35] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 0fk1cer38u9j1p0gvum09pis0k] user_sessions table already exists.
+[2026-08-16 09:44:36] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set
+[2026-08-16 09:44:36] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant (Attempt 1)
+[2026-08-16 09:44:37] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant
+[2026-08-16 09:44:37] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] Fetched 31 restaurants from API
+[2026-08-16 09:44:37] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/26/menu (Attempt 1)
+[2026-08-16 09:44:38] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/26/menu
+[2026-08-16 09:44:38] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API cache hit: /api/Restaurant/26/menu
+[2026-08-16 09:44:38] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/25/menu (Attempt 1)
+[2026-08-16 09:44:39] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 0fk1cer38u9j1p0gvum09pis0k] Database connection established successfully.
+[2026-08-16 09:44:39] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/25/menu
+[2026-08-16 09:44:39] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/29/menu (Attempt 1)
+[2026-08-16 09:44:40] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/29/menu
+[2026-08-16 09:44:40] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/9/menu (Attempt 1)
+[2026-08-16 09:44:40] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/9/menu
+[2026-08-16 09:44:40] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/4/menu (Attempt 1)
+[2026-08-16 09:44:41] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/4/menu
+[2026-08-16 09:44:41] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/22/menu (Attempt 1)
+[2026-08-16 09:44:42] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/22/menu
+[2026-08-16 09:44:42] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/16/menu (Attempt 1)
+[2026-08-16 09:44:43] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/16/menu
+[2026-08-16 09:44:43] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/11/menu (Attempt 1)
+[2026-08-16 09:44:44] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/11/menu
+[2026-08-16 09:44:44] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/20/menu (Attempt 1)
+[2026-08-16 09:44:45] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/20/menu
+[2026-08-16 09:44:45] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/31/menu (Attempt 1)
+[2026-08-16 09:44:45] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/31/menu
+[2026-08-16 09:44:45] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/10/menu (Attempt 1)
+[2026-08-16 09:44:46] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/10/menu
+[2026-08-16 09:44:46] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/12/menu (Attempt 1)
+[2026-08-16 09:44:47] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/12/menu
+[2026-08-16 09:44:47] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/2/menu (Attempt 1)
+[2026-08-16 09:44:48] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/2/menu
+[2026-08-16 09:44:48] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/13/menu (Attempt 1)
+[2026-08-16 09:44:49] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/13/menu
+[2026-08-16 09:44:49] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/18/menu (Attempt 1)
+[2026-08-16 09:44:49] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/18/menu
+[2026-08-16 09:44:49] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/15/menu (Attempt 1)
+[2026-08-16 09:44:50] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/15/menu
+[2026-08-16 09:44:50] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/17/menu (Attempt 1)
+[2026-08-16 09:44:51] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/17/menu
+[2026-08-16 09:44:51] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/6/menu (Attempt 1)
+[2026-08-16 09:44:52] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/6/menu
+[2026-08-16 09:44:52] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/21/menu (Attempt 1)
+[2026-08-16 09:44:53] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/21/menu
+[2026-08-16 09:44:53] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/23/menu (Attempt 1)
+[2026-08-16 09:44:54] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/23/menu
+[2026-08-16 09:44:54] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/1/menu (Attempt 1)
+[2026-08-16 09:44:54] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/1/menu
+[2026-08-16 09:44:54] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/28/menu (Attempt 1)
+[2026-08-16 09:44:55] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/28/menu
+[2026-08-16 09:44:55] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/24/menu (Attempt 1)
+[2026-08-16 09:44:56] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/24/menu
+[2026-08-16 09:44:56] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/5/menu (Attempt 1)
+[2026-08-16 09:44:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/5/menu
+[2026-08-16 09:44:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/30/menu (Attempt 1)
+[2026-08-16 09:44:58] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/30/menu
+[2026-08-16 09:44:58] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/27/menu (Attempt 1)
+[2026-08-16 09:44:58] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/27/menu
+[2026-08-16 09:44:58] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/8/menu (Attempt 1)
+[2026-08-16 09:44:59] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/8/menu
+[2026-08-16 09:44:59] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/3/menu (Attempt 1)
+[2026-08-16 09:45:00] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/3/menu
+[2026-08-16 09:45:00] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/7/menu (Attempt 1)
+[2026-08-16 09:45:01] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/7/menu
+[2026-08-16 09:45:01] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/14/menu (Attempt 1)
+[2026-08-16 09:45:02] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/14/menu
+[2026-08-16 09:45:02] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request: GET /api/Restaurant/19/menu (Attempt 1)
+[2026-08-16 09:45:03] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: qhrmg29qhe0v4l5oe1c99eto7a] API request successful: GET /api/Restaurant/19/menu
+[2026-08-17 08:48:45] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set
+[2026-08-17 08:48:46] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant (Attempt 1)
+[2026-08-17 08:48:47] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant
+[2026-08-17 08:48:47] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] Fetched 31 restaurants from API
+[2026-08-17 08:48:47] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/26/menu (Attempt 1)
+[2026-08-17 08:48:48] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/26/menu
+[2026-08-17 08:48:48] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API cache hit: /api/Restaurant/26/menu
+[2026-08-17 08:48:48] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/25/menu (Attempt 1)
+[2026-08-17 08:48:49] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/25/menu
+[2026-08-17 08:48:49] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/29/menu (Attempt 1)
+[2026-08-17 08:48:50] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/29/menu
+[2026-08-17 08:48:50] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/9/menu (Attempt 1)
+[2026-08-17 08:48:50] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/9/menu
+[2026-08-17 08:48:50] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/4/menu (Attempt 1)
+[2026-08-17 08:48:51] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/4/menu
+[2026-08-17 08:48:51] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/22/menu (Attempt 1)
+[2026-08-17 08:48:52] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/22/menu
+[2026-08-17 08:48:52] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/16/menu (Attempt 1)
+[2026-08-17 08:48:53] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/16/menu
+[2026-08-17 08:48:53] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/11/menu (Attempt 1)
+[2026-08-17 08:48:54] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/11/menu
+[2026-08-17 08:48:54] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/20/menu (Attempt 1)
+[2026-08-17 08:48:54] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/20/menu
+[2026-08-17 08:48:54] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/31/menu (Attempt 1)
+[2026-08-17 08:48:55] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/31/menu
+[2026-08-17 08:48:55] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/10/menu (Attempt 1)
+[2026-08-17 08:48:56] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/10/menu
+[2026-08-17 08:48:56] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/12/menu (Attempt 1)
+[2026-08-17 08:48:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/12/menu
+[2026-08-17 08:48:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/2/menu (Attempt 1)
+[2026-08-17 08:48:58] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/2/menu
+[2026-08-17 08:48:58] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/13/menu (Attempt 1)
+[2026-08-17 08:48:58] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/13/menu
+[2026-08-17 08:48:58] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/18/menu (Attempt 1)
+[2026-08-17 08:48:59] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/18/menu
+[2026-08-17 08:48:59] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/15/menu (Attempt 1)
+[2026-08-17 08:49:00] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/15/menu
+[2026-08-17 08:49:00] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/17/menu (Attempt 1)
+[2026-08-17 08:49:01] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/17/menu
+[2026-08-17 08:49:01] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/6/menu (Attempt 1)
+[2026-08-17 08:49:01] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/6/menu
+[2026-08-17 08:49:01] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/21/menu (Attempt 1)
+[2026-08-17 08:49:02] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/21/menu
+[2026-08-17 08:49:02] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/23/menu (Attempt 1)
+[2026-08-17 08:49:03] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/23/menu
+[2026-08-17 08:49:03] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/1/menu (Attempt 1)
+[2026-08-17 08:49:04] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/1/menu
+[2026-08-17 08:49:04] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/28/menu (Attempt 1)
+[2026-08-17 08:49:05] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/28/menu
+[2026-08-17 08:49:05] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/24/menu (Attempt 1)
+[2026-08-17 08:49:05] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/24/menu
+[2026-08-17 08:49:05] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/5/menu (Attempt 1)
+[2026-08-17 08:49:06] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/5/menu
+[2026-08-17 08:49:06] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/30/menu (Attempt 1)
+[2026-08-17 08:49:07] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/30/menu
+[2026-08-17 08:49:07] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/27/menu (Attempt 1)
+[2026-08-17 08:49:08] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/27/menu
+[2026-08-17 08:49:08] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/8/menu (Attempt 1)
+[2026-08-17 08:49:09] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/8/menu
+[2026-08-17 08:49:09] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/3/menu (Attempt 1)
+[2026-08-17 08:49:09] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/3/menu
+[2026-08-17 08:49:09] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/7/menu (Attempt 1)
+[2026-08-17 08:49:10] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/7/menu
+[2026-08-17 08:49:10] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/14/menu (Attempt 1)
+[2026-08-17 08:49:11] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/14/menu
+[2026-08-17 08:49:11] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/19/menu (Attempt 1)
+[2026-08-17 08:49:12] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/19/menu
+[2026-08-17 08:49:21] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set
+[2026-08-17 08:49:21] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant (Attempt 1)
+[2026-08-17 08:49:22] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant
+[2026-08-17 08:49:22] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] Fetched 31 restaurants from API
+[2026-08-17 08:49:22] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/26/menu (Attempt 1)
+[2026-08-17 08:49:23] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/26/menu
+[2026-08-17 08:49:23] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API cache hit: /api/Restaurant/26/menu
+[2026-08-17 08:49:23] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/25/menu (Attempt 1)
+[2026-08-17 08:49:24] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/25/menu
+[2026-08-17 08:49:24] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/29/menu (Attempt 1)
+[2026-08-17 08:49:25] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/29/menu
+[2026-08-17 08:49:25] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/9/menu (Attempt 1)
+[2026-08-17 08:49:25] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/9/menu
+[2026-08-17 08:49:25] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/4/menu (Attempt 1)
+[2026-08-17 08:49:26] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/4/menu
+[2026-08-17 08:49:26] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/22/menu (Attempt 1)
+[2026-08-17 08:49:27] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/22/menu
+[2026-08-17 08:49:27] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/16/menu (Attempt 1)
+[2026-08-17 08:49:28] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/16/menu
+[2026-08-17 08:49:28] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/11/menu (Attempt 1)
+[2026-08-17 08:49:29] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/11/menu
+[2026-08-17 08:49:29] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/20/menu (Attempt 1)
+[2026-08-17 08:49:29] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/20/menu
+[2026-08-17 08:49:29] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/31/menu (Attempt 1)
+[2026-08-17 08:49:30] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/31/menu
+[2026-08-17 08:49:30] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/10/menu (Attempt 1)
+[2026-08-17 08:49:31] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/10/menu
+[2026-08-17 08:49:31] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/12/menu (Attempt 1)
+[2026-08-17 08:49:32] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/12/menu
+[2026-08-17 08:49:32] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/2/menu (Attempt 1)
+[2026-08-17 08:49:32] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/2/menu
+[2026-08-17 08:49:32] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/13/menu (Attempt 1)
+[2026-08-17 08:49:33] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/13/menu
+[2026-08-17 08:49:33] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/18/menu (Attempt 1)
+[2026-08-17 08:49:34] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/18/menu
+[2026-08-17 08:49:34] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/15/menu (Attempt 1)
+[2026-08-17 08:49:35] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/15/menu
+[2026-08-17 08:49:35] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/17/menu (Attempt 1)
+[2026-08-17 08:49:36] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/17/menu
+[2026-08-17 08:49:36] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/6/menu (Attempt 1)
+[2026-08-17 08:49:36] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/6/menu
+[2026-08-17 08:49:36] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/21/menu (Attempt 1)
+[2026-08-17 08:49:37] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set
+[2026-08-17 08:49:37] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/21/menu
+[2026-08-17 08:49:37] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/23/menu (Attempt 1)
+[2026-08-17 08:49:38] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/23/menu
+[2026-08-17 08:49:38] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/1/menu (Attempt 1)
+[2026-08-17 08:49:39] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/1/menu
+[2026-08-17 08:49:39] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/28/menu (Attempt 1)
+[2026-08-17 08:49:40] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/28/menu
+[2026-08-17 08:49:40] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/24/menu (Attempt 1)
+[2026-08-17 08:49:40] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/24/menu
+[2026-08-17 08:49:40] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/5/menu (Attempt 1)
+[2026-08-17 08:49:41] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/5/menu
+[2026-08-17 08:49:41] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/30/menu (Attempt 1)
+[2026-08-17 08:49:41] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set
+[2026-08-17 08:49:42] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/30/menu
+[2026-08-17 08:49:42] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/27/menu (Attempt 1)
+[2026-08-17 08:49:43] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/27/menu
+[2026-08-17 08:49:43] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/8/menu (Attempt 1)
+[2026-08-17 08:49:44] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/8/menu
+[2026-08-17 08:49:44] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/3/menu (Attempt 1)
+[2026-08-17 08:49:44] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/3/menu
+[2026-08-17 08:49:44] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/7/menu (Attempt 1)
+[2026-08-17 08:49:45] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/7/menu
+[2026-08-17 08:49:45] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/14/menu (Attempt 1)
+[2026-08-17 08:49:46] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/14/menu
+[2026-08-17 08:49:46] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/19/menu (Attempt 1)
+[2026-08-17 08:49:47] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/19/menu
+[2026-08-17 08:49:47] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant (Attempt 1)
+[2026-08-17 08:49:48] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant
+[2026-08-17 08:49:48] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] Fetched 31 restaurants from API
+[2026-08-17 08:49:48] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/26/menu (Attempt 1)
+[2026-08-17 08:49:48] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/26/menu
+[2026-08-17 08:49:48] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API cache hit: /api/Restaurant/26/menu
+[2026-08-17 08:49:48] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/25/menu (Attempt 1)
+[2026-08-17 08:49:49] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/25/menu
+[2026-08-17 08:49:49] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/29/menu (Attempt 1)
+[2026-08-17 08:49:50] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/29/menu
+[2026-08-17 08:49:50] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/9/menu (Attempt 1)
+[2026-08-17 08:49:51] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/9/menu
+[2026-08-17 08:49:51] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/4/menu (Attempt 1)
+[2026-08-17 08:49:52] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/4/menu
+[2026-08-17 08:49:52] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/22/menu (Attempt 1)
+[2026-08-17 08:49:52] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/22/menu
+[2026-08-17 08:49:52] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/16/menu (Attempt 1)
+[2026-08-17 08:49:53] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/16/menu
+[2026-08-17 08:49:53] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/11/menu (Attempt 1)
+[2026-08-17 08:49:54] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/11/menu
+[2026-08-17 08:49:54] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/20/menu (Attempt 1)
+[2026-08-17 08:49:55] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/20/menu
+[2026-08-17 08:49:55] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/31/menu (Attempt 1)
+[2026-08-17 08:49:56] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/31/menu
+[2026-08-17 08:49:56] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/10/menu (Attempt 1)
+[2026-08-17 08:49:56] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/10/menu
+[2026-08-17 08:49:56] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/12/menu (Attempt 1)
+[2026-08-17 08:49:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/12/menu
+[2026-08-17 08:49:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/2/menu (Attempt 1)
+[2026-08-17 08:49:58] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/2/menu
+[2026-08-17 08:49:58] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/13/menu (Attempt 1)
+[2026-08-17 08:49:59] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/13/menu
+[2026-08-17 08:49:59] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/18/menu (Attempt 1)
+[2026-08-17 08:50:00] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/18/menu
+[2026-08-17 08:50:00] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/15/menu (Attempt 1)
+[2026-08-17 08:50:00] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/15/menu
+[2026-08-17 08:50:00] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/17/menu (Attempt 1)
+[2026-08-17 08:50:01] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/17/menu
+[2026-08-17 08:50:01] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/6/menu (Attempt 1)
+[2026-08-17 08:50:02] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/6/menu
+[2026-08-17 08:50:02] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/21/menu (Attempt 1)
+[2026-08-17 08:50:03] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/21/menu
+[2026-08-17 08:50:03] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/23/menu (Attempt 1)
+[2026-08-17 08:50:04] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/23/menu
+[2026-08-17 08:50:04] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/1/menu (Attempt 1)
+[2026-08-17 08:50:04] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/1/menu
+[2026-08-17 08:50:04] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/28/menu (Attempt 1)
+[2026-08-17 08:50:05] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/28/menu
+[2026-08-17 08:50:05] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/24/menu (Attempt 1)
+[2026-08-17 08:50:06] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/24/menu
+[2026-08-17 08:50:06] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/5/menu (Attempt 1)
+[2026-08-17 08:50:07] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/5/menu
+[2026-08-17 08:50:07] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/30/menu (Attempt 1)
+[2026-08-17 08:50:08] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/30/menu
+[2026-08-17 08:50:08] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/27/menu (Attempt 1)
+[2026-08-17 08:50:08] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/27/menu
+[2026-08-17 08:50:08] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/8/menu (Attempt 1)
+[2026-08-17 08:50:09] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/8/menu
+[2026-08-17 08:50:09] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/3/menu (Attempt 1)
+[2026-08-17 08:50:10] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/3/menu
+[2026-08-17 08:50:10] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/7/menu (Attempt 1)
+[2026-08-17 08:50:11] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/7/menu
+[2026-08-17 08:50:11] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/14/menu (Attempt 1)
+[2026-08-17 08:50:12] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/14/menu
+[2026-08-17 08:50:12] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/19/menu (Attempt 1)
+[2026-08-17 08:50:12] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/19/menu
+[2026-08-17 08:50:12] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant (Attempt 1)
+[2026-08-17 08:50:13] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant
+[2026-08-17 08:50:13] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] Fetched 31 restaurants from API
+[2026-08-17 08:50:13] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/26/menu (Attempt 1)
+[2026-08-17 08:50:14] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/26/menu
+[2026-08-17 08:50:14] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API cache hit: /api/Restaurant/26/menu
+[2026-08-17 08:50:14] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/25/menu (Attempt 1)
+[2026-08-17 08:50:15] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/25/menu
+[2026-08-17 08:50:15] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/29/menu (Attempt 1)
+[2026-08-17 08:50:16] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/29/menu
+[2026-08-17 08:50:16] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/9/menu (Attempt 1)
+[2026-08-17 08:50:16] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/9/menu
+[2026-08-17 08:50:16] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/4/menu (Attempt 1)
+[2026-08-17 08:50:17] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/4/menu
+[2026-08-17 08:50:17] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/22/menu (Attempt 1)
+[2026-08-17 08:50:18] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/22/menu
+[2026-08-17 08:50:18] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/16/menu (Attempt 1)
+[2026-08-17 08:50:19] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/16/menu
+[2026-08-17 08:50:19] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/11/menu (Attempt 1)
+[2026-08-17 08:50:20] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/11/menu
+[2026-08-17 08:50:20] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/20/menu (Attempt 1)
+[2026-08-17 08:50:20] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/20/menu
+[2026-08-17 08:50:20] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/31/menu (Attempt 1)
+[2026-08-17 08:50:21] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/31/menu
+[2026-08-17 08:50:21] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/10/menu (Attempt 1)
+[2026-08-17 08:50:22] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/10/menu
+[2026-08-17 08:50:22] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/12/menu (Attempt 1)
+[2026-08-17 08:50:23] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/12/menu
+[2026-08-17 08:50:23] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/2/menu (Attempt 1)
+[2026-08-17 08:50:24] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/2/menu
+[2026-08-17 08:50:24] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/13/menu (Attempt 1)
+[2026-08-17 08:50:25] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/13/menu
+[2026-08-17 08:50:25] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/18/menu (Attempt 1)
+[2026-08-17 08:50:25] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/18/menu
+[2026-08-17 08:50:25] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/15/menu (Attempt 1)
+[2026-08-17 08:50:26] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/15/menu
+[2026-08-17 08:50:26] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/17/menu (Attempt 1)
+[2026-08-17 08:50:27] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/17/menu
+[2026-08-17 08:50:27] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/6/menu (Attempt 1)
+[2026-08-17 08:50:28] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/6/menu
+[2026-08-17 08:50:28] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/21/menu (Attempt 1)
+[2026-08-17 08:50:29] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/21/menu
+[2026-08-17 08:50:29] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/23/menu (Attempt 1)
+[2026-08-17 08:50:29] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/23/menu
+[2026-08-17 08:50:29] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/1/menu (Attempt 1)
+[2026-08-17 08:50:30] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/1/menu
+[2026-08-17 08:50:30] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/28/menu (Attempt 1)
+[2026-08-17 08:50:31] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/28/menu
+[2026-08-17 08:50:31] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/24/menu (Attempt 1)
+[2026-08-17 08:50:32] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/24/menu
+[2026-08-17 08:50:32] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/5/menu (Attempt 1)
+[2026-08-17 08:50:33] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/5/menu
+[2026-08-17 08:50:33] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/30/menu (Attempt 1)
+[2026-08-17 08:50:33] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/30/menu
+[2026-08-17 08:50:33] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/27/menu (Attempt 1)
+[2026-08-17 08:50:34] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/27/menu
+[2026-08-17 08:50:34] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/8/menu (Attempt 1)
+[2026-08-17 08:50:35] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/8/menu
+[2026-08-17 08:50:35] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/3/menu (Attempt 1)
+[2026-08-17 08:50:37] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/3/menu
+[2026-08-17 08:50:37] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/7/menu (Attempt 1)
+[2026-08-17 08:50:38] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/7/menu
+[2026-08-17 08:50:38] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/14/menu (Attempt 1)
+[2026-08-17 08:50:38] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/14/menu
+[2026-08-17 08:50:38] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/19/menu (Attempt 1)
+[2026-08-17 08:50:39] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/19/menu
+[2026-08-17 09:56:46] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set
+[2026-08-17 09:56:46] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant (Attempt 1)
+[2026-08-17 09:56:48] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant
+[2026-08-17 09:56:48] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] Fetched 31 restaurants from API
+[2026-08-17 09:56:48] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/26/menu (Attempt 1)
+[2026-08-17 09:56:49] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/26/menu
+[2026-08-17 09:56:49] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API cache hit: /api/Restaurant/26/menu
+[2026-08-17 09:56:49] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/25/menu (Attempt 1)
+[2026-08-17 09:56:50] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/25/menu
+[2026-08-17 09:56:50] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/29/menu (Attempt 1)
+[2026-08-17 09:56:51] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/29/menu
+[2026-08-17 09:56:51] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/9/menu (Attempt 1)
+[2026-08-17 09:56:51] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/9/menu
+[2026-08-17 09:56:51] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/4/menu (Attempt 1)
+[2026-08-17 09:56:52] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/4/menu
+[2026-08-17 09:56:52] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/22/menu (Attempt 1)
+[2026-08-17 09:56:53] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/22/menu
+[2026-08-17 09:56:53] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/16/menu (Attempt 1)
+[2026-08-17 09:56:54] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/16/menu
+[2026-08-17 09:56:54] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/11/menu (Attempt 1)
+[2026-08-17 09:56:54] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/11/menu
+[2026-08-17 09:56:54] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/20/menu (Attempt 1)
+[2026-08-17 09:56:55] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/20/menu
+[2026-08-17 09:56:55] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/31/menu (Attempt 1)
+[2026-08-17 09:56:56] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/31/menu
+[2026-08-17 09:56:56] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/10/menu (Attempt 1)
+[2026-08-17 09:56:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/10/menu
+[2026-08-17 09:56:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/12/menu (Attempt 1)
+[2026-08-17 09:56:58] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/12/menu
+[2026-08-17 09:56:58] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/2/menu (Attempt 1)
+[2026-08-17 09:56:59] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/2/menu
+[2026-08-17 09:56:59] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/13/menu (Attempt 1)
+[2026-08-17 09:56:59] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/13/menu
+[2026-08-17 09:56:59] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/18/menu (Attempt 1)
+[2026-08-17 09:57:00] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/18/menu
+[2026-08-17 09:57:00] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/15/menu (Attempt 1)
+[2026-08-17 09:57:01] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/15/menu
+[2026-08-17 09:57:01] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/17/menu (Attempt 1)
+[2026-08-17 09:57:02] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/17/menu
+[2026-08-17 09:57:02] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/6/menu (Attempt 1)
+[2026-08-17 09:57:03] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/6/menu
+[2026-08-17 09:57:03] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/21/menu (Attempt 1)
+[2026-08-17 09:57:03] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/21/menu
+[2026-08-17 09:57:03] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/23/menu (Attempt 1)
+[2026-08-17 09:57:04] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/23/menu
+[2026-08-17 09:57:04] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/1/menu (Attempt 1)
+[2026-08-17 09:57:05] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/1/menu
+[2026-08-17 09:57:05] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/28/menu (Attempt 1)
+[2026-08-17 09:57:06] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/28/menu
+[2026-08-17 09:57:06] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/24/menu (Attempt 1)
+[2026-08-17 09:57:07] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/24/menu
+[2026-08-17 09:57:07] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/5/menu (Attempt 1)
+[2026-08-17 09:57:07] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/5/menu
+[2026-08-17 09:57:07] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/30/menu (Attempt 1)
+[2026-08-17 09:57:08] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/30/menu
+[2026-08-17 09:57:08] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/27/menu (Attempt 1)
+[2026-08-17 09:57:09] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/27/menu
+[2026-08-17 09:57:09] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/8/menu (Attempt 1)
+[2026-08-17 09:57:10] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/8/menu
+[2026-08-17 09:57:10] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/3/menu (Attempt 1)
+[2026-08-17 09:57:11] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/3/menu
+[2026-08-17 09:57:11] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/7/menu (Attempt 1)
+[2026-08-17 09:57:11] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/7/menu
+[2026-08-17 09:57:11] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/14/menu (Attempt 1)
+[2026-08-17 09:57:12] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/14/menu
+[2026-08-17 09:57:12] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/19/menu (Attempt 1)
+[2026-08-17 09:57:13] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/19/menu
+[2026-08-17 11:19:29] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set
+[2026-08-17 11:19:29] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant (Attempt 1)
+[2026-08-17 11:19:30] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant
+[2026-08-17 11:19:30] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] Fetched 31 restaurants from API
+[2026-08-17 11:19:30] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/26/menu (Attempt 1)
+[2026-08-17 11:19:31] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/26/menu
+[2026-08-17 11:19:31] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API cache hit: /api/Restaurant/26/menu
+[2026-08-17 11:19:31] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/25/menu (Attempt 1)
+[2026-08-17 11:19:32] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/25/menu
+[2026-08-17 11:19:32] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/29/menu (Attempt 1)
+[2026-08-17 11:19:32] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/29/menu
+[2026-08-17 11:19:32] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/9/menu (Attempt 1)
+[2026-08-17 11:19:33] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/9/menu
+[2026-08-17 11:19:33] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/4/menu (Attempt 1)
+[2026-08-17 11:19:34] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/4/menu
+[2026-08-17 11:19:34] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/22/menu (Attempt 1)
+[2026-08-17 11:19:35] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/22/menu
+[2026-08-17 11:19:35] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/16/menu (Attempt 1)
+[2026-08-17 11:19:36] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/16/menu
+[2026-08-17 11:19:36] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/11/menu (Attempt 1)
+[2026-08-17 11:19:36] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/11/menu
+[2026-08-17 11:19:36] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/20/menu (Attempt 1)
+[2026-08-17 11:19:37] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/20/menu
+[2026-08-17 11:19:37] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/31/menu (Attempt 1)
+[2026-08-17 11:19:38] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/31/menu
+[2026-08-17 11:19:38] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/10/menu (Attempt 1)
+[2026-08-17 11:19:39] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/10/menu
+[2026-08-17 11:19:39] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/12/menu (Attempt 1)
+[2026-08-17 11:19:40] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/12/menu
+[2026-08-17 11:19:40] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/2/menu (Attempt 1)
+[2026-08-17 11:19:40] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/2/menu
+[2026-08-17 11:19:40] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/13/menu (Attempt 1)
+[2026-08-17 11:19:41] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/13/menu
+[2026-08-17 11:19:41] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/18/menu (Attempt 1)
+[2026-08-17 11:19:42] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/18/menu
+[2026-08-17 11:19:42] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/15/menu (Attempt 1)
+[2026-08-17 11:19:43] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/15/menu
+[2026-08-17 11:19:43] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/17/menu (Attempt 1)
+[2026-08-17 11:19:44] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/17/menu
+[2026-08-17 11:19:44] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/6/menu (Attempt 1)
+[2026-08-17 11:19:44] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/6/menu
+[2026-08-17 11:19:44] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/21/menu (Attempt 1)
+[2026-08-17 11:19:45] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/21/menu
+[2026-08-17 11:19:45] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/23/menu (Attempt 1)
+[2026-08-17 11:19:46] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/23/menu
+[2026-08-17 11:19:46] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/1/menu (Attempt 1)
+[2026-08-17 11:19:47] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/1/menu
+[2026-08-17 11:19:47] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/28/menu (Attempt 1)
+[2026-08-17 11:19:48] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/28/menu
+[2026-08-17 11:19:48] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/24/menu (Attempt 1)
+[2026-08-17 11:19:48] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/24/menu
+[2026-08-17 11:19:48] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/5/menu (Attempt 1)
+[2026-08-17 11:19:49] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/5/menu
+[2026-08-17 11:19:49] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/30/menu (Attempt 1)
+[2026-08-17 11:19:50] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/30/menu
+[2026-08-17 11:19:50] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/27/menu (Attempt 1)
+[2026-08-17 11:19:51] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/27/menu
+[2026-08-17 11:19:51] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/8/menu (Attempt 1)
+[2026-08-17 11:19:52] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/8/menu
+[2026-08-17 11:19:52] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/3/menu (Attempt 1)
+[2026-08-17 11:19:52] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/3/menu
+[2026-08-17 11:19:52] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/7/menu (Attempt 1)
+[2026-08-17 11:19:53] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/7/menu
+[2026-08-17 11:19:53] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/14/menu (Attempt 1)
+[2026-08-17 11:19:54] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/14/menu
+[2026-08-17 11:19:54] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/19/menu (Attempt 1)
+[2026-08-17 11:19:55] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/19/menu
+[2026-08-17 11:34:04] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set
+[2026-08-17 11:34:04] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant (Attempt 1)
+[2026-08-17 11:34:05] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant
+[2026-08-17 11:34:05] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] Fetched 31 restaurants from API
+[2026-08-17 11:34:05] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/26/menu (Attempt 1)
+[2026-08-17 11:34:06] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/26/menu
+[2026-08-17 11:34:06] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API cache hit: /api/Restaurant/26/menu
+[2026-08-17 11:34:06] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/25/menu (Attempt 1)
+[2026-08-17 11:34:07] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/25/menu
+[2026-08-17 11:34:07] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/29/menu (Attempt 1)
+[2026-08-17 11:34:07] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/29/menu
+[2026-08-17 11:34:07] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/9/menu (Attempt 1)
+[2026-08-17 11:34:08] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/9/menu
+[2026-08-17 11:34:08] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/4/menu (Attempt 1)
+[2026-08-17 11:34:09] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/4/menu
+[2026-08-17 11:34:09] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/22/menu (Attempt 1)
+[2026-08-17 11:34:10] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/22/menu
+[2026-08-17 11:34:10] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/16/menu (Attempt 1)
+[2026-08-17 11:34:11] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/16/menu
+[2026-08-17 11:34:11] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/11/menu (Attempt 1)
+[2026-08-17 11:34:12] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/11/menu
+[2026-08-17 11:34:12] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/20/menu (Attempt 1)
+[2026-08-17 11:34:12] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/20/menu
+[2026-08-17 11:34:12] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/31/menu (Attempt 1)
+[2026-08-17 11:34:13] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/31/menu
+[2026-08-17 11:34:13] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/10/menu (Attempt 1)
+[2026-08-17 11:34:14] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/10/menu
+[2026-08-17 11:34:14] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/12/menu (Attempt 1)
+[2026-08-17 11:34:15] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/12/menu
+[2026-08-17 11:34:15] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/2/menu (Attempt 1)
+[2026-08-17 11:34:16] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/2/menu
+[2026-08-17 11:34:16] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/13/menu (Attempt 1)
+[2026-08-17 11:34:16] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/13/menu
+[2026-08-17 11:34:16] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/18/menu (Attempt 1)
+[2026-08-17 11:34:17] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/18/menu
+[2026-08-17 11:34:17] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/15/menu (Attempt 1)
+[2026-08-17 11:34:18] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/15/menu
+[2026-08-17 11:34:18] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/17/menu (Attempt 1)
+[2026-08-17 11:34:19] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/17/menu
+[2026-08-17 11:34:19] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/6/menu (Attempt 1)
+[2026-08-17 11:34:20] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/6/menu
+[2026-08-17 11:34:20] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/21/menu (Attempt 1)
+[2026-08-17 11:34:20] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/21/menu
+[2026-08-17 11:34:20] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/23/menu (Attempt 1)
+[2026-08-17 11:34:21] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/23/menu
+[2026-08-17 11:34:21] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/1/menu (Attempt 1)
+[2026-08-17 11:34:22] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/1/menu
+[2026-08-17 11:34:22] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/28/menu (Attempt 1)
+[2026-08-17 11:34:23] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/28/menu
+[2026-08-17 11:34:23] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/24/menu (Attempt 1)
+[2026-08-17 11:34:24] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/24/menu
+[2026-08-17 11:34:24] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/5/menu (Attempt 1)
+[2026-08-17 11:34:24] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/5/menu
+[2026-08-17 11:34:24] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/30/menu (Attempt 1)
+[2026-08-17 11:34:25] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/30/menu
+[2026-08-17 11:34:25] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/27/menu (Attempt 1)
+[2026-08-17 11:34:26] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/27/menu
+[2026-08-17 11:34:26] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/8/menu (Attempt 1)
+[2026-08-17 11:34:27] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/8/menu
+[2026-08-17 11:34:27] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/3/menu (Attempt 1)
+[2026-08-17 11:34:28] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/3/menu
+[2026-08-17 11:34:28] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/7/menu (Attempt 1)
+[2026-08-17 11:34:28] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/7/menu
+[2026-08-17 11:34:28] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/14/menu (Attempt 1)
+[2026-08-17 11:34:29] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/14/menu
+[2026-08-17 11:34:29] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/19/menu (Attempt 1)
+[2026-08-17 11:34:30] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/19/menu
+[2026-08-17 12:06:40] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set
+[2026-08-17 12:06:40] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant (Attempt 1)
+[2026-08-17 12:06:41] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant
+[2026-08-17 12:06:41] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] Fetched 31 restaurants from API
+[2026-08-17 12:06:41] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/26/menu (Attempt 1)
+[2026-08-17 12:06:42] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/26/menu
+[2026-08-17 12:06:42] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API cache hit: /api/Restaurant/26/menu
+[2026-08-17 12:06:42] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/25/menu (Attempt 1)
+[2026-08-17 12:06:43] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/25/menu
+[2026-08-17 12:06:43] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/29/menu (Attempt 1)
+[2026-08-17 12:06:44] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/29/menu
+[2026-08-17 12:06:44] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/9/menu (Attempt 1)
+[2026-08-17 12:06:45] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/9/menu
+[2026-08-17 12:06:45] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/4/menu (Attempt 1)
+[2026-08-17 12:06:46] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/4/menu
+[2026-08-17 12:06:46] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/22/menu (Attempt 1)
+[2026-08-17 12:06:46] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/22/menu
+[2026-08-17 12:06:46] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/16/menu (Attempt 1)
+[2026-08-17 12:06:47] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/16/menu
+[2026-08-17 12:06:47] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/11/menu (Attempt 1)
+[2026-08-17 12:06:48] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/11/menu
+[2026-08-17 12:06:48] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/20/menu (Attempt 1)
+[2026-08-17 12:06:49] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/20/menu
+[2026-08-17 12:06:49] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/31/menu (Attempt 1)
+[2026-08-17 12:06:50] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/31/menu
+[2026-08-17 12:06:50] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/10/menu (Attempt 1)
+[2026-08-17 12:06:50] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/10/menu
+[2026-08-17 12:06:50] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/12/menu (Attempt 1)
+[2026-08-17 12:06:51] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/12/menu
+[2026-08-17 12:06:51] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/2/menu (Attempt 1)
+[2026-08-17 12:06:52] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/2/menu
+[2026-08-17 12:06:52] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/13/menu (Attempt 1)
+[2026-08-17 12:06:53] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/13/menu
+[2026-08-17 12:06:53] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/18/menu (Attempt 1)
+[2026-08-17 12:06:53] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/18/menu
+[2026-08-17 12:06:53] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/15/menu (Attempt 1)
+[2026-08-17 12:06:54] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/15/menu
+[2026-08-17 12:06:54] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/17/menu (Attempt 1)
+[2026-08-17 12:06:55] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/17/menu
+[2026-08-17 12:06:55] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/6/menu (Attempt 1)
+[2026-08-17 12:06:56] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/6/menu
+[2026-08-17 12:06:56] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/21/menu (Attempt 1)
+[2026-08-17 12:06:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/21/menu
+[2026-08-17 12:06:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/23/menu (Attempt 1)
+[2026-08-17 12:06:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/23/menu
+[2026-08-17 12:06:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/1/menu (Attempt 1)
+[2026-08-17 12:06:58] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/1/menu
+[2026-08-17 12:06:58] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/28/menu (Attempt 1)
+[2026-08-17 12:06:59] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/28/menu
+[2026-08-17 12:06:59] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/24/menu (Attempt 1)
+[2026-08-17 12:07:00] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/24/menu
+[2026-08-17 12:07:00] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/5/menu (Attempt 1)
+[2026-08-17 12:07:01] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/5/menu
+[2026-08-17 12:07:01] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/30/menu (Attempt 1)
+[2026-08-17 12:07:01] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/30/menu
+[2026-08-17 12:07:01] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/27/menu (Attempt 1)
+[2026-08-17 12:07:02] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/27/menu
+[2026-08-17 12:07:02] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/8/menu (Attempt 1)
+[2026-08-17 12:07:04] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/8/menu
+[2026-08-17 12:07:04] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/3/menu (Attempt 1)
+[2026-08-17 12:07:04] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/3/menu
+[2026-08-17 12:07:04] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/7/menu (Attempt 1)
+[2026-08-17 12:07:05] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/7/menu
+[2026-08-17 12:07:05] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/14/menu (Attempt 1)
+[2026-08-17 12:07:06] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/14/menu
+[2026-08-17 12:07:06] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request: GET /api/Restaurant/19/menu (Attempt 1)
+[2026-08-17 12:07:07] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mjefvtddhphv81k44ebpjg525v] API request successful: GET /api/Restaurant/19/menu
+[2026-08-17 12:07:21] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: t50qt9jlkhbdtv44um9jj8r7lh] Session initialized and ID regenerated
+[2026-08-17 12:07:21] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: t50qt9jlkhbdtv44um9jj8r7lh] Secure session started successfully
+[2026-08-17 12:07:21] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: t50qt9jlkhbdtv44um9jj8r7lh] New CSRF token generated (version: 1)
+[2026-08-17 12:07:24] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: t50qt9jlkhbdtv44um9jj8r7lh] Secure session started successfully
+[2026-08-17 12:07:24] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: t50qt9jlkhbdtv44um9jj8r7lh] Database 'campus_eats' ensured to exist.
+[2026-08-17 12:07:24] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: t50qt9jlkhbdtv44um9jj8r7lh] Tables already exist.
+[2026-08-17 12:07:25] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: t50qt9jlkhbdtv44um9jj8r7lh] Admin account verified and correct.
+[2026-08-17 12:07:25] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: t50qt9jlkhbdtv44um9jj8r7lh] user_sessions table already exists.
+[2026-08-17 12:07:29] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: t50qt9jlkhbdtv44um9jj8r7lh] Database connection established successfully.
+[2026-08-17 12:07:38] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: t50qt9jlkhbdtv44um9jj8r7lh] Secure session started successfully
+[2026-08-18 09:34:27] [EXCEPTION] [ERROR] [IP: 127.0.0.1] [User: guest] [Session: no_session] Uncaught Exception: Call to undefined function rotateAllLogs() in C:\wamp64\www\campus-eats-web\Solution\config\error_logging.php on line 325
+Stack trace:
+#0 C:\wamp64\www\campus-eats-web\Solution\config\database.php(83): require_once()
+#1 C:\wamp64\www\campus-eats-web\Solution\includes\auth.php(23): require_once('C:\\wamp64\\www\\c...')
+#2 C:\wamp64\www\campus-eats-web\index.php(21): require_once('C:\\wamp64\\www\\c...')
+#3 {main}
+[2026-08-18 09:34:27] [AUDIT] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Audit: system - exception (Result: error)
+[2026-08-18 09:35:56] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (CSP with unsafe-inline removed)
+[2026-08-18 09:35:56] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant (Attempt 1)
+[2026-08-18 09:35:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant
+[2026-08-18 09:35:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] Fetched 31 restaurants from API
+[2026-08-18 09:35:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/26/menu (Attempt 1)
+[2026-08-18 09:35:58] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/26/menu
+[2026-08-18 09:35:58] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API cache hit: /api/Restaurant/26/menu
+[2026-08-18 09:35:58] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/25/menu (Attempt 1)
+[2026-08-18 09:35:59] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/25/menu
+[2026-08-18 09:35:59] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/29/menu (Attempt 1)
+[2026-08-18 09:36:00] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/29/menu
+[2026-08-18 09:36:00] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/9/menu (Attempt 1)
+[2026-08-18 09:36:01] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/9/menu
+[2026-08-18 09:36:01] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/4/menu (Attempt 1)
+[2026-08-18 09:36:01] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/4/menu
+[2026-08-18 09:36:01] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/22/menu (Attempt 1)
+[2026-08-18 09:36:02] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/22/menu
+[2026-08-18 09:36:02] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/16/menu (Attempt 1)
+[2026-08-18 09:36:03] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/16/menu
+[2026-08-18 09:36:03] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/11/menu (Attempt 1)
+[2026-08-18 09:36:04] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/11/menu
+[2026-08-18 09:36:04] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/20/menu (Attempt 1)
+[2026-08-18 09:36:05] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/20/menu
+[2026-08-18 09:36:05] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/31/menu (Attempt 1)
+[2026-08-18 09:36:05] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/31/menu
+[2026-08-18 09:36:05] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/10/menu (Attempt 1)
+[2026-08-18 09:36:06] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/10/menu
+[2026-08-18 09:36:06] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/12/menu (Attempt 1)
+[2026-08-18 09:36:07] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/12/menu
+[2026-08-18 09:36:07] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/2/menu (Attempt 1)
+[2026-08-18 09:36:08] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/2/menu
+[2026-08-18 09:36:08] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/13/menu (Attempt 1)
+[2026-08-18 09:36:09] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/13/menu
+[2026-08-18 09:36:09] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/18/menu (Attempt 1)
+[2026-08-18 09:36:09] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/18/menu
+[2026-08-18 09:36:09] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/15/menu (Attempt 1)
+[2026-08-18 09:36:10] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/15/menu
+[2026-08-18 09:36:10] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/17/menu (Attempt 1)
+[2026-08-18 09:36:11] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/17/menu
+[2026-08-18 09:36:11] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/6/menu (Attempt 1)
+[2026-08-18 09:36:12] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/6/menu
+[2026-08-18 09:36:12] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/21/menu (Attempt 1)
+[2026-08-18 09:36:13] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/21/menu
+[2026-08-18 09:36:13] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/23/menu (Attempt 1)
+[2026-08-18 09:36:13] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/23/menu
+[2026-08-18 09:36:14] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/1/menu (Attempt 1)
+[2026-08-18 09:36:14] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/1/menu
+[2026-08-18 09:36:14] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/28/menu (Attempt 1)
+[2026-08-18 09:36:15] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/28/menu
+[2026-08-18 09:36:15] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/24/menu (Attempt 1)
+[2026-08-18 09:36:16] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/24/menu
+[2026-08-18 09:36:16] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/5/menu (Attempt 1)
+[2026-08-18 09:36:17] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/5/menu
+[2026-08-18 09:36:17] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/30/menu (Attempt 1)
+[2026-08-18 09:36:18] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/30/menu
+[2026-08-18 09:36:18] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/27/menu (Attempt 1)
+[2026-08-18 09:36:18] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/27/menu
+[2026-08-18 09:36:18] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/8/menu (Attempt 1)
+[2026-08-18 09:36:19] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/8/menu
+[2026-08-18 09:36:19] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/3/menu (Attempt 1)
+[2026-08-18 09:36:20] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/3/menu
+[2026-08-18 09:36:20] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/7/menu (Attempt 1)
+[2026-08-18 09:36:21] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/7/menu
+[2026-08-18 09:36:21] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/14/menu (Attempt 1)
+[2026-08-18 09:36:22] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/14/menu
+[2026-08-18 09:36:22] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/19/menu (Attempt 1)
+[2026-08-18 09:36:22] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/19/menu
+[2026-08-18 12:00:51] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (CSP with unsafe-inline removed)
+[2026-08-18 12:00:51] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant (Attempt 1)
+[2026-08-18 12:00:52] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant
+[2026-08-18 12:00:52] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] Fetched 31 restaurants from API
+[2026-08-18 12:00:52] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/26/menu (Attempt 1)
+[2026-08-18 12:00:53] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/26/menu
+[2026-08-18 12:00:53] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API cache hit: /api/Restaurant/26/menu
+[2026-08-18 12:00:53] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/25/menu (Attempt 1)
+[2026-08-18 12:00:53] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/25/menu
+[2026-08-18 12:00:53] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/29/menu (Attempt 1)
+[2026-08-18 12:00:54] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/29/menu
+[2026-08-18 12:00:54] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/9/menu (Attempt 1)
+[2026-08-18 12:00:55] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/9/menu
+[2026-08-18 12:00:55] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/4/menu (Attempt 1)
+[2026-08-18 12:00:56] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/4/menu
+[2026-08-18 12:00:56] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/22/menu (Attempt 1)
+[2026-08-18 12:00:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/22/menu
+[2026-08-18 12:00:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/16/menu (Attempt 1)
+[2026-08-18 12:00:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/16/menu
+[2026-08-18 12:00:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/11/menu (Attempt 1)
+[2026-08-18 12:00:58] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/11/menu
+[2026-08-18 12:00:58] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/20/menu (Attempt 1)
+[2026-08-18 12:00:59] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/20/menu
+[2026-08-18 12:00:59] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/31/menu (Attempt 1)
+[2026-08-18 12:01:00] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/31/menu
+[2026-08-18 12:01:00] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/10/menu (Attempt 1)
+[2026-08-18 12:01:01] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/10/menu
+[2026-08-18 12:01:01] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/12/menu (Attempt 1)
+[2026-08-18 12:01:01] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/12/menu
+[2026-08-18 12:01:01] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/2/menu (Attempt 1)
+[2026-08-18 12:01:02] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/2/menu
+[2026-08-18 12:01:02] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/13/menu (Attempt 1)
+[2026-08-18 12:01:03] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/13/menu
+[2026-08-18 12:01:03] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/18/menu (Attempt 1)
+[2026-08-18 12:01:04] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/18/menu
+[2026-08-18 12:01:04] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/15/menu (Attempt 1)
+[2026-08-18 12:01:05] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/15/menu
+[2026-08-18 12:01:05] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/17/menu (Attempt 1)
+[2026-08-18 12:01:05] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/17/menu
+[2026-08-18 12:01:05] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/6/menu (Attempt 1)
+[2026-08-18 12:01:06] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/6/menu
+[2026-08-18 12:01:06] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/21/menu (Attempt 1)
+[2026-08-18 12:01:07] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/21/menu
+[2026-08-18 12:01:07] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/23/menu (Attempt 1)
+[2026-08-18 12:01:08] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/23/menu
+[2026-08-18 12:01:08] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/1/menu (Attempt 1)
+[2026-08-18 12:01:09] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/1/menu
+[2026-08-18 12:01:09] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/28/menu (Attempt 1)
+[2026-08-18 12:01:09] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/28/menu
+[2026-08-18 12:01:09] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/24/menu (Attempt 1)
+[2026-08-18 12:01:10] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/24/menu
+[2026-08-18 12:01:10] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/5/menu (Attempt 1)
+[2026-08-18 12:01:11] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/5/menu
+[2026-08-18 12:01:11] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/30/menu (Attempt 1)
+[2026-08-18 12:01:12] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/30/menu
+[2026-08-18 12:01:12] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/27/menu (Attempt 1)
+[2026-08-18 12:01:13] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/27/menu
+[2026-08-18 12:01:13] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/8/menu (Attempt 1)
+[2026-08-18 12:01:13] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/8/menu
+[2026-08-18 12:01:13] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/3/menu (Attempt 1)
+[2026-08-18 12:01:14] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/3/menu
+[2026-08-18 12:01:14] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/7/menu (Attempt 1)
+[2026-08-18 12:01:15] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/7/menu
+[2026-08-18 12:01:15] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/14/menu (Attempt 1)
+[2026-08-18 12:01:16] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/14/menu
+[2026-08-18 12:01:16] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/19/menu (Attempt 1)
+[2026-08-18 12:01:17] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/19/menu
+[2026-08-18 12:01:33] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: o3o78mal9qk4q3lau2fvg6tlb1] Session initialized and ID regenerated
+[2026-08-18 12:01:33] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: o3o78mal9qk4q3lau2fvg6tlb1] Secure session started successfully
+[2026-08-18 12:01:33] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: o3o78mal9qk4q3lau2fvg6tlb1] New CSRF token generated (version: 1)
+[2026-08-18 12:02:23] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: o3o78mal9qk4q3lau2fvg6tlb1] Secure session started successfully
+[2026-08-18 12:02:23] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: o3o78mal9qk4q3lau2fvg6tlb1] CSRF token validated successfully
+[2026-08-18 12:02:23] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: o3o78mal9qk4q3lau2fvg6tlb1] Database 'campus_eats' ensured to exist.
+[2026-08-18 12:02:23] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: o3o78mal9qk4q3lau2fvg6tlb1] Tables already exist.
+[2026-08-18 12:02:24] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: o3o78mal9qk4q3lau2fvg6tlb1] Admin account verified and correct.
+[2026-08-18 12:02:24] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: o3o78mal9qk4q3lau2fvg6tlb1] user_sessions table already exists.
+[2026-08-18 12:02:28] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: o3o78mal9qk4q3lau2fvg6tlb1] Database connection established successfully.
+[2026-08-18 12:02:28] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: o3o78mal9qk4q3lau2fvg6tlb1] Cleared failed login attempts for username: davidl from IP: 127.0.0.1
+[2026-08-18 12:02:28] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: btc6l7lu8rl707996u3gu8ko5a] New CSRF token generated (version: 2)
+[2026-08-18 12:02:28] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: btc6l7lu8rl707996u3gu8ko5a] Session regenerated successfully
+[2026-08-18 12:02:28] [AUTH] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] User authenticated successfully: davidl (Role: student)
+[2026-08-18 12:02:28] [AUTH] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Login successful for user: davidl (Role: student)
+[2026-08-18 12:02:28] [AUTH] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Secure session started successfully
+[2026-08-18 12:02:28] [DATABASE] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Database 'campus_eats' ensured to exist.
+[2026-08-18 12:02:28] [DATABASE] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Tables already exist.
+[2026-08-18 12:02:29] [DATABASE] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Admin account verified and correct.
+[2026-08-18 12:02:29] [DATABASE] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] user_sessions table already exists.
+[2026-08-18 12:02:33] [DATABASE] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Database connection established successfully.
+[2026-08-18 12:02:33] [DASHBOARD] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Student/Standard dashboard accessed by user ID: 4001 (Role: student)
+[2026-08-18 12:02:33] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request: GET /api/Restaurant (Attempt 1)
+[2026-08-18 12:02:34] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request successful: GET /api/Restaurant
+[2026-08-18 12:02:34] [DASHBOARD] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Found 31 restaurants from API
+[2026-08-18 12:02:34] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request: GET /api/Restaurant/26/menu (Attempt 1)
+[2026-08-18 12:02:35] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request successful: GET /api/Restaurant/26/menu
+[2026-08-18 12:02:35] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request: GET /api/Restaurant/25/menu (Attempt 1)
+[2026-08-18 12:02:36] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request successful: GET /api/Restaurant/25/menu
+[2026-08-18 12:02:36] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request: GET /api/Restaurant/29/menu (Attempt 1)
+[2026-08-18 12:02:36] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request successful: GET /api/Restaurant/29/menu
+[2026-08-18 12:02:36] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request: GET /api/Restaurant/9/menu (Attempt 1)
+[2026-08-18 12:02:37] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request successful: GET /api/Restaurant/9/menu
+[2026-08-18 12:02:37] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request: GET /api/Restaurant/4/menu (Attempt 1)
+[2026-08-18 12:02:38] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request successful: GET /api/Restaurant/4/menu
+[2026-08-18 12:02:38] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request: GET /api/Restaurant/22/menu (Attempt 1)
+[2026-08-18 12:02:39] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request successful: GET /api/Restaurant/22/menu
+[2026-08-18 12:02:39] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request: GET /api/Restaurant/16/menu (Attempt 1)
+[2026-08-18 12:02:40] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request successful: GET /api/Restaurant/16/menu
+[2026-08-18 12:02:40] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request: GET /api/Restaurant/11/menu (Attempt 1)
+[2026-08-18 12:02:41] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request successful: GET /api/Restaurant/11/menu
+[2026-08-18 12:02:41] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request: GET /api/Restaurant/20/menu (Attempt 1)
+[2026-08-18 12:02:41] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request successful: GET /api/Restaurant/20/menu
+[2026-08-18 12:02:41] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request: GET /api/Restaurant/31/menu (Attempt 1)
+[2026-08-18 12:02:42] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request successful: GET /api/Restaurant/31/menu
+[2026-08-18 12:02:42] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request: GET /api/Restaurant/10/menu (Attempt 1)
+[2026-08-18 12:02:43] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request successful: GET /api/Restaurant/10/menu
+[2026-08-18 12:02:43] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request: GET /api/Restaurant/12/menu (Attempt 1)
+[2026-08-18 12:02:44] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request successful: GET /api/Restaurant/12/menu
+[2026-08-18 12:02:44] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request: GET /api/Restaurant/2/menu (Attempt 1)
+[2026-08-18 12:02:44] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request successful: GET /api/Restaurant/2/menu
+[2026-08-18 12:02:44] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request: GET /api/Restaurant/13/menu (Attempt 1)
+[2026-08-18 12:02:45] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request successful: GET /api/Restaurant/13/menu
+[2026-08-18 12:02:45] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request: GET /api/Restaurant/18/menu (Attempt 1)
+[2026-08-18 12:02:46] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request successful: GET /api/Restaurant/18/menu
+[2026-08-18 12:02:46] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request: GET /api/Restaurant/15/menu (Attempt 1)
+[2026-08-18 12:02:47] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request successful: GET /api/Restaurant/15/menu
+[2026-08-18 12:02:47] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request: GET /api/Restaurant/17/menu (Attempt 1)
+[2026-08-18 12:02:48] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request successful: GET /api/Restaurant/17/menu
+[2026-08-18 12:02:48] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request: GET /api/Restaurant/6/menu (Attempt 1)
+[2026-08-18 12:02:48] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request successful: GET /api/Restaurant/6/menu
+[2026-08-18 12:02:48] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request: GET /api/Restaurant/21/menu (Attempt 1)
+[2026-08-18 12:02:49] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request successful: GET /api/Restaurant/21/menu
+[2026-08-18 12:02:49] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request: GET /api/Restaurant/23/menu (Attempt 1)
+[2026-08-18 12:02:50] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request successful: GET /api/Restaurant/23/menu
+[2026-08-18 12:02:50] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request: GET /api/Restaurant/1/menu (Attempt 1)
+[2026-08-18 12:02:51] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request successful: GET /api/Restaurant/1/menu
+[2026-08-18 12:02:51] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request: GET /api/Restaurant/28/menu (Attempt 1)
+[2026-08-18 12:02:52] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request successful: GET /api/Restaurant/28/menu
+[2026-08-18 12:02:52] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request: GET /api/Restaurant/24/menu (Attempt 1)
+[2026-08-18 12:02:53] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request successful: GET /api/Restaurant/24/menu
+[2026-08-18 12:02:53] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request: GET /api/Restaurant/5/menu (Attempt 1)
+[2026-08-18 12:02:53] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request successful: GET /api/Restaurant/5/menu
+[2026-08-18 12:02:53] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request: GET /api/Restaurant/30/menu (Attempt 1)
+[2026-08-18 12:02:54] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request successful: GET /api/Restaurant/30/menu
+[2026-08-18 12:02:54] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request: GET /api/Restaurant/27/menu (Attempt 1)
+[2026-08-18 12:02:55] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request successful: GET /api/Restaurant/27/menu
+[2026-08-18 12:02:55] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request: GET /api/Restaurant/8/menu (Attempt 1)
+[2026-08-18 12:02:56] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request successful: GET /api/Restaurant/8/menu
+[2026-08-18 12:02:56] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request: GET /api/Restaurant/3/menu (Attempt 1)
+[2026-08-18 12:02:57] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request successful: GET /api/Restaurant/3/menu
+[2026-08-18 12:02:57] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request: GET /api/Restaurant/7/menu (Attempt 1)
+[2026-08-18 12:02:57] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request successful: GET /api/Restaurant/7/menu
+[2026-08-18 12:02:57] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request: GET /api/Restaurant/14/menu (Attempt 1)
+[2026-08-18 12:02:58] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request successful: GET /api/Restaurant/14/menu
+[2026-08-18 12:02:58] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request: GET /api/Restaurant/19/menu (Attempt 1)
+[2026-08-18 12:02:59] [API] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] API request successful: GET /api/Restaurant/19/menu
+[2026-08-18 12:02:59] [DASHBOARD] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Found 31 restaurants with menus
+[2026-08-18 12:02:59] [DASHBOARD] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Cart count for user ID 4001: 0 items
+[2026-08-18 12:02:59] [AUTH] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Secure session started successfully
+[2026-08-18 12:02:59] [DATABASE] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Database 'campus_eats' ensured to exist.
+[2026-08-18 12:02:59] [DATABASE] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Tables already exist.
+[2026-08-18 12:03:00] [DATABASE] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Admin account verified and correct.
+[2026-08-18 12:03:00] [DATABASE] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] user_sessions table already exists.
+[2026-08-18 12:03:04] [DATABASE] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Database connection established successfully.
+[2026-08-18 12:03:07] [AUTH] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Secure session started successfully
+[2026-08-18 12:03:07] [DATABASE] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Database 'campus_eats' ensured to exist.
+[2026-08-18 12:03:07] [DATABASE] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Tables already exist.
+[2026-08-18 12:03:08] [DATABASE] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Admin account verified and correct.
+[2026-08-18 12:03:08] [DATABASE] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] user_sessions table already exists.
+[2026-08-18 12:03:12] [DATABASE] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Database connection established successfully.
+[2026-08-18 12:03:12] [ORDER_TRACKING] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Order tracking: Invalid order ID: 0
+[2026-08-18 12:03:12] [AUTH] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Secure session started successfully
+[2026-08-18 12:03:12] [DATABASE] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Database 'campus_eats' ensured to exist.
+[2026-08-18 12:03:12] [DATABASE] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Tables already exist.
+[2026-08-18 12:03:13] [DATABASE] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Admin account verified and correct.
+[2026-08-18 12:03:13] [DATABASE] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] user_sessions table already exists.
+[2026-08-18 12:03:17] [DATABASE] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Database connection established successfully.
+[2026-08-18 12:03:17] [ORDER_TRACKING] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Order tracking: Invalid order ID: 0
+[2026-08-18 12:03:17] [AUTH] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Secure session started successfully
+[2026-08-18 12:03:17] [DATABASE] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Database 'campus_eats' ensured to exist.
+[2026-08-18 12:03:17] [DATABASE] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Tables already exist.
+[2026-08-18 12:03:18] [DATABASE] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Admin account verified and correct.
+[2026-08-18 12:03:18] [DATABASE] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] user_sessions table already exists.
+[2026-08-18 12:03:22] [DATABASE] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Database connection established successfully.
+[2026-08-18 12:03:22] [ORDER_TRACKING] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Order tracking: Invalid order ID: 0
+[2026-08-18 12:03:22] [AUTH] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Secure session started successfully
+[2026-08-18 12:03:22] [DATABASE] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Database 'campus_eats' ensured to exist.
+[2026-08-18 12:03:22] [DATABASE] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Tables already exist.
+[2026-08-18 12:03:23] [DATABASE] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Admin account verified and correct.
+[2026-08-18 12:03:23] [DATABASE] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] user_sessions table already exists.
+[2026-08-18 12:03:27] [DATABASE] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Database connection established successfully.
+[2026-08-18 12:03:27] [ORDER_TRACKING] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Order tracking: Invalid order ID: 0
+[2026-08-18 12:03:27] [AUTH] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Secure session started successfully
+[2026-08-18 12:03:27] [AUTH] [INFO] [IP: 127.0.0.1] [User: 4001] [Session: btc6l7lu8rl707996u3gu8ko5a] Logout requested for user: davidl (ID: 4001)
+[2026-08-18 12:03:27] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Session destroyed successfully
+[2026-08-18 12:03:27] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] User logged out successfully: davidl
+[2026-08-18 12:03:27] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Redirecting to: /campus-eats-web/index.php?logout=1787054607
+[2026-08-18 12:03:27] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (CSP with unsafe-inline removed)
+[2026-08-18 12:03:27] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Logout parameter detected in index.php
+[2026-08-18 12:03:27] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (CSP with unsafe-inline removed)
+[2026-08-18 12:03:27] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant (Attempt 1)
+[2026-08-18 12:03:27] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant
+[2026-08-18 12:03:27] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] Fetched 31 restaurants from API
+[2026-08-18 12:03:27] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/26/menu (Attempt 1)
+[2026-08-18 12:03:28] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/26/menu
+[2026-08-18 12:03:28] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API cache hit: /api/Restaurant/26/menu
+[2026-08-18 12:03:28] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/25/menu (Attempt 1)
+[2026-08-18 12:03:29] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/25/menu
+[2026-08-18 12:03:29] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/29/menu (Attempt 1)
+[2026-08-18 12:03:30] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/29/menu
+[2026-08-18 12:03:30] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/9/menu (Attempt 1)
+[2026-08-18 12:03:31] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/9/menu
+[2026-08-18 12:03:31] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/4/menu (Attempt 1)
+[2026-08-18 12:03:31] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/4/menu
+[2026-08-18 12:03:31] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/22/menu (Attempt 1)
+[2026-08-18 12:03:32] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/22/menu
+[2026-08-18 12:03:32] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/16/menu (Attempt 1)
+[2026-08-18 12:03:33] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/16/menu
+[2026-08-18 12:03:33] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/11/menu (Attempt 1)
+[2026-08-18 12:03:34] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/11/menu
+[2026-08-18 12:03:34] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/20/menu (Attempt 1)
+[2026-08-18 12:03:35] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/20/menu
+[2026-08-18 12:03:35] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/31/menu (Attempt 1)
+[2026-08-18 12:03:35] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/31/menu
+[2026-08-18 12:03:35] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/10/menu (Attempt 1)
+[2026-08-18 12:03:36] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/10/menu
+[2026-08-18 12:03:36] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/12/menu (Attempt 1)
+[2026-08-18 12:03:37] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/12/menu
+[2026-08-18 12:03:37] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/2/menu (Attempt 1)
+[2026-08-18 12:03:38] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/2/menu
+[2026-08-18 12:03:38] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/13/menu (Attempt 1)
+[2026-08-18 12:03:39] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/13/menu
+[2026-08-18 12:03:39] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/18/menu (Attempt 1)
+[2026-08-18 12:03:39] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/18/menu
+[2026-08-18 12:03:39] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/15/menu (Attempt 1)
+[2026-08-18 12:03:40] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/15/menu
+[2026-08-18 12:03:40] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/17/menu (Attempt 1)
+[2026-08-18 12:03:41] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/17/menu
+[2026-08-18 12:03:41] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/6/menu (Attempt 1)
+[2026-08-18 12:03:42] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/6/menu
+[2026-08-18 12:03:42] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/21/menu (Attempt 1)
+[2026-08-18 12:03:43] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/21/menu
+[2026-08-18 12:03:43] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/23/menu (Attempt 1)
+[2026-08-18 12:03:43] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/23/menu
+[2026-08-18 12:03:43] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/1/menu (Attempt 1)
+[2026-08-18 12:03:44] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/1/menu
+[2026-08-18 12:03:44] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/28/menu (Attempt 1)
+[2026-08-18 12:03:45] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/28/menu
+[2026-08-18 12:03:45] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/24/menu (Attempt 1)
+[2026-08-18 12:03:46] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/24/menu
+[2026-08-18 12:03:46] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/5/menu (Attempt 1)
+[2026-08-18 12:03:47] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/5/menu
+[2026-08-18 12:03:47] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/30/menu (Attempt 1)
+[2026-08-18 12:03:47] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/30/menu
+[2026-08-18 12:03:47] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/27/menu (Attempt 1)
+[2026-08-18 12:03:48] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/27/menu
+[2026-08-18 12:03:48] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/8/menu (Attempt 1)
+[2026-08-18 12:03:49] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/8/menu
+[2026-08-18 12:03:49] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/3/menu (Attempt 1)
+[2026-08-18 12:03:50] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/3/menu
+[2026-08-18 12:03:50] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/7/menu (Attempt 1)
+[2026-08-18 12:03:51] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/7/menu
+[2026-08-18 12:03:51] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/14/menu (Attempt 1)
+[2026-08-18 12:03:51] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/14/menu
+[2026-08-18 12:03:51] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request: GET /api/Restaurant/19/menu (Attempt 1)
+[2026-08-18 12:03:52] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: q7bhsn0nkll18o32jhgenfq0n2] API request successful: GET /api/Restaurant/19/menu

@@ -1,0 +1,25 @@
+/**
+ * Unified Sidebar Styles for Admin, Student, and Vendor Interfaces
+ *
+ * This file has been deprecated. Sidebar styles are now in role-specific CSS files:
+ * - admin.css (admin sidebar)
+ * - vendor.css (vendor sidebar)
+ * - student.css (student sidebar)
+ *
+ * CORRECTIONS:
+ * - This file now serves as a compatibility shim
+ * - Imports the canonical design system and role-specific styles
+ *
+ * Source: campus-eats-process-document.pdf (Section 10 - User Interface Design)
+ *
+ * @version 3.0
+ * @deprecated Use role-specific CSS files instead
+ */
+
+/* Import canonical design system */
+@import url('../assets/css/apple.css');
+
+/* Import role-specific sidebar styles */
+@import url('../assets/css/admin.css');
+@import url('../assets/css/vendor.css');
+@import url('../assets/css/student.css');
