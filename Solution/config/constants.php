@@ -485,3 +485,52 @@ if (!empty($missingConstants))
         die('System configuration error. Please contact the administrator.');
     }
 }
+
+// =============================================================================
+// Firebase Configuration - Added for Firebase Integration
+// =============================================================================
+
+if (!defined('FIREBASE_API_KEY'))
+{
+    define('FIREBASE_API_KEY', 'AIzaSyBnal57F8ODfUHY4CCNpRUIvOEKGmd6T5M');
+}
+
+if (!defined('FIREBASE_AUTH_DOMAIN'))
+{
+    define('FIREBASE_AUTH_DOMAIN', 'campus-eats-db.firebaseapp.com');
+}
+
+if (!defined('FIREBASE_DATABASE_URL'))
+{
+    define('FIREBASE_DATABASE_URL', 'https://campus-eats-db-default-rtdb.europe-west1.firebasedatabase.app');
+}
+
+if (!defined('FIREBASE_PROJECT_ID'))
+{
+    define('FIREBASE_PROJECT_ID', 'campus-eats-db');
+}
+
+if (!defined('FIREBASE_STORAGE_BUCKET'))
+{
+    define('FIREBASE_STORAGE_BUCKET', 'campus-eats-db.firebasestorage.app');
+}
+
+if (!defined('FIREBASE_MESSAGING_SENDER_ID'))
+{
+    define('FIREBASE_MESSAGING_SENDER_ID', '64265928399');
+}
+
+if (!defined('FIREBASE_APP_ID'))
+{
+    define('FIREBASE_APP_ID', '1:64265928399:web:1ed0d7f032fbdad34b01ba');
+}
+
+if (!defined('FIREBASE_MEASUREMENT_ID'))
+{
+    define('FIREBASE_MEASUREMENT_ID', 'G-8MSCNGN1XD');
+}
+
+if (!defined('FIREBASE_SDK_VERSION'))
+{
+    define('FIREBASE_SDK_VERSION', '12.18.0');
+}

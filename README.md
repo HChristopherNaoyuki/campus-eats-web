@@ -28,7 +28,7 @@ vendors, and system reporting.
 
 You can view the absolute demo of this application at:
 
-https://joyful-eats-platform.lovable.app
+https://campus-eats-platform.lovable.app/
 
 This link is the absolute demo of what is being built in PHP, MySQL,
 JavaScript, CSS, and HTML. That website has all of the basic things of
@@ -335,6 +335,8 @@ campus-eats-web/
     │   │   ├── cart.js
     │   │   ├── checkout.js
     │   │   ├── dashboard-common.js
+    │   │   ├── firebase.js
+    │   │   ├── feedback-firebase.js
     │   │   ├── main.js
     │   │   ├── payment-modal.js
     │   │   ├── student.js
@@ -351,6 +353,7 @@ campus-eats-web/
     │   ├── api_service.php
     │   ├── auth.php
     │   ├── dashboard_header.php
+    │   ├── firebase_config.php
     │   ├── footer.php
     │   ├── header.php
     │   ├── password_validation.php

@@ -1,21 +1,16 @@
 <?php
 /**
- * Global Footer Include File - Redesigned to Match Mockups
+ * Global Footer Include File - With Firebase Integration
  *
  * This file contains the HTML footer, copyright information, and JavaScript includes.
  * It must be included at the bottom of every page.
  *
- * CORRECTIONS (Version 10.0 - Visual Parity with Mockup 4.png):
- * - Redesigned footer to match the 4-column layout in mockup 4.png
- * - Added button-style navigation elements (Terms, Privacy, Support, GitHub)
- * - Improved hover states, click feedback, and spacing
- * - Added social media links
- * - Ensured footer maintains responsiveness
+ * CORRECTIONS (Version 11.0 - Firebase Integration):
+ * - Added Firebase JavaScript modules
+ * - Added Feedback module for pages that need it
+ * - Added user context for Firebase operations
  *
- * SOURCE: Mockup - 4.png
- * SOURCE: Software Engineering Report - Task 3
- *
- * @version 10.0
+ * @version 11.0
  */
 
 // Load required dependencies to define constants
@@ -26,12 +21,26 @@ if (defined('CSP_NONCE') && CSP_NONCE)
 {
     $nonceAttribute = ' nonce="' . CSP_NONCE . '"';
 }
+
+// Determine if Firebase should be loaded on this page
+$loadFirebase = true; // Default: load on all pages
+
+// Check for user context for Firebase
+$firebaseUserContext = array();
+if (isset($_SESSION['user_id']))
+{
+    $firebaseUserContext = array(
+        'userId' => $_SESSION['user_id'] ?? null,
+        'role' => $_SESSION['account_type'] ?? null,
+        'fullName' => $_SESSION['full_name'] ?? $_SESSION['username'] ?? null,
+        'email' => $_SESSION['email'] ?? null
+    );
+}
 ?>
     </main>
 
     <!-- =============================================================================
          Footer - 4-Column Layout Matching Mockup 4.png
-         Source: Mockup 4.png
          ============================================================================= -->
     <footer class="app-footer">
         <div class="container">
@@ -90,16 +99,11 @@ if (defined('CSP_NONCE') && CSP_NONCE)
                 </div>
             </div>
 
-            <!-- =========================================================================
-                 Footer Bottom - Button-Style Navigation Matching Mockup 4.png
-                 ========================================================================= -->
+            <!-- Footer Bottom - Button-Style Navigation -->
             <div class="footer-bottom">
-                <!-- Copyright -->
                 <div class="copyright">
                     <p>&copy; <span id="current-year"></span> Campus Eats — student pickup network. All prices in South African Rand (R).</p>
                 </div>
-
-                <!-- Button-Style Navigation Links -->
                 <div class="footer-nav-buttons">
                     <a href="<?php echo ROOT_URL; ?>/terms.php" class="footer-nav-btn">
                         <i class="fas fa-file-contract"></i>
@@ -121,6 +125,37 @@ if (defined('CSP_NONCE') && CSP_NONCE)
             </div>
         </div>
     </footer>
+
+    <!-- =============================================================================
+         Firebase Integration - Loaded on pages that need it
+         ============================================================================= -->
+    <?php if ($loadFirebase): ?>
+        <script>
+            // PHP user context for Firebase operations
+            window.FIREBASE_USER_CONTEXT = <?php echo json_encode($firebaseUserContext); ?>;
+        </script>
+        <script src="<?php echo ASSETS_URL; ?>/js/firebase.js"></script>
+        
+        <!-- Load Feedback module on relevant pages -->
+        <?php
+        $currentPage = basename($_SERVER['PHP_SELF']);
+        $feedbackPages = array('submit_feedback.php', 'view_feedback.php', 'dashboard.php');
+        $isFeedbackPage = in_array($currentPage, $feedbackPages);
+        ?>
+        <?php if ($isFeedbackPage): ?>
+            <script src="<?php echo ASSETS_URL; ?>/js/feedback-firebase.js"></script>
+            <script>
+                // Initialize Feedback module with user context
+                document.addEventListener('DOMContentLoaded', function()
+                {
+                    if (typeof window.Feedback !== 'undefined' && window.FIREBASE_USER_CONTEXT)
+                    {
+                        window.Feedback.init(window.FIREBASE_USER_CONTEXT);
+                    }
+                });
+            </script>
+        <?php endif; ?>
+    <?php endif; ?>
 
     <!-- External JavaScript files -->
     <script src="<?php echo ASSETS_URL; ?>/js/main.js"></script>
