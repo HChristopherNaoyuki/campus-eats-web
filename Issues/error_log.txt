@@ -1,77 +1,128 @@
-[2026-09-12 13:16:33] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (single canonical CSP with nonce)
-[2026-09-12 13:16:33] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request: GET /api/Restaurant (Attempt 1)
-[2026-09-12 13:16:41] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (single canonical CSP with nonce)
-[2026-09-12 13:16:50] [PHP_ERROR] [ERROR] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] PHP Error: file_get_contents(): SSL operation failed with code 1. OpenSSL Error messages:
-error:0A000086:SSL routines::certificate verify failed in C:\wamp64\www\campus-eats-web\Solution\includes\api_service.php on line 141
-[2026-09-12 13:16:50] [PHP_ERROR] [ERROR] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] PHP Error: file_get_contents(): Failed to enable crypto in C:\wamp64\www\campus-eats-web\Solution\includes\api_service.php on line 141
-[2026-09-12 13:16:50] [PHP_ERROR] [ERROR] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] PHP Error: file_get_contents(https://fakerestaurantapi.runasp.net/api/Restaurant): Failed to open stream: operation failed in C:\wamp64\www\campus-eats-web\Solution\includes\api_service.php on line 141
-[2026-09-12 13:16:50] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request failed, retrying in 1s: Failed to fetch API response
-[2026-09-12 13:16:51] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request: GET /api/Restaurant (Attempt 2)
-[2026-09-12 13:16:52] [PHP_ERROR] [ERROR] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] PHP Error: file_get_contents(): SSL operation failed with code 1. OpenSSL Error messages:
-error:0A000086:SSL routines::certificate verify failed in C:\wamp64\www\campus-eats-web\Solution\includes\api_service.php on line 141
-[2026-09-12 13:16:52] [PHP_ERROR] [ERROR] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] PHP Error: file_get_contents(): Failed to enable crypto in C:\wamp64\www\campus-eats-web\Solution\includes\api_service.php on line 141
-[2026-09-12 13:16:52] [PHP_ERROR] [ERROR] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] PHP Error: file_get_contents(https://fakerestaurantapi.runasp.net/api/Restaurant): Failed to open stream: operation failed in C:\wamp64\www\campus-eats-web\Solution\includes\api_service.php on line 141
-[2026-09-12 13:16:52] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request failed, retrying in 1s: Failed to fetch API response
-[2026-09-12 13:16:53] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request: GET /api/Restaurant (Attempt 3)
-[2026-09-12 13:16:53] [PHP_ERROR] [ERROR] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] PHP Error: file_get_contents(): SSL operation failed with code 1. OpenSSL Error messages:
-error:0A000086:SSL routines::certificate verify failed in C:\wamp64\www\campus-eats-web\Solution\includes\api_service.php on line 141
-[2026-09-12 13:16:53] [PHP_ERROR] [ERROR] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] PHP Error: file_get_contents(): Failed to enable crypto in C:\wamp64\www\campus-eats-web\Solution\includes\api_service.php on line 141
-[2026-09-12 13:16:53] [PHP_ERROR] [ERROR] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] PHP Error: file_get_contents(https://fakerestaurantapi.runasp.net/api/Restaurant): Failed to open stream: operation failed in C:\wamp64\www\campus-eats-web\Solution\includes\api_service.php on line 141
-[2026-09-12 13:16:53] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request failed after 3 attempts: Failed to fetch API response
-[2026-09-12 13:16:53] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] Error fetching restaurants from API: Failed to fetch API response
-[2026-09-12 13:16:53] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request: GET /api/Restaurant (Attempt 1)
-[2026-09-12 13:16:54] [PHP_ERROR] [ERROR] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] PHP Error: file_get_contents(): SSL operation failed with code 1. OpenSSL Error messages:
-error:0A000086:SSL routines::certificate verify failed in C:\wamp64\www\campus-eats-web\Solution\includes\api_service.php on line 141
-[2026-09-12 13:16:54] [PHP_ERROR] [ERROR] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] PHP Error: file_get_contents(): Failed to enable crypto in C:\wamp64\www\campus-eats-web\Solution\includes\api_service.php on line 141
-[2026-09-12 13:16:54] [PHP_ERROR] [ERROR] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] PHP Error: file_get_contents(https://fakerestaurantapi.runasp.net/api/Restaurant): Failed to open stream: operation failed in C:\wamp64\www\campus-eats-web\Solution\includes\api_service.php on line 141
-[2026-09-12 13:16:54] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request failed, retrying in 1s: Failed to fetch API response
-[2026-09-12 13:16:55] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request: GET /api/Restaurant (Attempt 2)
-[2026-09-12 13:16:56] [PHP_ERROR] [ERROR] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] PHP Error: file_get_contents(): SSL operation failed with code 1. OpenSSL Error messages:
-error:0A000086:SSL routines::certificate verify failed in C:\wamp64\www\campus-eats-web\Solution\includes\api_service.php on line 141
-[2026-09-12 13:16:56] [PHP_ERROR] [ERROR] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] PHP Error: file_get_contents(): Failed to enable crypto in C:\wamp64\www\campus-eats-web\Solution\includes\api_service.php on line 141
-[2026-09-12 13:16:56] [PHP_ERROR] [ERROR] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] PHP Error: file_get_contents(https://fakerestaurantapi.runasp.net/api/Restaurant): Failed to open stream: operation failed in C:\wamp64\www\campus-eats-web\Solution\includes\api_service.php on line 141
-[2026-09-12 13:16:56] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request failed, retrying in 1s: Failed to fetch API response
-[2026-09-12 13:16:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request: GET /api/Restaurant (Attempt 3)
-[2026-09-12 13:16:57] [PHP_ERROR] [ERROR] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] PHP Error: file_get_contents(): SSL operation failed with code 1. OpenSSL Error messages:
-error:0A000086:SSL routines::certificate verify failed in C:\wamp64\www\campus-eats-web\Solution\includes\api_service.php on line 141
-[2026-09-12 13:16:57] [PHP_ERROR] [ERROR] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] PHP Error: file_get_contents(): Failed to enable crypto in C:\wamp64\www\campus-eats-web\Solution\includes\api_service.php on line 141
-[2026-09-12 13:16:57] [PHP_ERROR] [ERROR] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] PHP Error: file_get_contents(https://fakerestaurantapi.runasp.net/api/Restaurant): Failed to open stream: operation failed in C:\wamp64\www\campus-eats-web\Solution\includes\api_service.php on line 141
-[2026-09-12 13:16:57] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request failed after 3 attempts: Failed to fetch API response
-[2026-09-12 13:16:57] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] Error fetching restaurants from API: Failed to fetch API response
-[2026-09-12 13:21:11] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (single canonical CSP with nonce)
-[2026-09-12 13:21:11] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request: GET /api/Restaurant (Attempt 1)
-[2026-09-12 13:21:11] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] cURL error 60: SSL certificate problem: unable to get local issuer certificate (url: https://fakerestaurantapi.runasp.net/api/Restaurant)
-[2026-09-12 13:21:11] [EXCEPTION] [ERROR] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] Uncaught Exception: Undefined constant "CURLE_PEER_FAILED_VERIFICATION" in C:\wamp64\www\campus-eats-web\Solution\includes\api_service.php on line 162
+[2026-09-12 13:48:37] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Session initialized and ID regenerated
+[2026-09-12 13:48:37] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Secure session started successfully
+[2026-09-12 13:48:37] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] New CSRF token generated (version: 1)
+[2026-09-12 13:48:53] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Secure session started successfully
+[2026-09-12 13:48:53] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] CSRF token validated successfully
+[2026-09-12 13:48:53] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Database 'campus_eats' ensured to exist.
+[2026-09-12 13:48:53] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Tables do not exist. Installing...
+[2026-09-12 13:48:54] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Database tables installed successfully.
+[2026-09-12 13:48:54] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Could not check account_type column definition.
+[2026-09-12 13:48:54] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'campus_eats.users' doesn't exist | SQL: SELECT `user_id`, `password_hash`, `is_verified`, `is_active`, `account_type`
+                 FROM `users`
+                 WHERE `username` = :username
+                 LIMIT 1
+[2026-09-12 13:48:54] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] fetchOne failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'campus_eats.users' doesn't exist
+[2026-09-12 13:48:54] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Failed to ensure admin account: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'campus_eats.users' doesn't exist
+[2026-09-12 13:48:54] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] user_sessions table does not exist. Creating...
+[2026-09-12 13:48:54] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Query failed: SQLSTATE[HY000]: General error: 1824 Failed to open the referenced table 'users' | SQL: CREATE TABLE IF NOT EXISTS `user_sessions`
+                    (
+                        `session_id`    VARCHAR(128) NOT NULL PRIMARY KEY,
+                        `user_id`       INT NOT NULL,
+                        `ip_address`    VARCHAR(45) NOT NULL,
+                        `user_agent`    TEXT NULL,
+                        `created_at`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        `last_activity` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                        FOREIGN KEY (`user_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE,
+                        INDEX `idx_user_id` (`user_id`),
+                        INDEX `idx_last_activity` (`last_activity`)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                    COMMENT='Stores active user sessions for session management and tracking'
+[2026-09-12 13:48:54] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Failed to create user_sessions table: SQLSTATE[HY000]: General error: 1824 Failed to open the referenced table 'users'
+[2026-09-12 13:48:54] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'campus_eats.users' doesn't exist | SQL: SELECT `user_id`, `password_hash`, `account_type`, `is_verified`, `is_active`
+                     FROM `users`
+                     WHERE `email` = :email OR `username` = :username
+                     LIMIT 1
+[2026-09-12 13:48:54] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] fetchOne failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'campus_eats.users' doesn't exist
+[2026-09-12 13:48:54] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Failed to ensure demo accounts: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'campus_eats.users' doesn't exist
+[2026-09-12 13:48:54] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Created login_attempts table.
+[2026-09-12 13:48:54] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Created password_reset_attempts table.
+[2026-09-12 13:48:54] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Database connection established successfully.
+[2026-09-12 13:48:54] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'campus_eats.users' doesn't exist | SQL: SELECT
+                    u.user_id,
+                    u.unique_id,
+                    u.full_name,
+                    u.username,
+                    u.email,
+                    u.password_hash,
+                    u.account_type,
+                    u.is_active,
+                    u.is_verified,
+                    v.vendor_id,
+                    v.vendor_name,
+                    v.is_approved
+                FROM users u
+                LEFT JOIN vendors v ON u.user_id = v.vendor_user_id
+                WHERE u.email = :identifier
+                LIMIT 1
+[2026-09-12 13:48:54] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] fetchOne failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'campus_eats.users' doesn't exist
+[2026-09-12 13:48:54] [EXCEPTION] [ERROR] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Uncaught Exception: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'campus_eats.users' doesn't exist in C:\wamp64\www\campus-eats-web\Solution\config\database.php on line 1031
 Stack trace:
-#0 C:\wamp64\www\campus-eats-web\Solution\includes\api_service.php(311): ApiService->isPermanentCurlFailure(60)
-#1 C:\wamp64\www\campus-eats-web\Solution\includes\api_service.php(416): ApiService->request('/api/Restaurant')
-#2 C:\wamp64\www\campus-eats-web\index.php(115): ApiService->getAllRestaurants()
-#3 {main}
-[2026-09-12 13:21:11] [AUDIT] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] Audit: system - exception (Result: error)
-[2026-09-12 13:23:19] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (single canonical CSP with nonce)
-[2026-09-12 13:23:19] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request: GET /api/Restaurant (Attempt 1)
-[2026-09-12 13:23:20] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] cURL error 60 (CURLE_SSL_CACERT): SSL certificate problem: unable to get local issuer certificate (url: https://fakerestaurantapi.runasp.net/api/Restaurant)
-[2026-09-12 13:23:20] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] Permanent cURL failure (error 60). Not retrying.
-[2026-09-12 13:23:20] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request failed after 1 attempt(s): API request failed: SSL certificate problem: unable to get local issuer certificate
-[2026-09-12 13:23:20] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] Error fetching restaurants from API: API request failed: SSL certificate problem: unable to get local issuer certificate
-[2026-09-12 13:23:27] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] Security headers set (single canonical CSP with nonce)
-[2026-09-12 13:23:32] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (single canonical CSP with nonce)
-[2026-09-12 13:23:32] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request: GET /api/Restaurant (Attempt 1)
-[2026-09-12 13:23:33] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] cURL error 60 (CURLE_SSL_CACERT): SSL certificate problem: unable to get local issuer certificate (url: https://fakerestaurantapi.runasp.net/api/Restaurant)
-[2026-09-12 13:23:33] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] Permanent cURL failure (error 60). Not retrying.
-[2026-09-12 13:23:33] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request failed after 1 attempt(s): API request failed: SSL certificate problem: unable to get local issuer certificate
-[2026-09-12 13:23:33] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] Error fetching restaurants from API: API request failed: SSL certificate problem: unable to get local issuer certificate
-[2026-09-12 13:23:39] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] Security headers set (single canonical CSP with nonce)
-[2026-09-12 13:23:45] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] Security headers set (single canonical CSP with nonce)
-[2026-09-12 13:23:50] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (single canonical CSP with nonce)
-[2026-09-12 13:23:50] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request: GET /api/Restaurant (Attempt 1)
-[2026-09-12 13:23:51] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] cURL error 60 (CURLE_SSL_CACERT): SSL certificate problem: unable to get local issuer certificate (url: https://fakerestaurantapi.runasp.net/api/Restaurant)
-[2026-09-12 13:23:51] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] Permanent cURL failure (error 60). Not retrying.
-[2026-09-12 13:23:51] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request failed after 1 attempt(s): API request failed: SSL certificate problem: unable to get local issuer certificate
-[2026-09-12 13:23:51] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] Error fetching restaurants from API: API request failed: SSL certificate problem: unable to get local issuer certificate
-[2026-09-12 13:27:08] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (single canonical CSP with nonce)
-[2026-09-12 13:27:08] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request: GET /api/Restaurant (Attempt 1)
-[2026-09-12 13:27:16] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] cURL error 60 (CURLE_SSL_CACERT): SSL certificate problem: unable to get local issuer certificate (url: https://fakerestaurantapi.runasp.net/api/Restaurant)
-[2026-09-12 13:27:16] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] Permanent cURL failure (error 60). Not retrying.
-[2026-09-12 13:27:16] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request failed after 1 attempt(s): API request failed: SSL certificate problem: unable to get local issuer certificate
-[2026-09-12 13:27:16] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] Error fetching restaurants from API: API request failed: SSL certificate problem: unable to get local issuer certificate
+#0 C:\wamp64\www\campus-eats-web\Solution\config\database.php(1031): PDO->prepare('SELECT\n        ...')
+#1 C:\wamp64\www\campus-eats-web\Solution\config\database.php(1082): DatabaseConnection->executeQuery('SELECT\n        ...', Array)
+#2 C:\wamp64\www\campus-eats-web\Solution\includes\auth.php(644): DatabaseConnection->fetchOne('SELECT\n        ...', Array)
+#3 C:\wamp64\www\campus-eats-web\Solution\modules\auth\login.php(47): authenticateUser('john.doe@exampl...', ' \tAdminPass123!', '6e1a43e20384081...')
+#4 {main}
+[2026-09-12 13:48:54] [AUDIT] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Audit: system - exception (Result: error)
+[2026-09-12 13:49:26] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Secure session started successfully
+[2026-09-12 13:49:38] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Secure session started successfully
+[2026-09-12 13:49:38] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] CSRF token validated successfully
+[2026-09-12 13:49:38] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Database 'campus_eats' ensured to exist.
+[2026-09-12 13:49:38] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Tables do not exist. Installing...
+[2026-09-12 13:49:38] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Database tables installed successfully.
+[2026-09-12 13:49:38] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Could not check account_type column definition.
+[2026-09-12 13:49:38] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'campus_eats.users' doesn't exist | SQL: SELECT `user_id`, `password_hash`, `is_verified`, `is_active`, `account_type`
+                 FROM `users`
+                 WHERE `username` = :username
+                 LIMIT 1
+[2026-09-12 13:49:38] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] fetchOne failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'campus_eats.users' doesn't exist
+[2026-09-12 13:49:38] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Failed to ensure admin account: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'campus_eats.users' doesn't exist
+[2026-09-12 13:49:38] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] user_sessions table does not exist. Creating...
+[2026-09-12 13:49:38] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Query failed: SQLSTATE[HY000]: General error: 1824 Failed to open the referenced table 'users' | SQL: CREATE TABLE IF NOT EXISTS `user_sessions`
+                    (
+                        `session_id`    VARCHAR(128) NOT NULL PRIMARY KEY,
+                        `user_id`       INT NOT NULL,
+                        `ip_address`    VARCHAR(45) NOT NULL,
+                        `user_agent`    TEXT NULL,
+                        `created_at`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        `last_activity` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                        FOREIGN KEY (`user_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE,
+                        INDEX `idx_user_id` (`user_id`),
+                        INDEX `idx_last_activity` (`last_activity`)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                    COMMENT='Stores active user sessions for session management and tracking'
+[2026-09-12 13:49:38] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Failed to create user_sessions table: SQLSTATE[HY000]: General error: 1824 Failed to open the referenced table 'users'
+[2026-09-12 13:49:38] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'campus_eats.users' doesn't exist | SQL: SELECT `user_id`, `password_hash`, `account_type`, `is_verified`, `is_active`
+                     FROM `users`
+                     WHERE `email` = :email OR `username` = :username
+                     LIMIT 1
+[2026-09-12 13:49:38] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] fetchOne failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'campus_eats.users' doesn't exist
+[2026-09-12 13:49:38] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Failed to ensure demo accounts: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'campus_eats.users' doesn't exist
+[2026-09-12 13:49:38] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Created login_attempts table.
+[2026-09-12 13:49:38] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Created password_reset_attempts table.
+[2026-09-12 13:49:38] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Database connection established successfully.
+[2026-09-12 13:49:38] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Query failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'campus_eats.users' doesn't exist | SQL: SELECT
+                    u.user_id,
+                    u.unique_id,
+                    u.full_name,
+                    u.username,
+                    u.email,
+                    u.password_hash,
+                    u.account_type,
+                    u.is_active,
+                    u.is_verified,
+                    v.vendor_id,
+                    v.vendor_name,
+                    v.is_approved
+                FROM users u
+                LEFT JOIN vendors v ON u.user_id = v.vendor_user_id
+                WHERE u.email = :identifier
+                LIMIT 1
+[2026-09-12 13:49:38] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] fetchOne failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'campus_eats.users' doesn't exist
+[2026-09-12 13:49:38] [EXCEPTION] [ERROR] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Uncaught Exception: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'campus_eats.users' doesn't exist in C:\wamp64\www\campus-eats-web\Solution\config\database.php on line 1031
+Stack trace:
+#0 C:\wamp64\www\campus-eats-web\Solution\config\database.php(1031): PDO->prepare('SELECT\n        ...')
+#1 C:\wamp64\www\campus-eats-web\Solution\config\database.php(1082): DatabaseConnection->executeQuery('SELECT\n        ...', Array)
+#2 C:\wamp64\www\campus-eats-web\Solution\includes\auth.php(644): DatabaseConnection->fetchOne('SELECT\n        ...', Array)
+#3 C:\wamp64\www\campus-eats-web\Solution\modules\auth\login.php(47): authenticateUser('jane.smith@exam...', 'VendorPass456$', '6e1a43e20384081...')
+#4 {main}
+[2026-09-12 13:49:38] [AUDIT] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Audit: system - exception (Result: error)

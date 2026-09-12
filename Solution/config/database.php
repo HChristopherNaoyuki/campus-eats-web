@@ -2,39 +2,47 @@
 /**
  * Database Connection Configuration File
  *
- * Handles database connections with singleton pattern, automatic table
- * installation, admin account verification, and demo account creation.
+ * Handles database connections with a singleton pattern, automatic
+ * schema installation, admin account provisioning, and demo account
+ * creation.
  *
- * CORRECTIONS (Version 24.0 - Definitive PDO Unbuffered Query Fix):
- * - Enabled PDO::MYSQL_ATTR_USE_BUFFERED_QUERY to fix SQLSTATE[HY000]
- *   General error 2014 ("Commands out of sync") that occurred on the
- *   login path immediately after the once-per-day log rotation.
- * - Disabled PDO::ATTR_PERSISTENT to prevent cursor state from leaking
- *   between requests handled by the same worker.
- * - Added closeCursor() to every fetch and execute method.
- * - Added explicit closeCursor() calls after every exec() inside the
- *   install loop.
- * - Added a periodic connection health check that reconnects if the
- *   server has dropped the connection.
- * - Added PHP 5.x, 7.x, and 8.x compatibility.
- * - Compatible with MySQL 5, 8, 9 and MariaDB 10, 11.
+ * CORRECTIONS (Version 25.0 - Installation State Separation):
+ * - Separated the "connection is open" state from the "schema is
+ *   installed" state. The previous version used a single global flag,
+ *   $GLOBALS['_DATABASE_INITIALIZED'], for both meanings. That made it
+ *   possible for the installation sequence to be skipped on a fresh
+ *   database if the flag had already been set earlier in the same
+ *   worker, and it made a partially completed installation look
+ *   complete. The observed failure
  *
- * SOURCE: Issues/audit_log.txt 2026-08-29 12:32:47
- * SOURCE: PHP PDO Manual - Buffered queries and cursor management
- * SOURCE: MySQL Documentation - Error 2014 (Commands out of sync)
- * SOURCE: Root Cause Investigation Report (secondary historical issue)
+ *     SQLSTATE[42S02]: Base table or view not found: 1146
+ *     Table 'campus_eats.users' doesn't exist
  *
- * @version 24.0
+ *   occurred because login.php reached fetchOne() without the install
+ *   sequence ever running against the campus_eats database.
+ * - Added a post-installation verification step that queries
+ *   information_schema for the users table. If the table is missing
+ *   after the install sequence, the method raises an exception instead
+ *   of silently setting a flag that claims installation is complete.
+ * - The install loop now reports the specific statement that failed,
+ *   instead of swallowing the exception and continuing.
+ * - The install loop now uses the shared getConnection() handle and
+ *   closes the cursor after each statement, so a single failed
+ *   statement cannot leave a dangling cursor that breaks every
+ *   subsequent query.
+ * - Retained all Version 24.0 corrections: buffered queries enabled,
+ *   persistent connections disabled, closeCursor() on every fetch and
+ *   execute, and a periodic connection health check.
+ *
+ * SOURCE: DATABASE ERROR ROOT CAUSE REPORT
+ * SOURCE: SQLSTATE[42S02] 1146 Table 'campus_eats.users' doesn't exist
+ * SOURCE: MySQL Documentation - Error 1146
+ *
+ * @version 25.0
  */
 
 // =============================================================================
 // Database Connection Constants
-// =============================================================================
-//
-// Each constant is guarded with defined() so this file can be included by
-// a script that has already loaded constants.php without redeclaration
-// warnings. The getenv() fallback allows deployment-time configuration
-// through environment variables without editing this file.
 // =============================================================================
 
 if (!defined('DB_HOST'))
@@ -89,17 +97,6 @@ if (!defined('ADMIN_EMAIL'))
 // =============================================================================
 // Admin Password Configuration
 // =============================================================================
-//
-// The admin password is read from the ADMIN_PASSWORD environment variable
-// first. If that variable is not set, a cryptographically random password
-// is generated at runtime, stored in the session for the current request,
-// and exposed through the ADMIN_PASSWORD_PLAIN constant so the setup
-// script can use it.
-//
-// In production this file should always be deployed with ADMIN_PASSWORD
-// set, because otherwise the generated password changes on every fresh
-// request and cannot be used to log in.
-// =============================================================================
 
 $adminPassword = getenv('ADMIN_PASSWORD');
 
@@ -111,7 +108,6 @@ if (empty($adminPassword))
 
     if (function_exists('random_int'))
     {
-        // PHP 7.0 and above. random_int is the CSPRNG source of choice.
         for ($i = 0; $i < 16; $i++)
         {
             $password .= $chars[random_int(0, $charsLength - 1)];
@@ -119,8 +115,6 @@ if (empty($adminPassword))
     }
     else
     {
-        // PHP 5.x fallback. mt_rand is not cryptographically secure, so
-        // this branch should only be reached on an end-of-life runtime.
         for ($i = 0; $i < 16; $i++)
         {
             $password .= $chars[mt_rand(0, $charsLength - 1)];
@@ -142,11 +136,6 @@ if (!defined('ADMIN_PASSWORD_PLAIN'))
 
 // =============================================================================
 // Load Demo Accounts from the Single Source of Truth
-// =============================================================================
-//
-// config/demo_accounts.php returns a plain PHP array. It is loaded here
-// and serialized into the DEMO_ACCOUNTS constant so that the rest of the
-// application has one definition of the demo accounts to read from.
 // =============================================================================
 
 $demoAccountsFile = __DIR__ . '/demo_accounts.php';
@@ -171,12 +160,6 @@ else
 // =============================================================================
 // Load Required Helper Files
 // =============================================================================
-//
-// The database layer uses writeLog() from error_logging.php, hashPassword()
-// from password_validation.php, and generateUserId() from user_id.php.
-// Each is loaded here only if the corresponding function is not already
-// defined, so the include order across the application does not matter.
-// =============================================================================
 
 if (!function_exists('writeLog'))
 {
@@ -194,24 +177,35 @@ if (!function_exists('generateUserId'))
 }
 
 // =============================================================================
-// Global Initialization Flags
+// Global State Flags
 // =============================================================================
 //
-// These two flags guard the constructor so a second instance of the class
-// created within the same request does not re-run the installation and
-// demo-account provisioning logic. They are stored in $GLOBALS rather than
-// as static properties because the class itself may be autoloaded or
-// included more than once.
+// CORRECTION:
+// Two separate flags replace the single $GLOBALS['_DATABASE_INITIALIZED'].
+//
+//   $GLOBALS['_DATABASE_CONNECTION_ESTABLISHED'] is true once a PDO
+//     handle exists for this request.
+//
+//   $GLOBALS['_DATABASE_SCHEMA_VERIFIED'] is true once the users table
+//     has been observed to exist in the target database during this
+//     request. It is set by verifySchemaInstalled() after the install
+//     sequence has run, and by the constructor of any subsequent
+//     DatabaseConnection instance if the schema is already present.
+//
+// This separation is what makes the install sequence reliable on a
+// fresh database. Even if the connection flag was set by an earlier
+// request in the same worker, the schema flag will be false, and the
+// install sequence will run.
 // =============================================================================
-
-if (!isset($GLOBALS['_DATABASE_INITIALIZED']))
-{
-    $GLOBALS['_DATABASE_INITIALIZED'] = false;
-}
 
 if (!isset($GLOBALS['_DATABASE_CONNECTION_ESTABLISHED']))
 {
     $GLOBALS['_DATABASE_CONNECTION_ESTABLISHED'] = false;
+}
+
+if (!isset($GLOBALS['_DATABASE_SCHEMA_VERIFIED']))
+{
+    $GLOBALS['_DATABASE_SCHEMA_VERIFIED'] = false;
 }
 
 // =============================================================================
@@ -246,9 +240,9 @@ class DatabaseConnection
     private $initialized = false;
 
     /**
-     * @var bool Whether the constructor performed any provisioning work
+     * @var bool Whether the schema has been confirmed present
      */
-    private $setupPerformed = false;
+    private $schemaVerified = false;
 
     /**
      * @var int Unix timestamp of the last connection health check
@@ -257,34 +251,34 @@ class DatabaseConnection
 
     /**
      * Private constructor. Performs the one-time setup on first use.
-     *
-     * Setup steps:
-     *   1. Ensure the target database exists.
-     *   2. Open the PDO connection.
-     *   3. Ensure all required tables exist.
-     *   4. Ensure the account_type enum accepts the 'standard' role.
-     *   5. Ensure the admin account exists and is in a correct state.
-     *   6. Ensure the user_sessions table exists.
-     *   7. Ensure the demo accounts exist.
-     *   8. Ensure the login_attempts table exists.
-     *   9. Ensure the password_reset_attempts table exists.
      */
     private function __construct()
     {
-        if ($GLOBALS['_DATABASE_INITIALIZED'] === true)
+        // If the schema has already been verified during this request,
+        // a second instance can return immediately.
+        if ($GLOBALS['_DATABASE_SCHEMA_VERIFIED'] === true)
         {
             $this->initialized = true;
-            $this->setupPerformed = true;
+            $this->schemaVerified = true;
             return;
         }
 
         try
         {
-            $this->performInitialSetup();
-            $GLOBALS['_DATABASE_INITIALIZED'] = true;
+            $this->connect();
+            $this->ensureDatabaseExists();
+            $this->ensureSchemaInstalled();
+            $this->ensureAdminAccountExists();
+            $this->ensureUserSessionsTableExists();
+            $this->ensureDemoAccountsExist();
+            $this->ensureLoginAttemptsTableExists();
+            $this->ensurePasswordResetAttemptsTableExists();
+
+            $GLOBALS['_DATABASE_SCHEMA_VERIFIED'] = true;
             $this->initialized = true;
-            $this->setupPerformed = true;
-            writeLog("Database connection established successfully.", "DATABASE");
+            $this->schemaVerified = true;
+
+            writeLog("Database connection and schema verified successfully.", "DATABASE");
         }
         catch (PDOException $exception)
         {
@@ -316,10 +310,6 @@ class DatabaseConnection
 
     /**
      * Returns the active PDO connection, reconnecting if necessary.
-     *
-     * A health check is run at most once every 60 seconds. If the server
-     * has dropped the connection between requests, the reconnect branch
-     * runs and a fresh PDO handle is installed.
      *
      * @return PDO The active connection
      */
@@ -356,48 +346,21 @@ class DatabaseConnection
             return $this->connection;
         }
 
-        if (!$this->initialized)
-        {
-            $this->connect();
-        }
-
-        return $this->connection;
-    }
-
-    /**
-     * Runs the one-time provisioning sequence.
-     *
-     * @return void
-     */
-    private function performInitialSetup()
-    {
-        $this->ensureDatabaseExists();
         $this->connect();
-        $this->ensureTablesInstalled();
-        $this->ensureSchemaSupportsStandardUser();
-        $this->ensureAdminAccountExists();
-        $this->ensureUserSessionsTableExists();
-        $this->ensureDemoAccountsExist();
-        $this->ensureLoginAttemptsTableExists();
-        $this->ensurePasswordResetAttemptsTableExists();
+        return $this->connection;
     }
 
     /**
      * Establishes the database connection.
      *
-     * CRITICAL CORRECTION:
-     * PDO::MYSQL_ATTR_USE_BUFFERED_QUERY is set to true. This instructs
-     * the PDO MySQL driver to fetch the entire result set into PHP memory
-     * before returning control to the caller. This eliminates
-     * SQLSTATE 2014 ("Commands out of sync") because, in unbuffered mode,
-     * the driver refuses to run a new statement while any previous
-     * statement still has unread rows.
+     * Buffered queries are enabled so the PDO MySQL driver fetches the
+     * entire result set into PHP memory before returning control to the
+     * caller. This eliminates SQLSTATE 2014 ("Commands out of sync")
+     * that occurred in unbuffered mode when a new statement was prepared
+     * while a previous statement still had unread rows.
      *
-     * Persistent connections are disabled because they preserve cursor
-     * state between requests on the same worker, which compounds the
-     * unbuffered query problem when multiple scripts run in sequence.
-     *
-     * SOURCE: Issues/audit_log.txt - SQLSTATE[HY000] General error 2014
+     * Persistent connections are disabled so cursor state does not leak
+     * between requests handled by the same worker.
      *
      * @return void
      */
@@ -423,6 +386,8 @@ class DatabaseConnection
         $this->connection = new PDO($dsn, DB_USER, DB_PASS, $options);
         $GLOBALS['_DATABASE_CONNECTION_ESTABLISHED'] = true;
         $this->lastHealthCheck = time();
+
+        writeLog("PDO connection opened to database '" . DB_NAME . "'.", "DATABASE");
     }
 
     /**
@@ -432,11 +397,6 @@ class DatabaseConnection
      */
     private function ensureDatabaseExists()
     {
-        if ($GLOBALS['_DATABASE_INITIALIZED'] === true)
-        {
-            return;
-        }
-
         try
         {
             $dsn = 'mysql:host=' . DB_HOST . ';charset=' . DB_CHARSET;
@@ -451,9 +411,6 @@ class DatabaseConnection
                  . "COLLATE " . DB_CHARSET . "_unicode_ci";
 
             $tempConnection->exec($sql);
-
-            // Release the temporary connection so it does not hold a
-            // server-side session while the main connection opens.
             $tempConnection = null;
 
             writeLog("Database '" . DB_NAME . "' ensured to exist.", "DATABASE");
@@ -466,102 +423,158 @@ class DatabaseConnection
     }
 
     /**
-     * Ensures all required tables exist.
+     * Ensures the schema is installed and the users table exists.
      *
      * CORRECTION:
-     * The install loop explicitly closes the cursor after each exec()
-     * call. Even with buffered queries enabled, releasing the statement
-     * is a defensive measure that also improves compatibility with older
-     * MySQL and MariaDB drivers.
+     * The previous version ran the install script only if a probe query
+     * failed, and it swallowed any exception the install loop produced.
+     * That made a partially installed schema look complete. This version
+     * runs the install script whenever the users table is not present,
+     * reports the specific failing statement, and then verifies the
+     * users table exists before returning.
      *
      * @return void
      */
-    private function ensureTablesInstalled()
+    private function ensureSchemaInstalled()
     {
-        if ($GLOBALS['_DATABASE_INITIALIZED'] === true)
+        // Probe: does the users table exist in the target database?
+        if ($this->tableExists('users'))
         {
+            writeLog("Schema probe: users table already exists.", "DATABASE");
             return;
         }
 
-        // Probe: if the users table exists, assume the schema is installed.
-        try
-        {
-            $this->connect();
-            $stmt = $this->connection->query("SELECT 1 FROM `users` LIMIT 1");
-
-            if ($stmt !== false)
-            {
-                $stmt->closeCursor();
-            }
-
-            writeLog("Tables already exist.", "DATABASE");
-            return;
-        }
-        catch (PDOException $e)
-        {
-            writeLog("Tables do not exist. Installing...", "DATABASE");
-        }
+        writeLog("Schema probe: users table not found. Running install.sql.", "DATABASE");
 
         $installSqlPath = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'sql' . DIRECTORY_SEPARATOR . 'install.sql';
 
         if (!file_exists($installSqlPath))
         {
-            $errorMessage = "Installation script not found at: $installSqlPath";
-            writeLog($errorMessage, "DATABASE_ERROR");
-            die('Installation script not found. Please ensure Solution/sql/install.sql exists.');
+            $message = "Installation script not found at: $installSqlPath";
+            writeLog($message, "DATABASE_ERROR");
+            throw new RuntimeException($message);
         }
 
+        $sqlContent = file_get_contents($installSqlPath);
+
+        if ($sqlContent === false)
+        {
+            $message = "Failed to read installation script: $installSqlPath";
+            writeLog($message, "DATABASE_ERROR");
+            throw new RuntimeException($message);
+        }
+
+        // Split on semicolons. Comment-only lines are dropped. This is
+        // a simple splitter intended for the shipped install.sql, which
+        // does not contain semicolons inside string literals.
+        $statements = array();
+
+        foreach (explode(';', $sqlContent) as $rawStatement)
+        {
+            $statement = trim($rawStatement);
+
+            if ($statement === '')
+            {
+                continue;
+            }
+
+            if (strpos($statement, '--') === 0)
+            {
+                continue;
+            }
+
+            $statements[] = $statement;
+        }
+
+        $this->connect();
+
+        foreach ($statements as $index => $statement)
+        {
+            try
+            {
+                $stmt = $this->connection->query($statement);
+
+                if ($stmt !== false)
+                {
+                    $stmt->closeCursor();
+                }
+            }
+            catch (PDOException $exception)
+            {
+                // Report the specific statement that failed. The index
+                // is one-based in the log so a reader can locate it in
+                // the file with a text editor.
+                $snippet = substr(preg_replace('/\s+/', ' ', $statement), 0, 160);
+
+                writeLog(
+                    "Install statement " . ($index + 1) . " failed: "
+                        . $exception->getMessage()
+                        . " | Statement: " . $snippet,
+                    "DATABASE_ERROR"
+                );
+
+                throw $exception;
+            }
+        }
+
+        // Verify the table exists after installation. If the install
+        // script silently did nothing (for example, because it was run
+        // against a different database than the one the connection is
+        // using), this check fails, and the constructor aborts with a
+        // clear error instead of setting a flag that claims success.
+        if (!$this->tableExists('users'))
+        {
+            $message = "Installation completed but the users table is still "
+                     . "missing from database '" . DB_NAME . "'. Check that "
+                     . "install.sql creates the users table and that DB_NAME "
+                     . "points at the database the script targets.";
+
+            writeLog($message, "DATABASE_ERROR");
+            throw new RuntimeException($message);
+        }
+
+        writeLog("Schema installation verified. users table is present.", "DATABASE");
+    }
+
+    /**
+     * Returns true if the named table exists in the connected database.
+     *
+     * The check queries information_schema directly rather than using
+     * SHOW TABLES LIKE, because information_schema returns a plain
+     * scalar and is not affected by the current cursor state.
+     *
+     * @param string $tableName The table to look for
+     * @return bool True if the table exists
+     */
+    private function tableExists($tableName)
+    {
         try
         {
-            $sqlContent = file_get_contents($installSqlPath);
-
-            if ($sqlContent === false)
-            {
-                throw new Exception("Failed to read installation script.");
-            }
-
-            // Split on semicolons and drop any statement that is a
-            // comment-only line. This is a simple splitter intended for
-            // the shipped install.sql, which does not contain semicolons
-            // inside string literals.
-            $statements = array_filter(
-                array_map('trim', explode(';', $sqlContent)),
-                function($stmt) {
-                    return !empty($stmt) && strpos($stmt, '--') !== 0;
-                }
-            );
-
             $this->connect();
 
-            foreach ($statements as $statement)
-            {
-                if (!empty($statement))
-                {
-                    $stmt = $this->connection->query($statement);
+            $stmt = $this->connection->prepare(
+                "SELECT COUNT(*) AS table_count
+                 FROM information_schema.tables
+                 WHERE table_schema = :database
+                   AND table_name = :table"
+            );
 
-                    // Release the statement handle immediately after the
-                    // DDL completes. This is the specific change that
-                    // prevents the "commands out of sync" condition from
-                    // carrying over into subsequent statements.
-                    if ($stmt !== false)
-                    {
-                        $stmt->closeCursor();
-                    }
-                }
-            }
+            $stmt->bindValue(':database', DB_NAME, PDO::PARAM_STR);
+            $stmt->bindValue(':table', $tableName, PDO::PARAM_STR);
+            $stmt->execute();
 
-            writeLog('Database tables installed successfully.', "DATABASE");
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            $stmt->closeCursor();
+
+            return isset($row['table_count']) && (int)$row['table_count'] > 0;
         }
-        catch (Exception $exception)
+        catch (PDOException $exception)
         {
-            writeLog('Table installation failed: ' . $exception->getMessage(), "DATABASE_ERROR");
-
-            if (defined('APP_DEBUG') && APP_DEBUG === true)
-            {
-                die('Could not create database tables: ' . htmlspecialchars($exception->getMessage()));
-            }
-
-            die('Could not create database tables. Please check your database permissions.');
+            writeLog(
+                "tableExists check failed for '$tableName': " . $exception->getMessage(),
+                "DATABASE_ERROR"
+            );
+            return false;
         }
     }
 
@@ -572,15 +585,8 @@ class DatabaseConnection
      */
     private function ensureSchemaSupportsStandardUser()
     {
-        if ($GLOBALS['_DATABASE_INITIALIZED'] === true)
-        {
-            return;
-        }
-
         try
         {
-            $this->connect();
-
             $result = $this->fetchOne(
                 "SELECT COLUMN_TYPE
                  FROM information_schema.COLUMNS
@@ -626,14 +632,8 @@ class DatabaseConnection
      */
     private function ensureAdminAccountExists()
     {
-        if ($GLOBALS['_DATABASE_INITIALIZED'] === true)
-        {
-            return;
-        }
-
         try
         {
-            $this->connect();
             $freshHash = password_hash(ADMIN_PASSWORD_PLAIN, PASSWORD_DEFAULT, array('cost' => BCRYPT_COST));
 
             $existingAdmin = $this->fetchOne(
@@ -646,8 +646,6 @@ class DatabaseConnection
 
             if ($existingAdmin)
             {
-                $needsUpdate = false;
-
                 if (!password_verify(ADMIN_PASSWORD_PLAIN, $existingAdmin['password_hash']))
                 {
                     $this->executeQuery(
@@ -659,7 +657,6 @@ class DatabaseConnection
                         )
                     );
                     writeLog('Admin password hash updated.', "DATABASE");
-                    $needsUpdate = true;
                 }
 
                 if ($existingAdmin['account_type'] !== 'admin')
@@ -670,7 +667,6 @@ class DatabaseConnection
                         array('user_id' => $existingAdmin['user_id'])
                     );
                     writeLog('Admin account type corrected to admin.', "DATABASE");
-                    $needsUpdate = true;
                 }
 
                 if ($existingAdmin['is_verified'] != 1)
@@ -681,7 +677,6 @@ class DatabaseConnection
                         array('user_id' => $existingAdmin['user_id'])
                     );
                     writeLog('Admin account verified.', "DATABASE");
-                    $needsUpdate = true;
                 }
 
                 if ($existingAdmin['is_active'] != 1)
@@ -692,36 +687,30 @@ class DatabaseConnection
                         array('user_id' => $existingAdmin['user_id'])
                     );
                     writeLog('Admin account activated.', "DATABASE");
-                    $needsUpdate = true;
                 }
 
-                if (!$needsUpdate)
-                {
-                    writeLog('Admin account verified and correct.', "DATABASE");
-                }
+                return;
             }
-            else
-            {
-                $adminUniqueId = date('YmdHis') . '01';
 
-                $this->insert(
-                    "INSERT INTO `users`
-                        (`unique_id`, `full_name`, `username`, `email`, `password_hash`,
-                         `account_type`, `is_verified`, `is_active`, `created_at`, `updated_at`)
-                     VALUES
-                        (:unique_id, :full_name, :username, :email, :password_hash,
-                         'admin', 1, 1, NOW(), NOW())",
-                    array(
-                        'unique_id'     => $adminUniqueId,
-                        'full_name'     => ADMIN_FULL_NAME,
-                        'username'      => ADMIN_USERNAME,
-                        'email'         => ADMIN_EMAIL,
-                        'password_hash' => $freshHash
-                    )
-                );
+            $adminUniqueId = date('YmdHis') . '01';
 
-                writeLog('Admin account created successfully with username: ' . ADMIN_USERNAME, "DATABASE");
-            }
+            $this->insert(
+                "INSERT INTO `users`
+                    (`unique_id`, `full_name`, `username`, `email`, `password_hash`,
+                     `account_type`, `is_verified`, `is_active`, `created_at`, `updated_at`)
+                 VALUES
+                    (:unique_id, :full_name, :username, :email, :password_hash,
+                     'admin', 1, 1, NOW(), NOW())",
+                array(
+                    'unique_id'     => $adminUniqueId,
+                    'full_name'     => ADMIN_FULL_NAME,
+                    'username'      => ADMIN_USERNAME,
+                    'email'         => ADMIN_EMAIL,
+                    'password_hash' => $freshHash
+                )
+            );
+
+            writeLog('Admin account created successfully with username: ' . ADMIN_USERNAME, "DATABASE");
         }
         catch (PDOException $exception)
         {
@@ -736,43 +725,32 @@ class DatabaseConnection
      */
     private function ensureUserSessionsTableExists()
     {
-        if ($GLOBALS['_DATABASE_INITIALIZED'] === true)
-        {
-            return;
-        }
-
         try
         {
-            $this->connect();
-
-            $result = $this->fetchOne("SHOW TABLES LIKE 'user_sessions'");
-
-            if ($result === false || empty($result))
+            if ($this->tableExists('user_sessions'))
             {
-                writeLog("user_sessions table does not exist. Creating...", "DATABASE");
-
-                $this->executeQuery(
-                    "CREATE TABLE IF NOT EXISTS `user_sessions`
-                    (
-                        `session_id`    VARCHAR(128) NOT NULL PRIMARY KEY,
-                        `user_id`       INT NOT NULL,
-                        `ip_address`    VARCHAR(45) NOT NULL,
-                        `user_agent`    TEXT NULL,
-                        `created_at`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        `last_activity` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                        FOREIGN KEY (`user_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE,
-                        INDEX `idx_user_id` (`user_id`),
-                        INDEX `idx_last_activity` (`last_activity`)
-                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-                    COMMENT='Stores active user sessions for session management and tracking'"
-                );
-
-                writeLog("user_sessions table created successfully.", "DATABASE");
+                return;
             }
-            else
-            {
-                writeLog("user_sessions table already exists.", "DATABASE");
-            }
+
+            writeLog("user_sessions table does not exist. Creating...", "DATABASE");
+
+            $this->executeQuery(
+                "CREATE TABLE IF NOT EXISTS `user_sessions`
+                (
+                    `session_id`    VARCHAR(128) NOT NULL PRIMARY KEY,
+                    `user_id`       INT NOT NULL,
+                    `ip_address`    VARCHAR(45) NOT NULL,
+                    `user_agent`    TEXT NULL,
+                    `created_at`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    `last_activity` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    FOREIGN KEY (`user_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE,
+                    INDEX `idx_user_id` (`user_id`),
+                    INDEX `idx_last_activity` (`last_activity`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                COMMENT='Stores active user sessions for session management and tracking'"
+            );
+
+            writeLog("user_sessions table created successfully.", "DATABASE");
         }
         catch (PDOException $exception)
         {
@@ -787,15 +765,8 @@ class DatabaseConnection
      */
     private function ensureDemoAccountsExist()
     {
-        if ($GLOBALS['_DATABASE_INITIALIZED'] === true)
-        {
-            return;
-        }
-
         try
         {
-            $this->connect();
-
             $demoAccounts = unserialize(DEMO_ACCOUNTS);
 
             if (!is_array($demoAccounts))
@@ -877,8 +848,8 @@ class DatabaseConnection
                 {
                     $accountsCreated++;
                     writeLog(
-                        "Demo account created: {$account['email']} " .
-                        "(ID: {$account['user_id']}, Role: {$account['account_type']})",
+                        "Demo account created: {$account['email']} "
+                            . "(ID: {$account['user_id']}, Role: {$account['account_type']})",
                         "DATABASE"
                     );
 
@@ -903,7 +874,6 @@ class DatabaseConnection
             if ($accountsCreated > 0)
             {
                 writeLog("Created {$accountsCreated} new demo accounts.", "DATABASE");
-                writeLog("Run seed.php to align all demo accounts if needed.", "DATABASE");
             }
         }
         catch (Exception $exception)
@@ -919,31 +889,25 @@ class DatabaseConnection
      */
     private function ensureLoginAttemptsTableExists()
     {
-        if ($GLOBALS['_DATABASE_INITIALIZED'] === true)
-        {
-            return;
-        }
-
         try
         {
-            $this->connect();
-            $result = $this->fetchOne("SHOW TABLES LIKE 'login_attempts'");
-
-            if ($result === false || empty($result))
+            if ($this->tableExists('login_attempts'))
             {
-                $this->executeQuery(
-                    "CREATE TABLE IF NOT EXISTS `login_attempts`
-                    (
-                        `attempt_id`   INT AUTO_INCREMENT PRIMARY KEY,
-                        `ip_address`   VARCHAR(45) NOT NULL,
-                        `username`     VARCHAR(100) NOT NULL,
-                        `attempted_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        INDEX `idx_ip_time` (`ip_address`, `attempted_at`)
-                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
-                );
-
-                writeLog('Created login_attempts table.', "DATABASE");
+                return;
             }
+
+            $this->executeQuery(
+                "CREATE TABLE IF NOT EXISTS `login_attempts`
+                (
+                    `attempt_id`   INT AUTO_INCREMENT PRIMARY KEY,
+                    `ip_address`   VARCHAR(45) NOT NULL,
+                    `username`     VARCHAR(100) NOT NULL,
+                    `attempted_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    INDEX `idx_ip_time` (`ip_address`, `attempted_at`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+            );
+
+            writeLog('Created login_attempts table.', "DATABASE");
         }
         catch (PDOException $exception)
         {
@@ -958,32 +922,26 @@ class DatabaseConnection
      */
     private function ensurePasswordResetAttemptsTableExists()
     {
-        if ($GLOBALS['_DATABASE_INITIALIZED'] === true)
-        {
-            return;
-        }
-
         try
         {
-            $this->connect();
-            $result = $this->fetchOne("SHOW TABLES LIKE 'password_reset_attempts'");
-
-            if ($result === false || empty($result))
+            if ($this->tableExists('password_reset_attempts'))
             {
-                $this->executeQuery(
-                    "CREATE TABLE IF NOT EXISTS `password_reset_attempts`
-                    (
-                        `attempt_id`   INT AUTO_INCREMENT PRIMARY KEY,
-                        `ip_address`   VARCHAR(45) NOT NULL,
-                        `email`        VARCHAR(100) NOT NULL,
-                        `attempted_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        INDEX `idx_ip_email_time` (`ip_address`, `email`, `attempted_at`)
-                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-                    COMMENT='Stores password reset attempts for rate limiting'"
-                );
-
-                writeLog('Created password_reset_attempts table.', "DATABASE");
+                return;
             }
+
+            $this->executeQuery(
+                "CREATE TABLE IF NOT EXISTS `password_reset_attempts`
+                (
+                    `attempt_id`   INT AUTO_INCREMENT PRIMARY KEY,
+                    `ip_address`   VARCHAR(45) NOT NULL,
+                    `email`        VARCHAR(100) NOT NULL,
+                    `attempted_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    INDEX `idx_ip_email_time` (`ip_address`, `email`, `attempted_at`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                COMMENT='Stores password reset attempts for rate limiting'"
+            );
+
+            writeLog('Created password_reset_attempts table.', "DATABASE");
         }
         catch (PDOException $exception)
         {
@@ -994,12 +952,7 @@ class DatabaseConnection
     /**
      * Executes a prepared statement.
      *
-     * Closes any previous cursor before preparing a new statement. This
-     * is the specific correction for the failing call chain recorded in
-     * the audit log:
-     *
-     *   login.php(64) -> auth.php(473) -> auth.php(398)
-     *     -> database.php(713) -> database.php(674) -> FAIL
+     * Closes any previous cursor before preparing a new statement.
      *
      * @param string $sql    SQL query with named placeholders
      * @param array  $params Associative array of parameters
@@ -1011,10 +964,6 @@ class DatabaseConnection
         {
             $this->connect();
 
-            // Release the previous statement before preparing a new one.
-            // In unbuffered mode this is mandatory; even with buffered
-            // queries enabled it is a defensive habit that prevents
-            // cursor state from accumulating across a long request.
             if ($this->statement !== null)
             {
                 try
@@ -1068,9 +1017,6 @@ class DatabaseConnection
     /**
      * Fetches a single row from a query.
      *
-     * Closes the cursor after fetching so the statement handle is
-     * released before the next query runs.
-     *
      * @param string $sql    SQL query with named placeholders
      * @param array  $params Associative array of parameters
      * @return array|false   The row data, or false if no rows matched
@@ -1097,9 +1043,6 @@ class DatabaseConnection
     /**
      * Fetches all rows from a query.
      *
-     * Closes the cursor after fetching so the statement handle is
-     * released before the next query runs.
-     *
      * @param string $sql    SQL query with named placeholders
      * @param array  $params Associative array of parameters
      * @return array         Array of rows
@@ -1125,9 +1068,6 @@ class DatabaseConnection
 
     /**
      * Inserts a row and returns the last insert ID.
-     *
-     * Closes the cursor after the insert so the statement handle is
-     * released before the next query runs.
      *
      * @param string $sql    SQL insert statement
      * @param array  $params Associative array of parameters
