@@ -1,18 +1,27 @@
--- Campus Eats Database Installation Script
--- Version 19.0
+-- Campus Eats Database Schema
+-- Version 20.0
 --
--- Creates the complete schema required by the application.
+-- Creates the ten tables used by the application. The script does not
+-- insert any row. Demonstration data is inserted separately by
+-- Solution/sql/seed.php, so the schema and the demonstration data
+-- remain independent and either can be applied without the other.
 --
--- The application is MySQL-authoritative for user accounts, authentication,
--- and registration. Firebase is used only for reading feedback.
+-- The file is written so that the schema installer in
+-- Solution/config/database.php can split it into statements without
+-- errors. Every comment line begins with two hyphens followed by a
+-- space. No semicolon, backtick, single quote, or double quote appears
+-- inside a comment. The file must be saved as UTF-8 without a byte
+-- order mark.
 --
--- No user, administrator, demo, or sample account is created by this script.
--- Accounts are created through the registration page.
+-- The USE statement selects the target database before any CREATE
+-- TABLE runs, so the script is correct whether it is executed by the
+-- installer or imported manually in phpMyAdmin.
 --
--- Every comment line in this file begins with two hyphens. The file must be
--- saved as UTF-8 without a byte order mark. If the file is edited by a tool
--- that strips or collapses leading hyphens, the MySQL installation loop will
--- reject the first statement with SQLSTATE 1064.
+-- SOURCE: campus-eats-process-document.pdf Section 9 - Database Design
+-- SOURCE: NOTES - Populate the database using real or simulated data,
+--         with at least ten records per table.
+--
+-- @version 20.0
 
 USE campus_eats;
 
@@ -92,7 +101,7 @@ CREATE TABLE IF NOT EXISTS menu_items
         ON DELETE CASCADE,
     CONSTRAINT chk_menu_items_price CHECK (price >= 0),
     CONSTRAINT chk_menu_items_quantity CHECK (quantity_available >= 0),
-    INDEX idx_vendor_id (vendor_id),
+    INDEX idx_menu_vendor_id (vendor_id),
     INDEX idx_is_available (is_available),
     INDEX idx_category (category),
     INDEX idx_price (price),
@@ -113,7 +122,9 @@ CREATE TABLE IF NOT EXISTS orders
     student_discount    DECIMAL(10,2) DEFAULT 0.00,
     tax                 DECIMAL(10,2) DEFAULT 0.00,
     rounding_adjustment DECIMAL(10,2) DEFAULT 0.00,
-    order_status        ENUM('pending', 'accepted', 'preparing', 'ready', 'completed', 'cancelled') DEFAULT 'pending',
+    order_status        ENUM('pending', 'accepted', 'preparing',
+                             'ready', 'completed', 'cancelled')
+                        DEFAULT 'pending',
     pickup_time         VARCHAR(50) NULL,
     special_requests    TEXT NULL,
     order_placed_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -165,7 +176,8 @@ CREATE TABLE IF NOT EXISTS payments
     payment_id            INT AUTO_INCREMENT PRIMARY KEY,
     order_id              INT NOT NULL UNIQUE,
     payment_method        VARCHAR(50) NOT NULL,
-    payment_status        ENUM('pending', 'completed', 'failed', 'refunded') DEFAULT 'pending',
+    payment_status        ENUM('pending', 'completed', 'failed', 'refunded')
+                          DEFAULT 'pending',
     transaction_reference VARCHAR(100) NOT NULL UNIQUE,
     amount                DECIMAL(10,2) NOT NULL,
     payment_date          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

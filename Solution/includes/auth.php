@@ -1,32 +1,34 @@
 <?php
 /**
- * Campus Eats - Authentication and Authorization Module
+ * Campus Eats - Authentication and Authorisation Module
  *
  * Handles user authentication, role-based access control, session
- * management, security header configuration, and rate limiting.
+ * management, security header configuration, and rate limiting. The
+ * module is MySQL-authoritative. It does not call Firebase. Google SSO
+ * is handled by Solution/includes/oauth_google.php, which sets the
+ * application session through the shared helper defined here.
  *
- * CORRECTIONS (Version 23.0):
- * - Retains the 16-character User ID login branch added in Version 22.0.
- *   authenticateUser() classifies the identifier as an email, a 16-character
- *   User ID, or a username, and queries the matching column. Display hyphens
- *   are stripped before the User ID lookup, so both the raw form and the
- *   display form match the stored value.
- * - Retains the canonical escapeOutput() helper. It is the single escaping
- *   function for the application.
- * - Retains the CSP_POLICY and CSP_NONCE constants for header and inline
- *   block use.
- * - Retains the HttpOnly session cookie and the Secure flag when the request
- *   is over HTTPS.
- * - Retains CSRF tokens built from random_bytes and compared with hash_equals.
- * - No Firebase calls are made from this file. The application's
- *   authentication path is MySQL. Firebase is used for feedback only, and
- *   the feedback code lives in assets/js/feedback-firebase.js.
+ * CORRECTIONS (Version 24.0):
+ * - Added setSessionFromUser(), a single helper that every authentication
+ *   path uses to establish the application session. The password login
+ *   path, the Google SSO path, and any future provider now produce
+ *   identical session state.
+ * - Added getAuthProvider(), which returns the identifier of the
+ *   provider that authenticated the current session. The value is
+ *   "password" or "google".
+ * - Retains the 16-character User ID login branch from Version 22.0.
+ * - Retains the canonical escapeOutput() helper, the CSP constants, the
+ *   HttpOnly session cookie, the Secure flag when HTTPS is present, the
+ *   CSRF tokens built from random_bytes and compared with hash_equals,
+ *   and the failed-attempt rate limiter.
+ * - Retains the removal of every demo-account code path. No account is
+ *   created by this file.
  *
- * SOURCE: campus-eats-process-document.pdf Section 11.1
- * SOURCE: Solution/includes/user_id.php validateUserIdFormat()
- * SOURCE: Review item 2 - Login cannot actually use the 16-character User ID
+ * SOURCE: NOTES - Make use of SSO. Users should also be able to use
+ *         Google SSO. Include multi-language support for at least two
+ *         South African languages: English and Afrikaans.
  *
- * @version 23.0
+ * @version 24.0
  */
 
 if (!defined('BASE_PATH'))
@@ -257,11 +259,6 @@ if (!function_exists('setSecurityHeaders'))
     /**
      * Sets security headers including the canonical CSP.
      *
-     * The CSP is loaded from the CSP_POLICY constant so there is only
-     * one definition of the policy for the whole application. The nonce
-     * CSP_NONCE is used by any inline <style> or <script> block that is
-     * rendered by the application.
-     *
      * @return bool True on success
      */
     function setSecurityHeaders()
@@ -332,8 +329,6 @@ if (!function_exists('validateCsrfToken'))
 {
     /**
      * Validates a submitted CSRF token against the session token.
-     *
-     * Uses hash_equals for a constant-time comparison.
      *
      * @param string $token The token to validate
      * @param bool $regenerateOnSuccess When true, issues a fresh token on success
@@ -456,8 +451,8 @@ if (!function_exists('getFailedLoginAttemptCount'))
                AND attempted_at > DATE_SUB(NOW(), INTERVAL :window SECOND)",
             array(
                 'ip_address' => $ipAddress,
-                'username' => $username,
-                'window' => LOGIN_ATTEMPT_WINDOW
+                'username'   => $username,
+                'window'     => LOGIN_ATTEMPT_WINDOW
             )
         );
 
@@ -483,7 +478,7 @@ if (!function_exists('recordFailedLoginAttempt'))
              VALUES (:ip_address, :username, NOW())",
             array(
                 'ip_address' => $ipAddress,
-                'username' => $username
+                'username'   => $username
             )
         );
 
@@ -495,9 +490,6 @@ if (!function_exists('clearFailedLoginAttempts'))
 {
     /**
      * Clears failed login attempts for the given IP address and identifier.
-     *
-     * Called after a successful authentication so the user starts with a
-     * clean rate-limit budget.
      *
      * @param string $ipAddress The client IP address
      * @param string $username The identifier used in the login attempt
@@ -512,11 +504,76 @@ if (!function_exists('clearFailedLoginAttempts'))
              WHERE ip_address = :ip_address AND username = :username",
             array(
                 'ip_address' => $ipAddress,
-                'username' => $username
+                'username'   => $username
             )
         );
 
         writeLog("Cleared failed login attempts for username: $username from IP: $ipAddress", "AUTH");
+    }
+}
+
+// =============================================================================
+// Session Establishment
+// =============================================================================
+//
+// CORRECTION: A single helper is now the only place where the application
+// session is populated from a user row. Both the password login path and
+// the Google SSO callback call setSessionFromUser(). This keeps the
+// session shape identical across providers, and it means a future
+// provider only needs to look up the user row and call this helper.
+// =============================================================================
+
+if (!function_exists('setSessionFromUser'))
+{
+    /**
+     * Establishes the application session from a user record.
+     *
+     * @param array  $user     The user record from the MySQL users table
+     * @param string $provider The identifier of the authenticating provider,
+     *                         for example "password" or "google"
+     * @return void
+     */
+    function setSessionFromUser($user, $provider = 'password')
+    {
+        if (session_status() !== PHP_SESSION_ACTIVE)
+        {
+            startSecureSession();
+        }
+
+        regenerateSession();
+
+        $role = isset($user['account_type']) ? $user['account_type'] : 'student';
+        $allowedRoles = unserialize(ALLOWED_ROLES);
+
+        if (!in_array($role, $allowedRoles))
+        {
+            writeLog(
+                "Invalid role found during session establishment: $role. "
+                    . "Defaulting to student.",
+                "AUTH"
+            );
+            $role = 'student';
+        }
+
+        $_SESSION['user_id'] = (int)$user['user_id'];
+        $_SESSION['unique_id'] = $user['unique_id'];
+        $_SESSION['full_name'] = $user['full_name'];
+        $_SESSION['username'] = $user['username'];
+        $_SESSION['email'] = $user['email'];
+        $_SESSION['role'] = $role;
+        $_SESSION['account_type'] = $role;
+        $_SESSION['logged_in'] = true;
+        $_SESSION['session_start_time'] = time();
+        $_SESSION['auth_provider'] = $provider;
+
+        if ($role === 'vendor')
+        {
+            $_SESSION['vendor_id'] = (int)(isset($user['vendor_id']) ? $user['vendor_id'] : 0);
+            $_SESSION['vendor_name'] = isset($user['vendor_name'])
+                ? $user['vendor_name']
+                : $user['full_name'];
+            $_SESSION['vendor_is_open'] = 1;
+        }
     }
 }
 
@@ -530,17 +587,10 @@ if (!function_exists('authenticateUser'))
      * Authenticates a user by email, username, or 16-character User ID.
      *
      * Identifier classification order:
-     *   1. Email, if it passes FILTER_VALIDATE_EMAIL. An email is never
-     *      a valid 16-character ID, so this check is unambiguous.
+     *   1. Email, if it passes FILTER_VALIDATE_EMAIL.
      *   2. 16-character User ID, if the hyphen-stripped value passes
-     *      validateUserIdFormat(). This accepts both the raw form
-     *      "XXXXXXXXXXXXXXXX" and the display form "XXXX-XXXX-XXXX-XXXX".
-     *   3. Username, as the fallback for any other string.
-     *
-     * The failed-attempt rate limit is keyed on the raw identifier the
-     * user typed, so a user who mistypes their User ID twice and then
-     * their email twice is not penalised as though they had made four
-     * attempts against one credential.
+     *      validateUserIdFormat().
+     *   3. Username, as the fallback.
      *
      * @param string $identifier Email, username, or 16-character User ID
      * @param string $password The plain-text password to verify
@@ -572,14 +622,6 @@ if (!function_exists('authenticateUser'))
                     . (LOGIN_ATTEMPT_WINDOW / 60) . ' minutes before trying again.'
             );
         }
-
-        // =====================================================================
-        // Classify the identifier into one of three columns.
-        // =====================================================================
-        // 1. Email
-        // 2. 16-character User ID (hyphens stripped before the format check)
-        // 3. Username (fallback)
-        // =====================================================================
 
         $normalizedIdentifier = trim($identifier);
         $field = 'username';
@@ -669,41 +711,9 @@ if (!function_exists('authenticateUser'))
 
         clearFailedLoginAttempts($ipAddress, $identifier);
 
-        if (session_status() !== PHP_SESSION_ACTIVE)
-        {
-            startSecureSession();
-        }
-        regenerateSession();
+        setSessionFromUser($user, 'password');
 
-        $role = $user['account_type'];
-        $allowedRoles = unserialize(ALLOWED_ROLES);
-
-        if (!in_array($role, $allowedRoles))
-        {
-            writeLog("Invalid role found for user: {$user['username']} - Role: $role", "AUTH");
-            $role = 'student';
-        }
-
-        $_SESSION['user_id'] = (int)$user['user_id'];
-        $_SESSION['unique_id'] = $user['unique_id'];
-        $_SESSION['full_name'] = $user['full_name'];
-        $_SESSION['username'] = $user['username'];
-        $_SESSION['email'] = $user['email'];
-        $_SESSION['role'] = $role;
-        $_SESSION['account_type'] = $role;
-        $_SESSION['logged_in'] = true;
-        $_SESSION['session_start_time'] = time();
-
-        if ($user['account_type'] === 'vendor')
-        {
-            $_SESSION['vendor_id'] = (int)(isset($user['vendor_id']) ? $user['vendor_id'] : 0);
-            $_SESSION['vendor_name'] = isset($user['vendor_name'])
-                ? $user['vendor_name']
-                : $user['full_name'];
-            $_SESSION['vendor_is_open'] = 1;
-        }
-
-        writeLog("User authenticated successfully: {$user['username']} (Role: {$role})", "AUTH");
+        writeLog("User authenticated successfully: {$user['username']} (Role: {$user['account_type']})", "AUTH");
 
         return array(
             'success' => true,
@@ -779,13 +789,31 @@ if (!function_exists('getCurrentUserRole'))
     }
 }
 
+if (!function_exists('getAuthProvider'))
+{
+    /**
+     * Returns the identifier of the provider that authenticated the
+     * current session.
+     *
+     * @return string|null "password", "google", or null if not logged in
+     */
+    function getAuthProvider()
+    {
+        if (!isLoggedIn())
+        {
+            return null;
+        }
+
+        return isset($_SESSION['auth_provider'])
+            ? $_SESSION['auth_provider']
+            : 'password';
+    }
+}
+
 if (!function_exists('getCurrentUser'))
 {
     /**
      * Returns the full current user record, or null if not logged in.
-     *
-     * The result is cached for the lifetime of the request so multiple
-     * calls within the same page do not trigger repeated database reads.
      *
      * @return array|null The current user record
      */
@@ -845,16 +873,11 @@ if (!function_exists('getCurrentUser'))
 }
 
 // =============================================================================
-// Authorization Helpers
+// Authorisation Helpers
 // =============================================================================
 
 if (!function_exists('isLoggedIn'))
 {
-    /**
-     * Returns true if the current request has an active authenticated session.
-     *
-     * @return bool True if logged in and the session has not exceeded SESSION_LIFETIME
-     */
     function isLoggedIn()
     {
         return isset($_SESSION['user_id'])
@@ -907,7 +930,7 @@ if (!function_exists('isAdmin'))
 }
 
 // =============================================================================
-// Authorization Requirements
+// Authorisation Requirements
 // =============================================================================
 
 if (!function_exists('requireLogin'))
@@ -1011,11 +1034,6 @@ if (!function_exists('requireVendor'))
 
 if (!function_exists('requireVendorVerified'))
 {
-    /**
-     * Requires an authenticated, approved vendor.
-     *
-     * @return void
-     */
     function requireVendorVerified()
     {
         requireVendor();
@@ -1070,11 +1088,6 @@ if (!function_exists('logout'))
 {
     /**
      * Logs the current user out and redirects to the landing page.
-     *
-     * The 303 See Other status is used so that a POST that triggers a
-     * logout (for example, a "Logout" button in a form) is converted to
-     * a GET, preventing the browser from repeating the POST if the user
-     * refreshes the redirected page.
      *
      * @return void
      */

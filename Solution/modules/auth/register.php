@@ -2,30 +2,32 @@
 /**
  * Registration Page
  *
- * Handles new user registration with role selection.
+ * Handles new user registration. The page offers the Admin role only
+ * for the first account, when the users table is empty. Every other
+ * registration is limited to Student, Standard, or Vendor. The page
+ * also offers Google SSO when the Google OAuth credentials have been
+ * configured. All user-facing strings are translated through the
+ * shared __() helper.
  *
- * CORRECTIONS (Version 15.0 - Demo Account Removal and First User Admin):
- * - The Admin role is offered only when the users table is empty. This is
- *   the only path by which an administrator account is created. The
- *   installer no longer provisions an admin account, and no default admin
- *   credentials exist anywhere in the codebase.
- * - The POST handler re-checks the user count at submission time, so a
- *   crafted request cannot create a second administrator after the first
- *   user has registered.
- * - Retains the User ID display and the Copy button. The Copy button is
- *   bound by assets/js/auth.js, not by an inline onclick handler.
- * - Retains the shared escapeOutput() helper. No local helper is defined.
- * - New accounts are verified and active on creation, matching the
- *   process document.
+ * CORRECTIONS (Version 16.0):
+ * - Added a Sign up with Google button. The button links to the same
+ *   oauth_google.php start endpoint used by the login page.
+ * - Replaced every hardcoded string with a __() call so the page
+ *   renders in English or Afrikaans depending on the active language.
+ * - Retains the first-user-only Admin rule, the User ID display with
+ *   the copy button, the CSRF protection, the password policy check,
+ *   and the auto-verification of new accounts.
  *
- * SOURCE: DEMO ACCOUNT REQUIREMENT (Interpretation C)
- * SOURCE: campus-eats-process-document.pdf Section 13
+ * SOURCE: NOTES - Make use of SSO. Users should also be able to use
+ *         Google SSO. Include multi-language support for at least two
+ *         South African languages: English and Afrikaans.
  *
- * @version 15.0
+ * @version 16.0
  */
 
 require_once dirname(__DIR__, 2) . '/config/constants.php';
 require_once dirname(__DIR__, 2) . '/includes/auth.php';
+require_once dirname(__DIR__, 2) . '/includes/i18n.php';
 require_once dirname(__DIR__, 2) . '/includes/password_validation.php';
 require_once dirname(__DIR__, 2) . '/includes/user_id.php';
 require_once dirname(__DIR__, 2) . '/config/database.php';
@@ -36,10 +38,23 @@ startSecureSession();
 $db = getDB();
 
 // =============================================================================
-// Determine whether this visitor is the first user.
+// Google SSO state
 // =============================================================================
-// If the users table is empty, the visitor may register as an administrator.
-// Once any user exists, the Admin role is neither offered nor accepted.
+
+$googleConfigured = false;
+
+if (file_exists(dirname(__DIR__, 2) . '/includes/oauth_google.php'))
+{
+    require_once dirname(__DIR__, 2) . '/includes/oauth_google.php';
+
+    if (function_exists('googleIsConfigured'))
+    {
+        $googleConfigured = googleIsConfigured();
+    }
+}
+
+// =============================================================================
+// Determine whether this visitor is the first user.
 // =============================================================================
 
 $isFirstUser = ($db->userCount() === 0);
@@ -47,7 +62,11 @@ $isFirstUser = ($db->userCount() === 0);
 $error = '';
 $success = '';
 $generatedUserId = '';
-$formData = array('full_name' => '', 'email' => '', 'account_type' => 'student');
+$formData = array(
+    'full_name'     => '',
+    'email'         => '',
+    'account_type'  => 'student'
+);
 
 $csrfToken = getCsrfToken();
 
@@ -60,48 +79,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
     $submittedCsrfToken = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
 
     $roleMap = array(
-        'Student' => 'student',
-        'student' => 'student',
-        'Vendor' => 'vendor',
-        'vendor' => 'vendor',
+        'Student'  => 'student',
+        'student'  => 'student',
+        'Vendor'   => 'vendor',
+        'vendor'   => 'vendor',
         'Standard' => 'standard',
         'standard' => 'standard',
-        'Admin' => 'admin',
-        'admin' => 'admin'
+        'Admin'    => 'admin',
+        'admin'    => 'admin'
     );
 
     $accountType = isset($roleMap[$accountType]) ? $roleMap[$accountType] : 'student';
 
-    // Re-evaluate the first-user state at POST time. If another user has
-    // registered since the form was rendered, admin is no longer permitted.
+    // Re-check the first-user state at POST time.
     $isFirstUserAtPostTime = ($db->userCount() === 0);
 
     $formData = array(
-        'full_name' => $fullName,
-        'email' => $email,
+        'full_name'    => $fullName,
+        'email'        => $email,
         'account_type' => $accountType
     );
 
     if (!validateCsrfToken($submittedCsrfToken))
     {
-        $error = 'Security validation failed. Please refresh the page.';
+        $error = __('error.csrf');
     }
     elseif (empty($fullName) || empty($email) || empty($passwordInput))
     {
-        $error = 'Please fill in all required fields.';
+        $error = __('error.required_fields');
     }
     elseif (!filter_var($email, FILTER_VALIDATE_EMAIL))
     {
-        $error = 'Please enter a valid email address.';
+        $error = __('error.invalid_email');
     }
     elseif ($accountType === 'admin' && !$isFirstUserAtPostTime)
     {
-        $error = 'The administrator account has already been created. '
-               . 'Please register as Student, Standard, or Vendor.';
+        $error = __('register.error_admin_taken');
     }
     elseif (!in_array($accountType, array('student', 'standard', 'vendor', 'admin'), true))
     {
-        $error = 'Invalid role selected.';
+        $error = __('error.invalid_role');
     }
     else
     {
@@ -122,7 +139,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
 
                 if ($existingUser)
                 {
-                    $error = 'An account with this email already exists. Please log in.';
+                    $error = __('error.email_exists');
                 }
                 else
                 {
@@ -142,18 +159,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
 
                     $userId = $db->insert(
                         "INSERT INTO users
-                            (unique_id, full_name, username, email, password_hash,
-                             account_type, is_verified, is_active, created_at, updated_at)
+                            (unique_id, full_name, username, email,
+                             password_hash, account_type, is_verified,
+                             is_active, created_at, updated_at)
                          VALUES
-                            (:unique_id, :full_name, :username, :email, :password_hash,
-                             :account_type, 1, 1, NOW(), NOW())",
+                            (:unique_id, :full_name, :username, :email,
+                             :password_hash, :account_type, 1, 1,
+                             NOW(), NOW())",
                         array(
-                            'unique_id' => $uniqueId,
-                            'full_name' => $fullName,
-                            'username' => $username,
-                            'email' => $email,
+                            'unique_id'     => $uniqueId,
+                            'full_name'     => $fullName,
+                            'username'      => $username,
+                            'email'         => $email,
                             'password_hash' => $passwordHash,
-                            'account_type' => $accountType
+                            'account_type'  => $accountType
                         )
                     );
 
@@ -161,11 +180,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                     {
                         $db->insert(
                             "INSERT INTO vendors
-                                (vendor_user_id, vendor_name, description, is_open, is_approved, created_at)
+                                (vendor_user_id, vendor_name, description,
+                                 is_open, is_approved, created_at)
                              VALUES
-                                (:user_id, :vendor_name, :description, 1, 0, NOW())",
+                                (:user_id, :vendor_name, :description,
+                                 1, 0, NOW())",
                             array(
-                                'user_id' => $userId,
+                                'user_id'     => $userId,
                                 'vendor_name' => $fullName,
                                 'description' => 'New vendor awaiting administrative approval.'
                             )
@@ -173,11 +194,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                     }
 
                     $generatedUserId = $uniqueId;
-                    $success = 'Account created successfully. Your 16-character '
-                             . 'USER ID has been generated. You can now log in.';
+                    $success = __('register.success_heading') . ' '
+                             . __('register.success_body');
                     writeLog(
-                        "Registration successful: User created with email: $email, "
-                            . "USER ID: $uniqueId, Role: $accountType",
+                        "Registration successful: User created with email: "
+                            . "$email, USER ID: $uniqueId, Role: $accountType",
                         "REGISTER"
                     );
 
@@ -188,14 +209,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
             catch (Exception $e)
             {
                 writeLog('Registration error: ' . $e->getMessage(), "REGISTER");
-                $error = 'Registration failed. Please try again later.';
+                $error = __('error.generic');
             }
         }
     }
 }
 
 $csrfToken = getCsrfToken();
-$pageTitle = 'Create account';
+$pageTitle = __('register.title');
 $displayUserId = '';
 
 if (!empty($generatedUserId))
@@ -204,12 +225,12 @@ if (!empty($generatedUserId))
 }
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo escapeOutput(getCurrentLanguage()); ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="csrf-token" content="<?php echo escapeOutput($csrfToken); ?>">
-    <title>Create account - Campus Eats</title>
+    <title><?php echo escapeOutput($pageTitle); ?> - <?php echo __e('app.name'); ?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="<?php echo ASSETS_URL; ?>/css/public.css">
 </head>
@@ -220,8 +241,8 @@ if (!empty($generatedUserId))
                 <div class="auth-logo">
                     <i class="fas fa-user-plus"></i>
                 </div>
-                <h1 class="auth-title">Create account</h1>
-                <p class="auth-subtitle">Join the campus pickup network</p>
+                <h1 class="auth-title"><?php echo __e('register.title'); ?></h1>
+                <p class="auth-subtitle"><?php echo __e('register.subtitle'); ?></p>
             </div>
 
             <?php if (!empty($error)): ?>
@@ -237,121 +258,166 @@ if (!empty($generatedUserId))
                     <?php echo escapeOutput($success); ?>
                 </div>
 
-                <div class="user-id-section"
-                     style="background: var(--gray-50); border-radius: var(--radius-md); padding: var(--space-4); margin: var(--space-4) 0;">
-                    <label style="font-size: 0.75rem; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.02em; display: block; margin-bottom: var(--space-2);">
-                        Your 16-character USER ID
+                <div class="user-id-section">
+                    <label class="user-id-label">
+                        <?php echo __e('register.user_id_label'); ?>
                     </label>
-                    <div style="display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); background: white; border-radius: var(--radius-sm); padding: var(--space-3) var(--space-4); border: 1px solid var(--gray-200);">
+                    <div class="user-id-display">
                         <code id="generated-user-id"
-                              data-user-id="<?php echo escapeOutput($generatedUserId); ?>"
-                              style="font-family: monospace; font-size: 0.875rem; font-weight: 600; color: var(--orange); letter-spacing: 0.5px; word-break: break-all;">
+                              data-user-id="<?php echo escapeOutput($generatedUserId); ?>">
                             <?php echo escapeOutput($displayUserId); ?>
                         </code>
-                        <button class="btn-copy" id="copy-user-id-btn" type="button"
-                                style="background: var(--orange); color: white; border: none; border-radius: var(--radius-sm); padding: var(--space-1) var(--space-3); font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: var(--space-1); flex-shrink: 0;">
-                            <i class="fas fa-copy"></i> Copy
+                        <button class="btn-copy" id="copy-user-id-btn" type="button">
+                            <i class="fas fa-copy"></i>
+                            <?php echo __e('register.copy_id'); ?>
                         </button>
                     </div>
-                    <p style="font-size: 0.75rem; color: var(--gray-600); margin-top: var(--space-2); display: flex; align-items: center; gap: var(--space-1);">
-                        Save this ID. You will need it to reset your password.
+                    <p class="user-id-note">
+                        <?php echo __e('register.user_id_note'); ?>
                     </p>
                 </div>
 
                 <div class="auth-body">
-                    <a href="login.php" class="btn btn-primary btn-block">Go to Login</a>
+                    <a href="login.php" class="btn btn-primary btn-block">
+                        <?php echo __e('register.go_to_login'); ?>
+                    </a>
                 </div>
             <?php else: ?>
                 <div class="auth-body">
                     <?php if ($isFirstUser): ?>
-                        <div class="info-box"
-                             style="background: var(--orange-light); border-left: 4px solid var(--orange); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); margin-bottom: var(--space-4); display: flex; gap: var(--space-3); align-items: flex-start;">
-                            <i class="fas fa-crown" style="color: var(--orange); font-size: 1.25rem; margin-top: 2px;"></i>
+                        <div class="info-box first-user-box">
+                            <i class="fas fa-crown" aria-hidden="true"></i>
                             <div>
-                                <strong>You are the first user.</strong>
-                                <p style="margin: var(--space-1) 0 0; font-size: 0.875rem;">
-                                    No accounts exist yet. You may register this first account
-                                    as an administrator. Once any account exists, the Admin
-                                    role will no longer be offered.
-                                </p>
+                                <strong><?php echo __e('register.first_user_title'); ?></strong>
+                                <p><?php echo __e('register.first_user_body'); ?></p>
                             </div>
                         </div>
                     <?php endif; ?>
+
+                    <a href="<?php echo escapeOutput(googleStartUrl()); ?>"
+                       class="btn-google">
+                        <i class="fab fa-google" aria-hidden="true"></i>
+                        <span><?php echo __e('auth.sign_up_google'); ?></span>
+                    </a>
+
+                    <?php if (!$googleConfigured): ?>
+                        <p class="sso-note">
+                            <i class="fas fa-info-circle" aria-hidden="true"></i>
+                            <?php echo __e('auth.sso_not_configured'); ?>
+                        </p>
+                    <?php endif; ?>
+
+                    <div class="auth-separator">
+                        <span><?php echo __e('common.or'); ?></span>
+                    </div>
 
                     <form method="POST" action="" id="register-form">
                         <input type="hidden" name="csrf_token"
                                value="<?php echo escapeOutput($csrfToken); ?>">
 
                         <div class="form-group">
-                            <label class="form-label" for="full_name">Name</label>
+                            <label class="form-label" for="full_name">
+                                <?php echo __e('auth.full_name'); ?>
+                            </label>
                             <div class="input-wrapper">
                                 <i class="fas fa-user input-icon"></i>
-                                <input type="text" id="full_name" name="full_name"
-                                       class="form-control" required
+                                <input type="text"
+                                       id="full_name"
+                                       name="full_name"
+                                       class="form-control"
+                                       required
                                        value="<?php echo escapeOutput($formData['full_name']); ?>"
-                                       placeholder="Your full name">
+                                       placeholder="<?php echo __e('register.name_placeholder'); ?>">
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label" for="email">Email</label>
+                            <label class="form-label" for="email">
+                                <?php echo __e('auth.email'); ?>
+                            </label>
                             <div class="input-wrapper">
                                 <i class="fas fa-envelope input-icon"></i>
-                                <input type="email" id="email" name="email"
-                                       class="form-control" required
+                                <input type="email"
+                                       id="email"
+                                       name="email"
+                                       class="form-control"
+                                       required
                                        value="<?php echo escapeOutput($formData['email']); ?>"
-                                       placeholder="you@campus.edu">
+                                       placeholder="<?php echo __e('register.email_placeholder'); ?>">
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label" for="password">Password</label>
+                            <label class="form-label" for="password">
+                                <?php echo __e('auth.password'); ?>
+                            </label>
                             <div class="input-wrapper">
                                 <i class="fas fa-lock input-icon"></i>
-                                <input type="password" id="password" name="password"
-                                       class="form-control" required
-                                       placeholder="Create a password">
+                                <input type="password"
+                                       id="password"
+                                       name="password"
+                                       class="form-control"
+                                       required
+                                       placeholder="<?php echo __e('register.password_placeholder'); ?>">
                             </div>
                             <div class="password-strength">
                                 <div class="strength-fill" id="strength-fill"></div>
                             </div>
                             <span class="form-hint">
-                                Minimum 8 characters, includes uppercase, number, and special character
+                                <?php echo __e('register.hint_password'); ?>
                             </span>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label" for="role">Role</label>
+                            <label class="form-label" for="role">
+                                <?php echo __e('auth.role'); ?>
+                            </label>
                             <div class="input-wrapper">
                                 <i class="fas fa-briefcase input-icon"></i>
                                 <select id="role" name="role" class="form-control" required>
-                                    <option value="Student" <?php echo $formData['account_type'] === 'student' ? 'selected' : ''; ?>>Student</option>
-                                    <option value="Standard" <?php echo $formData['account_type'] === 'standard' ? 'selected' : ''; ?>>Standard</option>
-                                    <option value="Vendor" <?php echo $formData['account_type'] === 'vendor' ? 'selected' : ''; ?>>Vendor</option>
+                                    <option value="Student"
+                                        <?php echo $formData['account_type'] === 'student' ? 'selected' : ''; ?>>
+                                        <?php echo __e('role.student'); ?>
+                                    </option>
+                                    <option value="Standard"
+                                        <?php echo $formData['account_type'] === 'standard' ? 'selected' : ''; ?>>
+                                        <?php echo __e('role.standard'); ?>
+                                    </option>
+                                    <option value="Vendor"
+                                        <?php echo $formData['account_type'] === 'vendor' ? 'selected' : ''; ?>>
+                                        <?php echo __e('role.vendor'); ?>
+                                    </option>
                                     <?php if ($isFirstUser): ?>
-                                        <option value="Admin" <?php echo $formData['account_type'] === 'admin' ? 'selected' : ''; ?>>Admin (first user only)</option>
+                                        <option value="Admin"
+                                            <?php echo $formData['account_type'] === 'admin' ? 'selected' : ''; ?>>
+                                            <?php echo __e('role.admin_first_user'); ?>
+                                        </option>
                                     <?php endif; ?>
                                 </select>
                             </div>
                             <span class="form-hint">
-                                Students receive a 2.5% discount on orders.
+                                <?php echo __e('register.hint_student'); ?>
                                 <?php if ($isFirstUser): ?>
-                                    The Admin role is available only for this first registration.
+                                    <br><?php echo __e('register.hint_admin_first'); ?>
                                 <?php endif; ?>
                             </span>
                         </div>
 
                         <button type="submit" id="register-btn"
                                 class="btn btn-primary btn-block btn-lg">
-                            <i class="fas fa-user-plus"></i> Create account
+                            <i class="fas fa-user-plus"></i>
+                            <?php echo __e('auth.sign_up'); ?>
                         </button>
                     </form>
                 </div>
                 <div class="auth-footer">
-                    <p>Already have an account? <a href="login.php">Sign in</a></p>
+                    <p>
+                        <?php echo __e('auth.already_have_account'); ?>
+                        <a href="login.php"><?php echo __e('auth.sign_in'); ?></a>
+                    </p>
                     <p class="return-home">
-                        <a href="<?php echo ROOT_URL; ?>/index.php">
-                            <i class="fas fa-home"></i> Return Home
+                        <a href="<?php echo escapeOutput(ROOT_URL); ?>/index.php">
+                            <?php echo __e('auth.return_home'); ?>
                         </a>
                     </p>
                 </div>

@@ -279,6 +279,7 @@ campus-eats-web/
 ├── index.php
 ├── privacy.php
 ├── terms.php
+├── Documentation/
 │   └── requirements/
 │       └── campus-eats-process-document.pdf
 ├── Issues/
@@ -342,6 +343,8 @@ campus-eats-web/
     │   ├── dashboard_header.php
     │   ├── firebase_config.php
     │   ├── footer.php
+    │   ├── i18n.php
+    │   ├── oauth_google.php
     │   ├── password_validation.php
     │   ├── public_header.php
     │   ├── session.php
@@ -349,6 +352,9 @@ campus-eats-web/
     │   ├── user_id.php
     │   ├── vendor_functions.php
     │   └── vendor_sidebar.php
+    ├── lang/
+    │   ├── af.php
+    │   └── en.php
     ├── modules/
     │   ├── admin/
     │   │   ├── dashboard.php
@@ -392,7 +398,7 @@ campus-eats-web/
     │   ├── seed.php
     │   └── update_account_type_enum.sql
     └── data/
-        └── (EMPTY FOLDER)
+        └── user.txt
 ```
 
 ---

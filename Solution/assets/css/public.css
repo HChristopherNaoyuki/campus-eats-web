@@ -1,35 +1,40 @@
 /**
  * Campus Eats Public Pages Styles
  *
- * This file contains styles for public-facing pages:
- * - Home page (index.php)
- * - About Us (about.php)
- * - FAQ (faq.php)
- * - Help Center (help.php)
- * - Terms of Service (terms.php)
- * - Privacy Policy (privacy.php)
+ * Styles for the public-facing pages: the landing page, the About page,
+ * the FAQ page, the Help Center, the Terms of Service, the Privacy
+ * Policy, the authentication pages, and the shared header and footer.
  *
- * CORRECTIONS (Version 9.0 - Visual Parity with Mockups):
- * - Added hero section styles matching mockup 1.png
- * - Added stats section styles matching mockup 1.png
- * - Added feature card styles matching mockup 2.png
- * - Added CTA section styles matching mockup 3.png
- * - Added FAQ accordion styles matching mockups 7-14.png
- * - Added About page card styles matching mockup 5.png
- * - Added proper responsive breakpoints
- * - Removed inline styles from pages and moved to this file
+ * CORRECTIONS (Version 10.0):
+ * - Added the Google sign-in button style (.btn-google).
+ * - Added the language switcher style (.language-switcher and children).
+ * - Added the Google provider badge style (.provider-badge), shown in
+ *   the header next to the user name when the session was established
+ *   through Google SSO.
+ * - Added the SSO note style (.sso-note), used when Google SSO is not
+ *   configured and the login or register page shows an informational
+ *   message.
+ * - Added the auth separator style (.auth-separator), the "or" line
+ *   between the Google button and the email form.
+ * - Added the first-user info box style (.info-box.first-user-box) used
+ *   on the registration page.
+ * - Added the user ID display styles (.user-id-section, .user-id-display,
+ *   .btn-copy, .user-id-note, .user-id-label).
+ * - All other rules from the previous version are retained.
  *
- * Source: campus-eats-process-document.pdf (Section 10 - User Interface Design)
- * Source: Mockups - 1.png through 17.png
+ * SOURCE: NOTES - Make use of SSO. Include multi-language support for
+ *         at least two South African languages: English and Afrikaans.
+ *         The app must have a user-friendly and appropriate user
+ *         interface.
  *
- * @version 9.0
+ * @version 10.0
  */
 
-/* Import canonical design system */
+/* Import the canonical design system. */
 @import url('apple.css');
 
 /* =============================================================================
-   Hero Section - Matching Mockup 1.png
+   Hero Section
    ============================================================================= */
 
 .hero
@@ -94,7 +99,8 @@
     z-index: 1;
 }
 
-.hero-buttons .btn-primary
+.hero-buttons .btn-primary,
+.hero-buttons .btn-outline
 {
     padding: var(--space-3) var(--space-8);
     font-size: 1rem;
@@ -103,9 +109,6 @@
 
 .hero-buttons .btn-outline
 {
-    padding: var(--space-3) var(--space-8);
-    font-size: 1rem;
-    border-radius: var(--radius-full);
     border-color: rgba(255, 255, 255, 0.3);
     color: white;
 }
@@ -117,7 +120,7 @@
 }
 
 /* =============================================================================
-   Stats Section - Matching Mockup 1.png
+   Stats Section
    ============================================================================= */
 
 .stats-section
@@ -153,7 +156,7 @@
 }
 
 /* =============================================================================
-   How It Works Section - Matching Mockup 2.png
+   How It Works Section
    ============================================================================= */
 
 .how-it-works
@@ -201,21 +204,8 @@
     margin: 0 auto var(--space-4);
 }
 
-.step h3
-{
-    margin-bottom: var(--space-2);
-    color: var(--gray-800);
-}
-
-.step p
-{
-    color: var(--gray-600);
-    font-size: 0.875rem;
-    line-height: 1.6;
-}
-
 /* =============================================================================
-   Features Section - Matching Mockup 2.png
+   Features Section
    ============================================================================= */
 
 .features
@@ -237,19 +227,6 @@
     color: var(--gray-900);
     position: relative;
     display: inline-block;
-}
-
-.section-title h2::after
-{
-    content: "";
-    position: absolute;
-    width: 50px;
-    height: 3px;
-    background-color: var(--orange);
-    bottom: calc(-1 * var(--space-2));
-    left: 50%;
-    transform: translateX(-50%);
-    border-radius: var(--radius-full);
 }
 
 .section-title p
@@ -298,22 +275,8 @@
     margin: 0 auto var(--space-4);
 }
 
-.feature-card h3
-{
-    font-size: 1.125rem;
-    margin-bottom: var(--space-2);
-    color: var(--gray-800);
-}
-
-.feature-card p
-{
-    font-size: 0.875rem;
-    color: var(--gray-600);
-    line-height: 1.6;
-}
-
 /* =============================================================================
-   CTA Section - Matching Mockup 3.png
+   CTA Section
    ============================================================================= */
 
 .cta
@@ -339,137 +302,8 @@
     font-size: 1.125rem;
 }
 
-.cta ul
-{
-    list-style: none;
-    display: flex;
-    justify-content: center;
-    gap: var(--space-6);
-    margin-bottom: var(--space-6);
-    flex-wrap: wrap;
-}
-
-.cta ul li
-{
-    font-size: 0.9375rem;
-}
-
-.cta ul li i
-{
-    margin-right: var(--space-2);
-    color: rgba(255, 255, 255, 0.8);
-}
-
-.cta .btn-secondary
-{
-    background: white;
-    color: var(--orange);
-    padding: var(--space-3) var(--space-8);
-    font-size: 1rem;
-    border-radius: var(--radius-full);
-    font-weight: 600;
-}
-
-.cta .btn-secondary:hover
-{
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
 /* =============================================================================
-   Featured Vendor Section
-   ============================================================================= */
-
-.vendors
-{
-    padding: var(--space-16) 0;
-    background: white;
-}
-
-.featured-vendor
-{
-    background: white;
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    box-shadow: var(--shadow-md);
-    margin-top: var(--space-8);
-    border: 1px solid var(--gray-100);
-}
-
-.featured-vendor-header
-{
-    background: var(--orange-gradient);
-    color: white;
-    padding: var(--space-4) var(--space-6);
-}
-
-.featured-vendor-header h2
-{
-    color: white;
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-}
-
-.featured-vendor-header h2 i
-{
-    margin-right: var(--space-2);
-}
-
-.featured-vendor-body
-{
-    padding: var(--space-5) var(--space-6);
-}
-
-.featured-vendor-body p
-{
-    margin-bottom: var(--space-2);
-    color: var(--gray-700);
-}
-
-.featured-vendor-body p i
-{
-    color: var(--orange);
-    width: 20px;
-}
-
-.menu-preview
-{
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--space-3);
-    margin-top: var(--space-4);
-}
-
-.menu-preview-item
-{
-    background: var(--gray-50);
-    padding: var(--space-3);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--gray-100);
-    transition: background var(--transition-fast);
-}
-
-.menu-preview-item:hover
-{
-    background: var(--orange-light);
-}
-
-.menu-preview-item .item-name
-{
-    font-weight: 600;
-    color: var(--gray-800);
-}
-
-.menu-preview-item .item-price
-{
-    color: var(--orange);
-    font-weight: 700;
-    font-size: 0.875rem;
-}
-
-/* =============================================================================
-   About Page - Matching Mockup 5.png
+   About, FAQ, Help, Privacy, and Terms Containers
    ============================================================================= */
 
 .about-container,
@@ -483,7 +317,9 @@
     padding: 0 var(--space-5);
 }
 
-.about-hero
+.about-hero,
+.faq-hero,
+.help-hero
 {
     background: var(--orange-gradient);
     color: white;
@@ -492,194 +328,8 @@
     margin-bottom: var(--space-8);
 }
 
-.about-hero h1
-{
-    color: white;
-    font-size: 2.5rem;
-    margin-bottom: var(--space-3);
-}
-
-.about-hero p
-{
-    font-size: 1.125rem;
-    opacity: 0.9;
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-.about-grid
-{
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-6);
-    margin: var(--space-8) 0;
-}
-
-.about-card
-{
-    background: white;
-    border-radius: var(--radius-lg);
-    padding: var(--space-6);
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--gray-100);
-    transition: transform var(--transition-base), box-shadow var(--transition-base);
-}
-
-.about-card:hover
-{
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-lg);
-}
-
-.about-card .icon
-{
-    font-size: 2.5rem;
-    color: var(--orange);
-    margin-bottom: var(--space-3);
-}
-
-.about-card h3
-{
-    color: var(--gray-800);
-    margin-bottom: var(--space-2);
-}
-
-.about-card p
-{
-    color: var(--gray-600);
-    line-height: 1.6;
-}
-
-.section-heading
-{
-    color: var(--orange-dark);
-    border-bottom: 2px solid var(--orange);
-    padding-bottom: var(--space-2);
-    margin-bottom: var(--space-4);
-    font-size: 1.25rem;
-    font-weight: 600;
-}
-
-.section-heading i
-{
-    margin-right: var(--space-2);
-}
-
-.section-text
-{
-    line-height: 1.6;
-    color: var(--gray-700);
-}
-
-.feature-list
-{
-    list-style: none;
-    padding-left: 0;
-}
-
-.feature-list li
-{
-    margin-bottom: var(--space-2);
-}
-
-.feature-list li i
-{
-    color: var(--success);
-    margin-right: var(--space-2);
-}
-
-/* =============================================================================
-   FAQ Page - Matching Mockups 7-14.png
-   ============================================================================= */
-
-.faq-hero
-{
-    background: var(--orange-gradient);
-    color: white;
-    padding: var(--space-10) 0;
-    text-align: center;
-    margin-bottom: var(--space-8);
-}
-
-.faq-hero h1
-{
-    color: white;
-    font-size: 2.5rem;
-    margin-bottom: var(--space-3);
-}
-
-.faq-hero p
-{
-    font-size: 1.125rem;
-    opacity: 0.9;
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-.faq-list
-{
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-}
-
-.faq-item
-{
-    border-bottom: 1px solid var(--gray-200);
-    padding-bottom: var(--space-5);
-    transition: background var(--transition-fast);
-}
-
-.faq-item:hover
-{
-    background: var(--gray-50);
-    padding-left: var(--space-3);
-    padding-right: var(--space-3);
-    border-radius: var(--radius-md);
-}
-
-.faq-item:last-child
-{
-    border-bottom: none;
-}
-
-.faq-question
-{
-    color: var(--orange);
-    margin-bottom: var(--space-2);
-    font-size: 1rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-}
-
-.faq-question i
-{
-    font-size: 0.875rem;
-    opacity: 0.7;
-}
-
-.faq-answer
-{
-    color: var(--gray-700);
-    line-height: 1.5;
-    padding-left: var(--space-6);
-}
-
-/* =============================================================================
-   Help Center Page
-   ============================================================================= */
-
-.help-hero
-{
-    background: var(--orange-gradient);
-    color: white;
-    padding: var(--space-10) 0;
-    text-align: center;
-    margin-bottom: var(--space-8);
-}
-
+.about-hero h1,
+.faq-hero h1,
 .help-hero h1
 {
     color: white;
@@ -687,6 +337,8 @@
     margin-bottom: var(--space-3);
 }
 
+.about-hero p,
+.faq-hero p,
 .help-hero p
 {
     font-size: 1.125rem;
@@ -695,377 +347,8 @@
     margin: 0 auto;
 }
 
-.help-grid
-{
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: var(--space-6);
-}
-
-.help-card
-{
-    background: white;
-    padding: var(--space-6);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--gray-100);
-    transition: transform var(--transition-base), box-shadow var(--transition-base);
-    text-align: center;
-}
-
-.help-card:hover
-{
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-lg);
-}
-
-.help-card i
-{
-    font-size: 2.5rem;
-    color: var(--orange);
-    margin-bottom: var(--space-4);
-}
-
-.help-card h3
-{
-    font-size: 1.125rem;
-    font-weight: 600;
-    margin-bottom: var(--space-3);
-    color: var(--gray-800);
-}
-
-.help-card p
-{
-    font-size: 0.875rem;
-    color: var(--gray-600);
-    line-height: 1.5;
-}
-
-.troubleshooting-list
-{
-    background: white;
-    padding: var(--space-6);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--gray-100);
-}
-
-.trouble-item
-{
-    margin-bottom: var(--space-4);
-    padding-bottom: var(--space-4);
-    border-bottom: 1px solid var(--gray-200);
-}
-
-.trouble-item:last-child
-{
-    border-bottom: none;
-    margin-bottom: 0;
-    padding-bottom: 0;
-}
-
-.trouble-item p:first-child
-{
-    font-weight: 600;
-    margin-bottom: var(--space-2);
-    font-size: 1rem;
-    color: var(--gray-800);
-}
-
-.trouble-item p:first-child i
-{
-    color: var(--warning);
-    margin-right: var(--space-2);
-}
-
-.trouble-item p:last-child
-{
-    color: var(--gray-600);
-    font-size: 0.875rem;
-    margin-left: var(--space-5);
-    line-height: 1.5;
-}
-
-.contact-support-box
-{
-    text-align: center;
-    background: linear-gradient(135deg, var(--orange-light), white);
-    padding: var(--space-8);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--orange-light);
-}
-
-.contact-support-box i
-{
-    font-size: 3rem;
-    color: var(--orange);
-    margin-bottom: var(--space-4);
-}
-
-.contact-support-box h3
-{
-    margin-bottom: var(--space-3);
-    font-size: 1.25rem;
-}
-
-.contact-support-box p
-{
-    margin-bottom: var(--space-2);
-    color: var(--gray-700);
-}
-
-.contact-support-box a
-{
-    color: var(--orange);
-    text-decoration: none;
-}
-
-.contact-support-box a:hover
-{
-    text-decoration: underline;
-}
-
 /* =============================================================================
-   Privacy and Terms Pages
-   ============================================================================= */
-
-.page-title
-{
-    color: var(--orange);
-    text-align: center;
-    margin-bottom: var(--space-8);
-    font-size: 2rem;
-    font-weight: 600;
-}
-
-.privacy-content,
-.terms-content
-{
-    line-height: 1.8;
-}
-
-.privacy-section,
-.terms-section
-{
-    margin-bottom: var(--space-8);
-}
-
-.privacy-section h2,
-.terms-section h2
-{
-    font-size: 1.125rem;
-    margin-bottom: var(--space-3);
-}
-
-.privacy-section ul,
-.terms-section ul
-{
-    margin-left: var(--space-5);
-    margin-top: var(--space-2);
-}
-
-.privacy-section li,
-.terms-section li
-{
-    margin-bottom: var(--space-1);
-}
-
-.effective-date
-{
-    margin-bottom: var(--space-4);
-}
-
-.intro-text
-{
-    margin-bottom: var(--space-6);
-}
-
-.consent-text
-{
-    margin-top: var(--space-8);
-    text-align: center;
-    color: var(--gray-600);
-    font-style: italic;
-}
-
-/* =============================================================================
-   Public Header - Matching Mockups
-   ============================================================================= */
-
-.public-header
-{
-    background: white;
-    border-bottom: 1px solid var(--gray-200);
-    position: sticky;
-    top: 0;
-    z-index: var(--z-medium);
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
-    background: rgba(255, 255, 255, 0.95);
-}
-
-.public-header .container
-{
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--space-3) var(--space-6);
-    flex-wrap: wrap;
-    gap: var(--space-3);
-}
-
-.logo a
-{
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--gray-900);
-    text-decoration: none;
-    letter-spacing: -0.01em;
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-}
-
-.logo a i
-{
-    color: var(--orange);
-    font-size: 1.25rem;
-}
-
-.public-nav ul
-{
-    display: flex;
-    list-style: none;
-    gap: var(--space-6);
-    flex-wrap: wrap;
-    margin: 0;
-    padding: 0;
-}
-
-.public-nav a
-{
-    color: var(--gray-600);
-    text-decoration: none;
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition: color var(--transition-fast);
-    position: relative;
-}
-
-.public-nav a:hover
-{
-    color: var(--orange);
-}
-
-.public-nav a.active
-{
-    color: var(--orange);
-}
-
-.public-nav a.active::after
-{
-    content: "";
-    position: absolute;
-    width: 100%;
-    height: 2px;
-    bottom: -4px;
-    left: 0;
-    background-color: var(--orange);
-    border-radius: var(--radius-full);
-}
-
-.auth-buttons
-{
-    display: flex;
-    gap: var(--space-3);
-    align-items: center;
-}
-
-.welcome-text
-{
-    font-weight: 500;
-    color: var(--orange);
-    font-size: 0.875rem;
-}
-
-.mobile-menu-toggle
-{
-    display: none;
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    color: var(--gray-700);
-    padding: var(--space-2);
-    border-radius: var(--radius-md);
-    transition: background var(--transition-fast);
-}
-
-.mobile-menu-toggle:hover
-{
-    background: var(--gray-100);
-}
-
-.mobile-menu-toggle[aria-expanded="true"] i
-{
-    transform: rotate(90deg);
-    transition: transform var(--transition-fast);
-}
-
-.mobile-menu
-{
-    display: none;
-    position: fixed;
-    top: 60px;
-    left: 0;
-    right: 0;
-    background: white;
-    box-shadow: var(--shadow-lg);
-    z-index: var(--z-high);
-    padding: var(--space-4);
-    border-bottom: 1px solid var(--gray-200);
-    max-height: calc(100vh - 60px);
-    overflow-y: auto;
-}
-
-.mobile-menu[aria-hidden="false"]
-{
-    display: block;
-}
-
-.mobile-menu nav ul
-{
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    flex-direction: column;
-    gap: var(--space-2);
-}
-
-.mobile-menu nav li
-{
-    margin-bottom: var(--space-2);
-}
-
-.mobile-menu nav a
-{
-    display: block;
-    padding: var(--space-3);
-    color: var(--gray-700);
-    text-decoration: none;
-    font-size: 1rem;
-    border-radius: var(--radius-md);
-    transition: background var(--transition-fast);
-}
-
-.mobile-menu nav a:hover
-{
-    background: var(--gray-100);
-    color: var(--orange);
-}
-
-/* =============================================================================
-   Authentication Pages - Matching Mockups 18-20.png
+   Authentication Pages
    ============================================================================= */
 
 .auth-page
@@ -1169,69 +452,492 @@
 }
 
 /* =============================================================================
-   Demo Accounts Display - Matching Mockup 19.png
+   Google SSO Button
    ============================================================================= */
 
-.demo-accounts
+.btn-google
 {
-    font-size: 0.75rem;
-    color: var(--gray-500);
-    margin-top: var(--space-4);
-    padding-top: var(--space-4);
-    border-top: 1px solid var(--gray-200);
-    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    width: 100%;
+    min-height: var(--touch-target-min);
+    padding: var(--space-3) var(--space-5);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--gray-800);
+    background: white;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+    cursor: pointer;
+    margin-bottom: var(--space-3);
 }
 
-.demo-accounts strong
+.btn-google:hover,
+.btn-google:focus-visible
 {
-    display: block;
-    margin-bottom: var(--space-2);
-    color: var(--gray-700);
-}
-
-.demo-accounts .demo-grid
-{
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-1);
-}
-
-.demo-accounts .demo-item
-{
-    font-size: 0.7rem;
-    color: var(--gray-400);
-    padding: var(--space-1) var(--space-2);
     background: var(--gray-50);
-    border-radius: var(--radius-sm);
+    border-color: var(--gray-400);
+    box-shadow: var(--shadow-sm);
+    text-decoration: none;
+    color: var(--gray-900);
+}
+
+.btn-google:focus-visible
+{
+    outline: 2px solid var(--orange);
+    outline-offset: 2px;
+}
+
+.btn-google i
+{
+    font-size: 1.125rem;
+    color: #4285F4;
 }
 
 /* =============================================================================
-   Empty State
+   SSO Note
    ============================================================================= */
 
-.empty-state
+.sso-note
 {
-    text-align: center;
-    padding: var(--space-8) var(--space-4);
-    color: var(--gray-500);
-}
-
-.empty-state i
-{
-    font-size: 3rem;
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
     margin-bottom: var(--space-4);
-    color: var(--gray-300);
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: var(--warning-text);
+    background: var(--warning-bg);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--warning);
 }
 
-.empty-state h3
+.sso-note i
 {
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+/* =============================================================================
+   Auth Separator
+   ============================================================================= */
+
+.auth-separator
+{
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: var(--space-4) 0;
+    color: var(--gray-500);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.auth-separator::before,
+.auth-separator::after
+{
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--gray-200);
+}
+
+.auth-separator span
+{
+    padding: 0 var(--space-3);
+}
+
+/* =============================================================================
+   First User Info Box
+   ============================================================================= */
+
+.info-box.first-user-box
+{
+    background: var(--orange-light);
+    border-left: 4px solid var(--orange);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-4);
+    display: flex;
+    gap: var(--space-3);
+    align-items: flex-start;
+}
+
+.info-box.first-user-box i
+{
+    color: var(--orange);
+    font-size: 1.25rem;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.info-box.first-user-box strong
+{
+    display: block;
+    margin-bottom: var(--space-1);
+    color: var(--gray-800);
+}
+
+.info-box.first-user-box p
+{
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--gray-700);
+    line-height: 1.4;
+}
+
+/* =============================================================================
+   User ID Display
+   ============================================================================= */
+
+.user-id-section
+{
+    background: var(--gray-50);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    margin: var(--space-4) 0;
+}
+
+.user-id-label
+{
+    display: block;
+    font-size: 0.75rem;
     color: var(--gray-600);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
     margin-bottom: var(--space-2);
 }
 
-.empty-state p
+.user-id-display
 {
-    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    background: white;
+    border-radius: var(--radius-sm);
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--gray-200);
+}
+
+.user-id-display code
+{
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--orange);
+    letter-spacing: 0.5px;
+    word-break: break-all;
+}
+
+.btn-copy
+{
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-1) var(--space-3);
+    font-size: 0.75rem;
+    color: white;
+    background: var(--orange);
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background var(--transition-fast);
+}
+
+.btn-copy:hover
+{
+    background: var(--orange-dark);
+}
+
+.btn-copy:focus-visible
+{
+    outline: 2px solid var(--orange);
+    outline-offset: 2px;
+}
+
+.user-id-note
+{
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    margin-top: var(--space-2);
+    font-size: 0.75rem;
+    color: var(--gray-600);
+}
+
+/* =============================================================================
+   Language Switcher
+   ============================================================================= */
+
+.language-switcher
+{
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-1);
+    background: var(--gray-100);
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+}
+
+.language-switcher .lang-link
+{
+    display: inline-flex;
+    align-items: center;
+    padding: var(--space-1) var(--space-3);
+    color: var(--gray-600);
+    text-decoration: none;
+    border-radius: var(--radius-full);
+    font-weight: 500;
+    transition: all var(--transition-fast);
+}
+
+.language-switcher .lang-link:hover
+{
+    color: var(--orange);
+    background: white;
+    text-decoration: none;
+}
+
+.language-switcher .lang-link.active
+{
+    color: white;
+    background: var(--orange);
+}
+
+.language-switcher .lang-link.active:hover
+{
+    color: white;
+    background: var(--orange-dark);
+}
+
+/* =============================================================================
+   Provider Badge
+   ============================================================================= */
+
+.provider-badge
+{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    margin-left: var(--space-1);
+    font-size: 0.75rem;
+    color: #4285F4;
+    background: white;
+    border-radius: 50%;
+    border: 1px solid var(--gray-200);
+    vertical-align: middle;
+}
+
+/* =============================================================================
+   Header Actions
+   ============================================================================= */
+
+.header-actions
+{
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+}
+
+.footer-language
+{
+    display: inline-flex;
+    align-items: center;
+}
+
+.mobile-language
+{
+    padding: var(--space-3) 0;
+    border-top: 1px solid var(--gray-200);
+    margin-top: var(--space-3);
+    display: flex;
+    justify-content: center;
+}
+
+/* =============================================================================
+   Public Header
+   ============================================================================= */
+
+.public-header
+{
+    background: white;
+    border-bottom: 1px solid var(--gray-200);
+    position: sticky;
+    top: 0;
+    z-index: var(--z-medium);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.95);
+}
+
+.public-header .container
+{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-3) var(--space-6);
+    flex-wrap: wrap;
+    gap: var(--space-3);
+}
+
+.logo a
+{
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--gray-900);
+    text-decoration: none;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.logo a i
+{
+    color: var(--orange);
+    font-size: 1.25rem;
+}
+
+.public-nav ul
+{
+    display: flex;
+    list-style: none;
+    gap: var(--space-6);
+    flex-wrap: wrap;
+    margin: 0;
+    padding: 0;
+}
+
+.public-nav a
+{
+    color: var(--gray-600);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: color var(--transition-fast);
+    position: relative;
+}
+
+.public-nav a:hover
+{
+    color: var(--orange);
+}
+
+.public-nav a.active
+{
+    color: var(--orange);
+}
+
+.public-nav a.active::after
+{
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    bottom: -4px;
+    left: 0;
+    background-color: var(--orange);
+    border-radius: var(--radius-full);
+}
+
+.auth-buttons
+{
+    display: flex;
+    gap: var(--space-3);
+    align-items: center;
+}
+
+.welcome-text
+{
+    font-weight: 500;
+    color: var(--orange);
+    font-size: 0.875rem;
+}
+
+.mobile-menu-toggle
+{
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--gray-700);
+    padding: var(--space-2);
+    border-radius: var(--radius-md);
+    transition: background var(--transition-fast);
+}
+
+.mobile-menu-toggle:hover
+{
+    background: var(--gray-100);
+}
+
+.mobile-menu
+{
+    display: none;
+    position: fixed;
+    top: 60px;
+    left: 0;
+    right: 0;
+    background: white;
+    box-shadow: var(--shadow-lg);
+    z-index: var(--z-high);
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--gray-200);
+    max-height: calc(100vh - 60px);
+    overflow-y: auto;
+}
+
+.mobile-menu[aria-hidden="false"]
+{
+    display: block;
+}
+
+.mobile-menu nav ul
+{
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.mobile-menu nav a
+{
+    display: block;
+    padding: var(--space-3);
+    color: var(--gray-700);
+    text-decoration: none;
+    font-size: 1rem;
+    border-radius: var(--radius-md);
+    transition: background var(--transition-fast);
+}
+
+.mobile-menu nav a:hover
+{
+    background: var(--gray-100);
+    color: var(--orange);
+}
+
+/* =============================================================================
+   Utility Classes
+   ============================================================================= */
+
+.isActivePublicPage
+{
+    /* placeholder for future JS hooks; kept to preserve structure */
 }
 
 /* =============================================================================
@@ -1243,6 +949,11 @@
     .features-grid
     {
         grid-template-columns: repeat(2, 1fr);
+    }
+
+    .header-actions
+    {
+        gap: var(--space-2);
     }
 }
 
@@ -1285,11 +996,6 @@
         grid-template-columns: 1fr;
     }
 
-    .about-grid
-    {
-        grid-template-columns: 1fr;
-    }
-
     .public-nav
     {
         display: none;
@@ -1300,58 +1006,17 @@
         display: block;
     }
 
-    .public-header .container
+    .header-actions
     {
-        padding: var(--space-3) var(--space-4);
+        order: 3;
+        width: 100%;
+        justify-content: space-between;
     }
 
     .auth-buttons .btn-outline,
     .auth-buttons .welcome-text
     {
         display: none;
-    }
-
-    .cta h2
-    {
-        font-size: 1.5rem;
-    }
-
-    .cta ul
-    {
-        flex-direction: column;
-        align-items: center;
-        gap: var(--space-3);
-    }
-
-    .menu-preview
-    {
-        grid-template-columns: 1fr;
-    }
-
-    .about-container,
-    .faq-container,
-    .help-container,
-    .privacy-container,
-    .terms-container
-    {
-        margin: var(--space-8) auto;
-        padding: 0 var(--space-4);
-    }
-
-    .faq-hero h1,
-    .help-hero h1
-    {
-        font-size: 2rem;
-    }
-
-    .about-hero h1
-    {
-        font-size: 2rem;
-    }
-
-    .demo-accounts .demo-grid
-    {
-        grid-template-columns: 1fr;
     }
 
     .auth-body
@@ -1370,14 +1035,16 @@
         font-size: 1.25rem;
     }
 
-    .auth-footer
+    .user-id-display
     {
-        margin-top: auto;
+        flex-direction: column;
+        text-align: center;
+        gap: var(--space-2);
     }
 
-    .help-grid
+    .user-id-display code
     {
-        grid-template-columns: 1fr;
+        font-size: 0.8125rem;
     }
 }
 
@@ -1400,66 +1067,6 @@
         font-size: 0.875rem;
     }
 
-    .featured-vendor-header
-    {
-        padding: var(--space-3) var(--space-4);
-    }
-
-    .featured-vendor-body
-    {
-        padding: var(--space-3) var(--space-4);
-    }
-
-    .about-hero
-    {
-        padding: var(--space-8) 0;
-    }
-
-    .about-hero h1
-    {
-        font-size: 1.5rem;
-    }
-
-    .faq-hero
-    {
-        padding: var(--space-6) 0;
-    }
-
-    .faq-hero h1
-    {
-        font-size: 1.5rem;
-    }
-
-    .faq-answer
-    {
-        padding-left: var(--space-3);
-    }
-
-    .help-hero
-    {
-        padding: var(--space-6) 0;
-    }
-
-    .help-hero h1
-    {
-        font-size: 1.5rem;
-    }
-
-    .help-card
-    {
-        padding: var(--space-4);
-    }
-
-    .contact-support-box
-    {
-        padding: var(--space-5);
-    }
-
-    .page-title
-    {
-        font-size: 1.5rem;
-    }
-
     .auth-body
     {
         padding: var(--space-4);
@@ -1470,14 +1077,25 @@
         padding: var(--space-3) var(--space-4);
     }
 
-    .auth-footer p
+    .page-title
     {
-        font-size: 0.8125rem;
+        font-size: 1.5rem;
     }
 
-    .btn-lg
+    .btn-google
     {
-        padding: var(--space-3) var(--space-4);
+        font-size: 0.875rem;
+        padding: var(--space-2) var(--space-4);
+    }
+
+    .language-switcher
+    {
+        font-size: 0.6875rem;
+    }
+
+    .language-switcher .lang-link
+    {
+        padding: var(--space-1) var(--space-2);
     }
 
     .logo a span

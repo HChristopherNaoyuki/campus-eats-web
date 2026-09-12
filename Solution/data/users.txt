@@ -1,0 +1,186 @@
+================================================================================
+Campus Eats - Demonstration Account Reference
+================================================================================
+
+IMPORTANT: DEMONSTRATION DATA
+
+The ten accounts listed in this file are fabricated demonstration data.
+Every name, email address, and password is invented for local testing.
+They do not correspond to any real person, and none of the email
+addresses can receive mail. The passwords are public. They must never
+be used on a host that is reachable from a network.
+
+This file is a human-readable reference. The application never reads it.
+The authoritative source of the account definitions is:
+
+    Solution/config/demo_accounts.php
+
+The database rows are created by:
+
+    Solution/sql/seed.php
+
+Run the seed script from the project root:
+
+    php Solution/sql/seed.php
+
+================================================================================
+Role Distribution
+================================================================================
+
+    admins     2
+    vendors    3
+    standard   4
+    students   1
+    --------  --
+    total     10
+
+================================================================================
+Administrators
+================================================================================
+
+User ID   : 1001
+Unique ID : ADMN4K7P2Q9XRT5M
+Name      : Amara Nkosi
+Username  : amara.nkosi
+Email     : amara.nkosi@campuseats.test
+Password  : Adm1n#Amara
+Role      : admin
+
+User ID   : 1002
+Unique ID : ADMN8B3W6Y1ZPL4N
+Name      : Pieter van Wyk
+Username  : pieter.vanwyk
+Email     : pieter.vanwyk@campuseats.test
+Password  : Adm1n#Pieter
+Role      : admin
+
+================================================================================
+Vendors
+================================================================================
+
+User ID   : 2001
+Unique ID : VNDR2T5H8J3KQ7L
+Name      : Thandiwe Mokoena
+Username  : thandiwe.mokoena
+Email     : thandiwe.mokoena@campuseats.test
+Password  : Vend0r#Thandi
+Role      : vendor
+Shop      : Campus Corner Kitchen
+Shop info : Traditional South African meals prepared fresh daily.
+            Pap, chakalaka, and grilled chicken are the house specialities.
+
+User ID   : 2002
+Unique ID : VNDR9F4G7N2MXP5Q
+Name      : Sipho Dlamini
+Username  : sipho.dlamini
+Email     : sipho.dlamini@campuseats.test
+Password  : Vend0r#Sipho
+Role      : vendor
+Shop      : Braai Brothers
+Shop info : Flame-grilled meat, boerewors rolls, and vegetarian skewers.
+            Open from breakfast until late afternoon.
+
+User ID   : 2003
+Unique ID : VNDR6C1V9B4LZR8T
+Name      : Annelie Botha
+Username  : annelie.botha
+Email     : annelie.botha@campuseats.test
+Password  : Vend0r#Annelie
+Role      : vendor
+Shop      : Coffee and Koeksisters
+Shop info : Speciality coffee, freshly baked koeksisters, and light
+            breakfast options for early lectures.
+
+================================================================================
+Standard Users
+================================================================================
+
+User ID   : 3001
+Unique ID : STDN3J7R5H2KXQ9M
+Name      : Lerato Khumalo
+Username  : lerato.khumalo
+Email     : lerato.khumalo@campuseats.test
+Password  : Stand@rd#Lerato
+Role      : standard
+
+User ID   : 3002
+Unique ID : STDN7P4W1Y6NBLZ2
+Name      : Johan Pretorius
+Username  : johan.pretorius
+Email     : johan.pretorius@campuseats.test
+Password  : Stand@rd#Johan
+Role      : standard
+
+User ID   : 3003
+Unique ID : STDN5T8M3K2LZXR6Q
+Name      : Zanele Ndlovu
+Username  : zanele.ndlovu
+Email     : zanele.ndlovu@campuseats.test
+Password  : Stand@rd#Zanele
+Role      : standard
+
+User ID   : 3004
+Unique ID : STDN9R2B7V4MQP1X
+Name      : Marius Steyn
+Username  : marius.steyn
+Email     : marius.steyn@campuseats.test
+Password  : Stand@rd#Marius
+Role      : standard
+
+================================================================================
+Student
+================================================================================
+
+User ID   : 4001
+Unique ID : STDT4K9X2P7MNZR5B
+Name      : Naledi Mahlangu
+Username  : naledi.mahlangu
+Email     : naledi.mahlangu@campuseats.test
+Password  : Stud3nt#Naledi
+Role      : student
+
+================================================================================
+How to Sign In
+================================================================================
+
+The sign-in page accepts any of the following as the identifier:
+
+    - The email address, for example amara.nkosi@campuseats.test
+    - The username, for example amara.nkosi
+    - The 16-character unique ID, with or without hyphens,
+      for example ADMN4K7P2Q9XRT5M or ADMN-4K7P-2Q9X-RT5M
+
+The password is the one listed above for the account.
+
+================================================================================
+Password Policy
+================================================================================
+
+Every password in this file satisfies the application policy:
+
+    - At least eight characters long.
+    - Contains at least one uppercase letter.
+    - Contains at least one lowercase letter.
+    - Contains at least one digit.
+    - Contains at least one special symbol.
+
+The password stored in the database is a bcrypt hash produced by
+password_hash() at cost factor 12. The plain-text values exist only in
+this file and in demo_accounts.php. They are never stored in the
+database.
+
+================================================================================
+Reminder
+================================================================================
+
+Before deploying this application to any host that is reachable from a
+network:
+
+    1. Delete this file.
+    2. Delete or empty Solution/config/demo_accounts.php.
+    3. Do not run Solution/sql/seed.php on that host.
+    4. Create real accounts through the registration page.
+
+================================================================================
+End of File
+================================================================================
