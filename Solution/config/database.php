@@ -5,20 +5,32 @@
  * Handles database connections with a singleton pattern and automatic
  * schema installation.
  *
- * CORRECTIONS (Version 26.0 - Demo Account Removal):
- * - Removed the ensureAdminAccountExists() method. No user accounts are
- *   created by the installer.
- * - Removed the ensureDemoAccountsExist() method and the DEMO_ACCOUNTS
- *   constant. No sample users are inserted into the database.
- * - Added userCount(), a helper used by the registration page to decide
- *   whether the first user may register as an administrator.
- * - Retained all Version 25.0 corrections: separate schema-verified flag,
- *   post-installation verification, closeCursor() on every query, and
- *   the buffered-query fix.
+ * CORRECTIONS (Version 27.0 - Comment-Aware SQL Splitter):
+ * - Replaced the naive explode(';', ...) splitter in ensureSchemaInstalled()
+ *   with a comment-aware and string-aware splitter. The previous version
+ *   split install.sql on every semicolon, including semicolons inside
+ *   -- comments, /* * / comments, single-quoted strings, and double-quoted
+ *   strings. When a semicolon appeared inside a comment, the splitter
+ *   produced a piece of SQL that ended mid-comment, and the next piece
+ *   began with the tail of a comment and then a fragment of a real
+ *   statement. MySQL received that fragment as a statement and either
+ *   rejected it with syntax error 1064 or dropped it silently, which is
+ *   how "Installation completed but the users table is still missing"
+ *   was produced.
+ * - The splitter now walks the file character by character, tracking
+ *   whether the cursor is inside a line comment, a block comment, a
+ *   single-quoted string, or a double-quoted string. A semicolon is
+ *   treated as a statement boundary only when the cursor is in none of
+ *   those states.
+ * - Retained all Version 26.0 corrections: no admin or demo account
+ *   creation, the userCount() helper, buffered queries, closeCursor()
+ *   on every query, and the post-installation schema verification.
  *
- * SOURCE: DEMO ACCOUNT REQUIREMENT (Interpretation C)
+ * SOURCE: DATABASE AND FIREBASE INTEGRATION ROOT CAUSE REPORT
+ * SOURCE: SQL SYNTAX ERROR INVESTIGATION REPORT
+ * SOURCE: MySQL Documentation - Comments and string literals
  *
- * @version 26.0
+ * @version 27.0
  */
 
 if (!defined('BASE_PATH'))
@@ -110,15 +122,6 @@ class DatabaseConnection
     private $schemaVerified = false;
     private $lastHealthCheck = 0;
 
-    /**
-     * Private constructor. Performs the one-time setup on first use.
-     *
-     * CORRECTION:
-     * The constructor no longer creates an admin account and no longer
-     * creates demo accounts. The schema is installed and verified, and
-     * that is the only provisioning the installer performs. All user
-     * accounts are created through the registration page.
-     */
     private function __construct()
     {
         if ($GLOBALS['_DATABASE_SCHEMA_VERIFIED'] === true)
@@ -256,6 +259,215 @@ class DatabaseConnection
         }
     }
 
+    /**
+     * Splits a SQL script into individual statements.
+     *
+     * CORRECTION:
+     * The previous implementation used explode(';', $sql) and dropped any
+     * piece whose trimmed form began with '--'. That approach is incorrect
+     * whenever a semicolon appears inside a comment, inside a single-quoted
+     * string, or inside a double-quoted string.
+     *
+     * This implementation walks the input character by character and
+     * maintains a state machine with six states:
+     *
+     *   NORMAL        - ordinary SQL text
+     *   LINE_COMMENT  - after -- up to the end of the line
+     *   BLOCK_COMMENT - between slash-star and star-slash
+     *   SINGLE_QUOTE  - inside a 'string'
+     *   DOUBLE_QUOTE  - inside a "string"
+     *   BACKTICK      - inside a `quoted identifier`
+     *
+     * A semicolon is treated as a statement boundary only in the NORMAL
+     * state. Inside any other state, the semicolon is part of the current
+     * piece and is preserved.
+     *
+     * @param string $sql The full SQL script
+     * @return array An array of trimmed, non-empty, non-comment statements
+     */
+    private function splitSqlStatements($sql)
+    {
+        $statements = array();
+        $current = '';
+        $length = strlen($sql);
+        $state = 'NORMAL';
+        $i = 0;
+
+        while ($i < $length)
+        {
+            $char = $sql[$i];
+            $next = ($i + 1 < $length) ? $sql[$i + 1] : '';
+
+            switch ($state)
+            {
+                case 'NORMAL':
+                    // Detect the start of a line comment.
+                    if ($char === '-' && $next === '-')
+                    {
+                        $state = 'LINE_COMMENT';
+                        $current .= $char;
+                        $i++;
+                        break;
+                    }
+
+                    // Detect the start of a block comment.
+                    if ($char === '/' && $next === '*')
+                    {
+                        $state = 'BLOCK_COMMENT';
+                        $current .= $char . $next;
+                        $i += 2;
+                        continue 2;
+                    }
+
+                    // Detect the start of a string or quoted identifier.
+                    if ($char === "'")
+                    {
+                        $state = 'SINGLE_QUOTE';
+                        $current .= $char;
+                        break;
+                    }
+
+                    if ($char === '"')
+                    {
+                        $state = 'DOUBLE_QUOTE';
+                        $current .= $char;
+                        break;
+                    }
+
+                    if ($char === '`')
+                    {
+                        $state = 'BACKTICK';
+                        $current .= $char;
+                        break;
+                    }
+
+                    // Statement boundary.
+                    if ($char === ';')
+                    {
+                        $trimmed = trim($current);
+
+                        if ($trimmed !== '')
+                        {
+                            $statements[] = $trimmed;
+                        }
+
+                        $current = '';
+                        break;
+                    }
+
+                    $current .= $char;
+                    break;
+
+                case 'LINE_COMMENT':
+                    // The comment ends at a newline. Keep the newline so the
+                    // statement retains its original shape.
+                    if ($char === "\n")
+                    {
+                        $state = 'NORMAL';
+                    }
+
+                    $current .= $char;
+                    break;
+
+                case 'BLOCK_COMMENT':
+                    // The comment ends at */. Preserve both characters.
+                    if ($char === '*' && $next === '/')
+                    {
+                        $current .= '*/';
+                        $state = 'NORMAL';
+                        $i += 2;
+                        continue 2;
+                    }
+
+                    $current .= $char;
+                    break;
+
+                case 'SINGLE_QUOTE':
+                    // A backslash escapes the next character.
+                    if ($char === '\\' && $next !== '')
+                    {
+                        $current .= $char . $next;
+                        $i += 2;
+                        continue 2;
+                    }
+
+                    // Two consecutive single quotes are an escaped quote.
+                    if ($char === "'" && $next === "'")
+                    {
+                        $current .= "''";
+                        $i += 2;
+                        continue 2;
+                    }
+
+                    if ($char === "'")
+                    {
+                        $state = 'NORMAL';
+                    }
+
+                    $current .= $char;
+                    break;
+
+                case 'DOUBLE_QUOTE':
+                    if ($char === '\\' && $next !== '')
+                    {
+                        $current .= $char . $next;
+                        $i += 2;
+                        continue 2;
+                    }
+
+                    if ($char === '"' && $next === '"')
+                    {
+                        $current .= '""';
+                        $i += 2;
+                        continue 2;
+                    }
+
+                    if ($char === '"')
+                    {
+                        $state = 'NORMAL';
+                    }
+
+                    $current .= $char;
+                    break;
+
+                case 'BACKTICK':
+                    if ($char === '`' && $next === '`')
+                    {
+                        $current .= '``';
+                        $i += 2;
+                        continue 2;
+                    }
+
+                    if ($char === '`')
+                    {
+                        $state = 'NORMAL';
+                    }
+
+                    $current .= $char;
+                    break;
+            }
+
+            $i++;
+        }
+
+        // Capture any trailing statement that was not terminated by a
+        // semicolon. Trailing whitespace is trimmed.
+        $trimmed = trim($current);
+
+        if ($trimmed !== '')
+        {
+            // Drop a trailing piece that is entirely a comment. This is
+            // the case where the file ends with a comment block and no
+            // final semicolon.
+            if (strpos($trimmed, '--') !== 0 && strpos($trimmed, '/*') !== 0)
+            {
+                $statements[] = $trimmed;
+            }
+        }
+
+        return $statements;
+    }
+
     private function ensureSchemaInstalled()
     {
         if ($this->tableExists('users'))
@@ -284,24 +496,12 @@ class DatabaseConnection
             throw new RuntimeException($message);
         }
 
-        $statements = array();
+        $statements = $this->splitSqlStatements($sqlContent);
 
-        foreach (explode(';', $sqlContent) as $rawStatement)
-        {
-            $statement = trim($rawStatement);
-
-            if ($statement === '')
-            {
-                continue;
-            }
-
-            if (strpos($statement, '--') === 0)
-            {
-                continue;
-            }
-
-            $statements[] = $statement;
-        }
+        writeLog(
+            "Parsed " . count($statements) . " SQL statement(s) from install.sql.",
+            "DATABASE"
+        );
 
         $this->connect();
 
@@ -318,7 +518,7 @@ class DatabaseConnection
             }
             catch (PDOException $exception)
             {
-                $snippet = substr(preg_replace('/\s+/', ' ', $statement), 0, 160);
+                $snippet = substr(preg_replace('/\s+/', ' ', $statement), 0, 200);
 
                 writeLog(
                     "Install statement " . ($index + 1) . " failed: "
@@ -334,7 +534,9 @@ class DatabaseConnection
         if (!$this->tableExists('users'))
         {
             $message = "Installation completed but the users table is still "
-                     . "missing from database '" . DB_NAME . "'.";
+                     . "missing from database '" . DB_NAME . "'. Check that "
+                     . "install.sql contains a CREATE TABLE users statement and "
+                     . "that DB_NAME points at the database the script targets.";
 
             writeLog($message, "DATABASE_ERROR");
             throw new RuntimeException($message);
@@ -377,11 +579,6 @@ class DatabaseConnection
 
     /**
      * Returns the number of rows in the users table.
-     *
-     * CORRECTION: Added for the registration page. The registration page
-     * calls this to decide whether the current visitor is the first user.
-     * If the count is zero, the page offers the Admin role. Once any user
-     * exists, the Admin option is no longer offered.
      *
      * @return int The number of users in the database
      */
@@ -490,12 +687,6 @@ class DatabaseConnection
             writeLog('Failed to create password_reset_attempts table: ' . $exception->getMessage(), "DATABASE_ERROR");
         }
     }
-
-    // =========================================================================
-    // The following methods are unchanged from Version 25.0:
-    //   executeQuery, fetchOne, fetchAll, insert, rowCount,
-    //   beginTransaction, commit, rollback, __clone, __wakeup
-    // =========================================================================
 
     public function executeQuery($sql, $params = array())
     {

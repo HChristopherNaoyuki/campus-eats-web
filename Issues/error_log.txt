@@ -1,0 +1,21 @@
+[2026-09-12 14:36:13] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (single canonical CSP with nonce)
+[2026-09-12 14:36:13] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request: GET /api/Restaurant (Attempt 1)
+[2026-09-12 14:36:14] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] cURL error 60 (CURLE_SSL_CACERT): SSL certificate problem: unable to get local issuer certificate (url: https://fakerestaurantapi.runasp.net/api/Restaurant)
+[2026-09-12 14:36:14] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] Permanent cURL failure (error 60). Not retrying.
+[2026-09-12 14:36:14] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request failed after 1 attempt(s): API request failed: SSL certificate problem: unable to get local issuer certificate
+[2026-09-12 14:36:14] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] Error fetching restaurants from API: API request failed: SSL certificate problem: unable to get local issuer certificate
+[2026-09-12 14:36:19] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: i2l5m9ak4u098aie2mmkfkkbdf] Session ID regenerated (periodic)
+[2026-09-12 14:36:19] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: i2l5m9ak4u098aie2mmkfkkbdf] Secure session started successfully
+[2026-09-12 14:36:23] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: i2l5m9ak4u098aie2mmkfkkbdf] Secure session started successfully
+[2026-09-12 14:36:23] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: i2l5m9ak4u098aie2mmkfkkbdf] PDO connection opened to database 'campus_eats'.
+[2026-09-12 14:36:23] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: i2l5m9ak4u098aie2mmkfkkbdf] Database 'campus_eats' ensured to exist.
+[2026-09-12 14:36:23] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: i2l5m9ak4u098aie2mmkfkkbdf] Schema probe: users table not found. Running install.sql.
+[2026-09-12 14:36:23] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: i2l5m9ak4u098aie2mmkfkkbdf] Installation completed but the users table is still missing from database 'campus_eats'.
+[2026-09-12 14:36:23] [EXCEPTION] [ERROR] [IP: 127.0.0.1] [User: guest] [Session: i2l5m9ak4u098aie2mmkfkkbdf] Uncaught Exception: Installation completed but the users table is still missing from database 'campus_eats'. in C:\wamp64\www\campus-eats-web\Solution\config\database.php on line 340
+Stack trace:
+#0 C:\wamp64\www\campus-eats-web\Solution\config\database.php(135): DatabaseConnection->ensureSchemaInstalled()
+#1 C:\wamp64\www\campus-eats-web\Solution\config\database.php(163): DatabaseConnection->__construct()
+#2 C:\wamp64\www\campus-eats-web\Solution\config\database.php(694): DatabaseConnection::getInstance()
+#3 C:\wamp64\www\campus-eats-web\Solution\modules\auth\register.php(35): getDB()
+#4 {main}
+[2026-09-12 14:36:23] [AUDIT] [INFO] [IP: 127.0.0.1] [User: guest] [Session: i2l5m9ak4u098aie2mmkfkkbdf] Audit: system - exception (Result: error)

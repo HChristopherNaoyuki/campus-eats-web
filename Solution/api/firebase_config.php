@@ -4,14 +4,18 @@
  *
  * Serves the Firebase client configuration to the browser as JSON.
  * The browser JavaScript fetches this once on page load and uses it
- * to initialize Firebase.
+ * to initialize the Firebase Web SDK.
  *
- * This replaces the hardcoded FIREBASE_CONFIG object that previously
- * lived inside assets/js/firebase.js.
+ * CORRECTIONS (Version 2.0):
+ * - Removed the wildcard CORS header. Only the application origin is
+ *   reflected, matching the pattern used elsewhere in the API layer.
+ * - Rejects OPTIONS preflight with 200 and empty body.
+ * - Returns 405 for any method other than GET.
+ * - Returns a clear JSON error if Firebase is not configured.
  *
- * SOURCE: Issue report - item 20
+ * SOURCE: Review item 14 - Firebase configuration
  *
- * @version 1.0
+ * @version 2.0
  */
 
 header('Content-Type: application/json');
@@ -42,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET')
 }
 
 require_once dirname(__DIR__) . '/config/constants.php';
-require_once dirname(__DIR__) . '/config/firebase_config.php';
+require_once dirname(__DIR__) . '/includes/firebase_config.php';
 
 if (!isFirebaseConfigured())
 {

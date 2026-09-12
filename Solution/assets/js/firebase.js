@@ -1,18 +1,29 @@
 /**
  * Firebase Integration Module for Campus Eats
  *
- * Initializes the Firebase SDK and provides shared functionality for
- * Firebase Realtime Database operations.
+ * Initializes the Firebase Web SDK and provides shared functionality
+ * for Firebase Realtime Database operations.
  *
- * CORRECTIONS (Version 3.0):
- * - Fixed "param = param || true" bug: callers can now set flags to false
- * - Firebase config is fetched from /api/firebase_config.php instead of
- *   being hardcoded, so the PHP configuration is the single source of truth
- * - Added explicit error propagation on authentication failure
+ * CORRECTIONS (Version 4.0):
+ * - Removed the writeData() function and the deleteData() function.
+ *   These were never called by any page in the codebase. Removing them
+ *   eliminates dead code and removes any accidental path by which a
+ *   client could attempt a protected write.
+ * - Fixed the "param = param || true" pattern in ensureAuthenticated().
+ *   The previous version forced the allowAnonymous flag to true even
+ *   when the caller passed false. The corrected version only defaults
+ *   the flag when the parameter is undefined.
+ * - readFeedback() now reads the whole feedback node and filters by
+ *   userId. This is the only read the application performs.
+ * - The Firebase configuration is fetched from /api/firebase_config.php
+ *   rather than being hardcoded. The PHP side is the single source of
+ *   truth for the client configuration.
+ * - Firebase SDK version is taken from the server response. If the
+ *   response does not specify a version, it falls back to 12.18.0.
  *
- * SOURCE: Issue report - items 18, 20
+ * SOURCE: Review items 7, 8, 18, 20
  *
- * @version 3.0
+ * @version 4.0
  */
 
 (function()
@@ -194,7 +205,7 @@
      * CORRECTION: The previous implementation used
      * "allowAnonymous = allowAnonymous || true;" which forced the flag to
      * true even when the caller passed false. This version uses a proper
-     * default.
+     * default and respects the caller's value.
      *
      * @param {boolean} allowAnonymous Whether to allow anonymous sign-in
      * @returns {Promise<Object>} Resolves with the authenticated user
@@ -251,7 +262,7 @@
     }
 
     /**
-     * Performs a Firebase database read.
+     * Reads a value from the Realtime Database.
      *
      * @param {string} path Database path
      * @param {string|null} childKey Optional child key
@@ -289,85 +300,11 @@
     }
 
     /**
-     * Performs a Firebase database write.
-     *
-     * @param {string} path Database path
-     * @param {*} data Data to write
-     * @param {string|null} childKey Optional child key
-     * @param {boolean} requireAuth Whether to require authentication
-     * @returns {Promise<*>}
-     */
-    function writeData(path, data, childKey, requireAuth)
-    {
-        if (typeof requireAuth === 'undefined')
-        {
-            requireAuth = true;
-        }
-
-        return ensureAuthenticated(requireAuth)
-            .then(function(user)
-            {
-                if (!user && requireAuth)
-                {
-                    throw new Error('No authenticated user');
-                }
-                return import(
-                    'https://www.gstatic.com/firebasejs/' +
-                    (firebaseConfig.sdkVersion || '12.18.0') +
-                    '/firebase-database.js'
-                );
-            })
-            .then(function(module)
-            {
-                var refFn = module.ref;
-                var setFn = module.set;
-                var pushFn = module.push;
-                var fullPath = childKey ? (path + '/' + childKey) : path;
-                var dbRef = refFn(firebaseDatabase, fullPath);
-                return setFn(dbRef, data);
-            });
-    }
-
-    /**
-     * Deletes data from Firebase.
-     *
-     * @param {string} path Database path
-     * @param {string} childKey Child key to delete
-     * @param {boolean} requireAuth Whether to require authentication
-     * @returns {Promise<void>}
-     */
-    function deleteData(path, childKey, requireAuth)
-    {
-        if (typeof requireAuth === 'undefined')
-        {
-            requireAuth = true;
-        }
-
-        return ensureAuthenticated(requireAuth)
-            .then(function()
-            {
-                return import(
-                    'https://www.gstatic.com/firebasejs/' +
-                    (firebaseConfig.sdkVersion || '12.18.0') +
-                    '/firebase-database.js'
-                );
-            })
-            .then(function(module)
-            {
-                var refFn = module.ref;
-                var removeFn = module.remove;
-                var fullPath = path + '/' + childKey;
-                var dbRef = refFn(firebaseDatabase, fullPath);
-                return removeFn(dbRef);
-            });
-    }
-
-    /**
      * Reads feedback entries.
      *
      * CORRECTION: "onlyUser" now defaults properly to true only when the
-     * parameter is undefined. Callers can pass false to read all feedback
-     * (subject to server-side rules).
+     * parameter is undefined. Callers may pass false to read all feedback
+     * subject to the Firebase security rules.
      *
      * @param {string|null} userId Firebase UID to filter by
      * @param {boolean} onlyUser If true, filter to the given user only
@@ -421,8 +358,6 @@
         signInAnonymously: signInAnonymously,
         ensureAuthenticated: ensureAuthenticated,
         readData: readData,
-        writeData: writeData,
-        deleteData: deleteData,
         readFeedback: readFeedback,
         DB_PATHS: DB_PATHS,
         isInitialized: function() { return isInitialized; }

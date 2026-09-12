@@ -8,7 +8,6 @@
       "$campus_user_id": {
         ".read": "auth != null && (auth.token.email === data.child('email').val() || root.child('admin_claims').child(auth.uid).val() === true)",
         ".write": "auth != null && (!data.exists() || auth.token.email === data.child('email').val())",
-
         ".validate": "newData.hasChildren(['userId', 'fullName', 'email', 'role'])",
         "userId": {
           ".validate": "newData.val().length === 19 || newData.val().length === 16"

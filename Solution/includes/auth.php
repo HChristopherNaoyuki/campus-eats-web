@@ -5,32 +5,28 @@
  * Handles user authentication, role-based access control, session
  * management, security header configuration, and rate limiting.
  *
- * CORRECTIONS (Version 22.0):
- * - authenticateUser() now accepts a 16-character User ID as a login
- *   credential, in addition to email and username. The login page
- *   (modules/auth/login.php) already advertises "16-character User ID
- *   or you@campus.edu" in its placeholder text and labels the field
- *   "User ID or Email". The previous implementation of authenticateUser()
- *   only branched between the `email` and `username` columns and never
- *   queried the `unique_id` column, so any user who followed the on-screen
- *   instruction and typed their User ID was rejected with "Invalid
- *   email/username or password". This version adds a third branch.
- * - The 16-character check uses the shared validateUserIdFormat() helper
- *   from includes/user_id.php, so the same rule is applied here as in
- *   forgot_password.php and register.php.
- * - Display hyphens are stripped before the lookup, so a user may type
- *   either "XXXX-XXXX-XXXX-XXXX" or "XXXXXXXXXXXXXXXX" and both forms
- *   match the continuous value stored in the users.unique_id column.
- * - Retains all previous corrections: CSP_POLICY constant, CSP_NONCE
- *   for inline blocks, escapeOutput() as the single canonical escaping
- *   helper, HttpOnly session cookies, Secure flag when HTTPS is present,
- *   and CSRF tokens built from random_bytes and compared with hash_equals.
+ * CORRECTIONS (Version 23.0):
+ * - Retains the 16-character User ID login branch added in Version 22.0.
+ *   authenticateUser() classifies the identifier as an email, a 16-character
+ *   User ID, or a username, and queries the matching column. Display hyphens
+ *   are stripped before the User ID lookup, so both the raw form and the
+ *   display form match the stored value.
+ * - Retains the canonical escapeOutput() helper. It is the single escaping
+ *   function for the application.
+ * - Retains the CSP_POLICY and CSP_NONCE constants for header and inline
+ *   block use.
+ * - Retains the HttpOnly session cookie and the Secure flag when the request
+ *   is over HTTPS.
+ * - Retains CSRF tokens built from random_bytes and compared with hash_equals.
+ * - No Firebase calls are made from this file. The application's
+ *   authentication path is MySQL. Firebase is used for feedback only, and
+ *   the feedback code lives in assets/js/feedback-firebase.js.
  *
  * SOURCE: campus-eats-process-document.pdf Section 11.1
  * SOURCE: Solution/includes/user_id.php validateUserIdFormat()
  * SOURCE: Review item 2 - Login cannot actually use the 16-character User ID
  *
- * @version 22.0
+ * @version 23.0
  */
 
 if (!defined('BASE_PATH'))
@@ -49,7 +45,7 @@ require_once BASE_PATH . '/config/error_logging.php';
 if (!function_exists('escapeOutput'))
 {
     /**
-     * Escapes a string for safe HTML output.
+     * Escapes a value for safe HTML output.
      *
      * This is the single canonical escaping helper for the application.
      * Every other file that needs to escape output for HTML should call
@@ -337,8 +333,7 @@ if (!function_exists('validateCsrfToken'))
     /**
      * Validates a submitted CSRF token against the session token.
      *
-     * Uses hash_equals for a constant-time comparison, so the comparison
-     * time does not leak how many leading characters matched.
+     * Uses hash_equals for a constant-time comparison.
      *
      * @param string $token The token to validate
      * @param bool $regenerateOnSuccess When true, issues a fresh token on success
@@ -534,13 +529,6 @@ if (!function_exists('authenticateUser'))
     /**
      * Authenticates a user by email, username, or 16-character User ID.
      *
-     * CORRECTION:
-     * The login page (modules/auth/login.php) advertises a 16-character
-     * User ID as an accepted credential. The previous implementation of
-     * this function only branched between the `email` and `username`
-     * columns, so any user who typed their User ID was rejected. This
-     * version adds a third branch that queries the `unique_id` column.
-     *
      * Identifier classification order:
      *   1. Email, if it passes FILTER_VALIDATE_EMAIL. An email is never
      *      a valid 16-character ID, so this check is unambiguous.
@@ -548,10 +536,6 @@ if (!function_exists('authenticateUser'))
      *      validateUserIdFormat(). This accepts both the raw form
      *      "XXXXXXXXXXXXXXXX" and the display form "XXXX-XXXX-XXXX-XXXX".
      *   3. Username, as the fallback for any other string.
-     *
-     * The same validation used by forgot_password.php and register.php
-     * is applied here, so the ID format is handled consistently across
-     * all three auth flows.
      *
      * The failed-attempt rate limit is keyed on the raw identifier the
      * user typed, so a user who mistypes their User ID twice and then
@@ -590,15 +574,11 @@ if (!function_exists('authenticateUser'))
         }
 
         // =====================================================================
-        // CORRECTION: Classify the identifier into one of three columns.
+        // Classify the identifier into one of three columns.
         // =====================================================================
-        // The previous implementation used only two branches (email or
-        // username). This version adds the unique_id branch so the login
-        // page's advertised "16-character User ID" credential is accepted.
-        //
-        // Hyphens are stripped from the candidate User ID before the format
-        // check, so a user may type either the raw or the display form.
-        // Both normalise to the continuous value stored in unique_id.
+        // 1. Email
+        // 2. 16-character User ID (hyphens stripped before the format check)
+        // 3. Username (fallback)
         // =====================================================================
 
         $normalizedIdentifier = trim($identifier);
@@ -611,11 +591,8 @@ if (!function_exists('authenticateUser'))
         }
         else
         {
-            // Strip the display hyphens before checking the raw ID format.
             $candidateUserId = str_replace('-', '', $normalizedIdentifier);
 
-            // The helper is defined in includes/user_id.php. Guard the call
-            // so this module remains usable if that file is not loaded.
             if (function_exists('validateUserIdFormat') && validateUserIdFormat($candidateUserId))
             {
                 $field = 'unique_id';

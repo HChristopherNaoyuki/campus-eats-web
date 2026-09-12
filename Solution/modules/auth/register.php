@@ -4,23 +4,24 @@
  *
  * Handles new user registration with role selection.
  *
- * CORRECTIONS (Version 14.0 - First User Admin):
- * - The role dropdown now offers the Admin role only when the users
- *   table is empty. This is the only path by which an administrator
- *   account is created. No admin account is provisioned by the
- *   installer and no default admin credentials exist.
- * - The server-side validation accepts 'admin' as a submitted role only
- *   when the users table is still empty at the moment of the POST. A
- *   crafted request that submits role=admin after the first user exists
- *   is rejected with the same message as any other invalid role.
- * - Retains all previous corrections: the inline onclick handler is
- *   replaced by an event listener in assets/js/auth.js, and the page
- *   uses the shared escapeOutput() helper.
+ * CORRECTIONS (Version 15.0 - Demo Account Removal and First User Admin):
+ * - The Admin role is offered only when the users table is empty. This is
+ *   the only path by which an administrator account is created. The
+ *   installer no longer provisions an admin account, and no default admin
+ *   credentials exist anywhere in the codebase.
+ * - The POST handler re-checks the user count at submission time, so a
+ *   crafted request cannot create a second administrator after the first
+ *   user has registered.
+ * - Retains the User ID display and the Copy button. The Copy button is
+ *   bound by assets/js/auth.js, not by an inline onclick handler.
+ * - Retains the shared escapeOutput() helper. No local helper is defined.
+ * - New accounts are verified and active on creation, matching the
+ *   process document.
  *
  * SOURCE: DEMO ACCOUNT REQUIREMENT (Interpretation C)
  * SOURCE: campus-eats-process-document.pdf Section 13
  *
- * @version 14.0
+ * @version 15.0
  */
 
 require_once dirname(__DIR__, 2) . '/config/constants.php';
@@ -37,12 +38,8 @@ $db = getDB();
 // =============================================================================
 // Determine whether this visitor is the first user.
 // =============================================================================
-//
-// If the users table is empty, the visitor is the first user and may
-// register as an administrator. Once any user exists, the Admin role
-// is not offered and not accepted. This is evaluated before the form
-// is rendered and again during the POST, so a delayed submission
-// cannot use the Admin role after another user has been created.
+// If the users table is empty, the visitor may register as an administrator.
+// Once any user exists, the Admin role is neither offered nor accepted.
 // =============================================================================
 
 $isFirstUser = ($db->userCount() === 0);
@@ -75,9 +72,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
 
     $accountType = isset($roleMap[$accountType]) ? $roleMap[$accountType] : 'student';
 
-    // Re-evaluate the first-user state at POST time. If another user
-    // has registered since the form was rendered, admin is no longer
-    // permitted even though the dropdown may still have shown it.
+    // Re-evaluate the first-user state at POST time. If another user has
+    // registered since the form was rendered, admin is no longer permitted.
     $isFirstUserAtPostTime = ($db->userCount() === 0);
 
     $formData = array(
@@ -100,7 +96,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
     }
     elseif ($accountType === 'admin' && !$isFirstUserAtPostTime)
     {
-        $error = 'The administrator account has already been created. Please register as Student, Standard, or Vendor.';
+        $error = 'The administrator account has already been created. '
+               . 'Please register as Student, Standard, or Vendor.';
     }
     elseif (!in_array($accountType, array('student', 'standard', 'vendor', 'admin'), true))
     {
@@ -160,9 +157,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                         )
                     );
 
-                    // Vendor accounts get a vendor profile. The profile is
-                    // marked as not approved, and it is approved by an
-                    // administrator before the vendor can log in.
                     if ($accountType === 'vendor' && $userId)
                     {
                         $db->insert(
@@ -179,17 +173,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                     }
 
                     $generatedUserId = $uniqueId;
-                    $success = 'Account created successfully. Your 16-character USER ID has been generated. You can now log in.';
+                    $success = 'Account created successfully. Your 16-character '
+                             . 'USER ID has been generated. You can now log in.';
                     writeLog(
-                        "Registration successful: User created with email: $email, USER ID: $uniqueId, Role: $accountType",
+                        "Registration successful: User created with email: $email, "
+                            . "USER ID: $uniqueId, Role: $accountType",
                         "REGISTER"
                     );
 
                     generateCsrfToken();
-
-                    // After this registration, the users table is no
-                    // longer empty. The next visitor will not see the
-                    // Admin option.
                     $isFirstUser = false;
                 }
             }
@@ -245,12 +237,14 @@ if (!empty($generatedUserId))
                     <?php echo escapeOutput($success); ?>
                 </div>
 
-                <div class="user-id-section" style="background: var(--gray-50); border-radius: var(--radius-md); padding: var(--space-4); margin: var(--space-4) 0;">
+                <div class="user-id-section"
+                     style="background: var(--gray-50); border-radius: var(--radius-md); padding: var(--space-4); margin: var(--space-4) 0;">
                     <label style="font-size: 0.75rem; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.02em; display: block; margin-bottom: var(--space-2);">
                         Your 16-character USER ID
                     </label>
                     <div style="display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); background: white; border-radius: var(--radius-sm); padding: var(--space-3) var(--space-4); border: 1px solid var(--gray-200);">
-                        <code id="generated-user-id" data-user-id="<?php echo escapeOutput($generatedUserId); ?>"
+                        <code id="generated-user-id"
+                              data-user-id="<?php echo escapeOutput($generatedUserId); ?>"
                               style="font-family: monospace; font-size: 0.875rem; font-weight: 600; color: var(--orange); letter-spacing: 0.5px; word-break: break-all;">
                             <?php echo escapeOutput($displayUserId); ?>
                         </code>
@@ -270,27 +264,30 @@ if (!empty($generatedUserId))
             <?php else: ?>
                 <div class="auth-body">
                     <?php if ($isFirstUser): ?>
-                        <div class="info-box" style="background: var(--orange-light); border-left: 4px solid var(--orange); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); margin-bottom: var(--space-4); display: flex; gap: var(--space-3); align-items: flex-start;">
+                        <div class="info-box"
+                             style="background: var(--orange-light); border-left: 4px solid var(--orange); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); margin-bottom: var(--space-4); display: flex; gap: var(--space-3); align-items: flex-start;">
                             <i class="fas fa-crown" style="color: var(--orange); font-size: 1.25rem; margin-top: 2px;"></i>
                             <div>
                                 <strong>You are the first user.</strong>
                                 <p style="margin: var(--space-1) 0 0; font-size: 0.875rem;">
-                                    No accounts exist yet. You may register this first account as
-                                    an administrator. Once any account exists, the Admin role
-                                    will no longer be offered.
+                                    No accounts exist yet. You may register this first account
+                                    as an administrator. Once any account exists, the Admin
+                                    role will no longer be offered.
                                 </p>
                             </div>
                         </div>
                     <?php endif; ?>
 
                     <form method="POST" action="" id="register-form">
-                        <input type="hidden" name="csrf_token" value="<?php echo escapeOutput($csrfToken); ?>">
+                        <input type="hidden" name="csrf_token"
+                               value="<?php echo escapeOutput($csrfToken); ?>">
 
                         <div class="form-group">
                             <label class="form-label" for="full_name">Name</label>
                             <div class="input-wrapper">
                                 <i class="fas fa-user input-icon"></i>
-                                <input type="text" id="full_name" name="full_name" class="form-control" required
+                                <input type="text" id="full_name" name="full_name"
+                                       class="form-control" required
                                        value="<?php echo escapeOutput($formData['full_name']); ?>"
                                        placeholder="Your full name">
                             </div>
@@ -300,7 +297,8 @@ if (!empty($generatedUserId))
                             <label class="form-label" for="email">Email</label>
                             <div class="input-wrapper">
                                 <i class="fas fa-envelope input-icon"></i>
-                                <input type="email" id="email" name="email" class="form-control" required
+                                <input type="email" id="email" name="email"
+                                       class="form-control" required
                                        value="<?php echo escapeOutput($formData['email']); ?>"
                                        placeholder="you@campus.edu">
                             </div>
@@ -310,7 +308,8 @@ if (!empty($generatedUserId))
                             <label class="form-label" for="password">Password</label>
                             <div class="input-wrapper">
                                 <i class="fas fa-lock input-icon"></i>
-                                <input type="password" id="password" name="password" class="form-control" required
+                                <input type="password" id="password" name="password"
+                                       class="form-control" required
                                        placeholder="Create a password">
                             </div>
                             <div class="password-strength">
@@ -342,7 +341,8 @@ if (!empty($generatedUserId))
                             </span>
                         </div>
 
-                        <button type="submit" id="register-btn" class="btn btn-primary btn-block btn-lg">
+                        <button type="submit" id="register-btn"
+                                class="btn btn-primary btn-block btn-lg">
                             <i class="fas fa-user-plus"></i> Create account
                         </button>
                     </form>

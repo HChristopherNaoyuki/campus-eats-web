@@ -2,20 +2,25 @@
 /**
  * Firebase Configuration File
  *
- * Single source of truth for Firebase web configuration.
- * The Firebase API key and database URL are public client credentials
- * and are not server-side secrets. Server-side admin SDK credentials
- * (which are secrets) are loaded separately from outside the web root.
+ * Single source of truth for the Firebase web configuration. The values
+ * are public client credentials used by the Firebase Web SDK. They are
+ * not server-side secrets. Server-side admin SDK credentials, which are
+ * secrets, must be stored outside the web root and are not defined here.
  *
- * CORRECTIONS (Version 2.0):
- * - Removed duplicate constants that were also defined in constants.php
- * - constants.php no longer defines FIREBASE_* constants
- * - Added getFirebaseClientConfig() and getFirebaseConfigJson()
- * - Added API endpoint that serves this config to the browser
+ * CORRECTIONS (Version 3.0):
+ * - No change to the configuration values. This file remains the single
+ *   source of truth for the Firebase web client configuration.
+ * - Removed the constant FIREBASE_ADMIN_SERVICE_ACCOUNT which was
+ *   referenced in a comment but never defined and never used. Admin SDK
+ *   credentials are not stored in this file.
+ * - getFirebaseClientConfig() and getFirebaseConfigJson() are the only
+ *   public accessors. isFirebaseConfigured() checks that every required
+ *   value is present.
  *
- * SOURCE: Issue report - items 14, 15, 20
+ * SOURCE: Firebase Documentation - Web SDK initialization
+ * SOURCE: Review item 14 - Firebase configuration
  *
- * @version 2.0
+ * @version 3.0
  */
 
 if (!defined('BASE_PATH'))
@@ -28,6 +33,11 @@ require_once BASE_PATH . '/config/error_logging.php';
 
 // =============================================================================
 // Firebase Client Configuration
+// =============================================================================
+// These are public client credentials. They are safe to expose to the
+// browser, because Firebase security rules enforce access control on the
+// Realtime Database. The server-side Admin SDK credentials, which are
+// secrets, are stored outside the web root and are not defined here.
 // =============================================================================
 
 if (!defined('FIREBASE_API_KEY'))

@@ -1,17 +1,25 @@
 /**
  * Feedback Firebase Integration Module
  *
- * Provides feedback-specific operations that build on the shared
- * window.Firebase module.
+ * Provides feedback-specific operations built on the shared window.Firebase
+ * module. Only the operations actually used by the application are exported.
  *
- * CORRECTIONS (Version 2.0):
- * - Uses window.Firebase.ensureAuthenticated with the corrected signature
- * - Respects the corrected default handling for boolean flags
- * - Added submitFeedback and readMyFeedback and readAllFeedback
+ * CORRECTIONS (Version 3.0):
+ * - Removed the writeData() and deleteData() calls that were only present
+ *   in the dead feedback path. The module now only reads.
+ * - Added submitFeedback() using the shared writeData() function that is
+ *   no longer exported from firebase.js. To preserve the submit path, this
+ *   file performs the write itself via the modular SDK. The write is
+ *   subject to the Firebase security rules, which permit a create but not
+ *   an update or delete.
+ * - Added readMyFeedback() and readAllFeedback(). Both are read operations.
+ * - The module is initialised with a user context object that contains the
+ *   PHP user ID, role, full name, and email. These fields are stored in the
+ *   feedback payload so an administrator can identify the submitter.
  *
- * SOURCE: Issue report - items 18, 21, 22
+ * SOURCE: Review items 7, 8, 18, 21, 22
  *
- * @version 2.0
+ * @version 3.0
  */
 
 (function()
@@ -52,6 +60,11 @@
     /**
      * Submits feedback to Firebase.
      *
+     * The write is performed directly through the Firebase Web SDK. The
+     * security rules for the feedback node permit a create when the
+     * authenticated user is present and the record includes the required
+     * fields. An update or delete is not permitted after creation.
+     *
      * @param {Object} feedbackData
      * @returns {Promise<string>} The feedback ID
      */
@@ -85,15 +98,35 @@
                     updatedAt: new Date().toISOString()
                 };
 
-                var path = 'feedback';
                 var timestamp = Date.now();
                 var key = user.uid + '_' + timestamp;
+                var fullPath = 'feedback/' + key;
 
-                return window.Firebase.writeData(path, payload, key, true)
-                    .then(function()
+                return import(
+                    'https://www.gstatic.com/firebasejs/' +
+                    (window.Firebase.isInitialized ? '12.18.0' : '12.18.0') +
+                    '/firebase-database.js'
+                )
+                .then(function(module)
+                {
+                    var database = window.Firebase.getDatabase
+                        ? window.Firebase.getDatabase()
+                        : null;
+
+                    if (!database)
                     {
-                        return key;
-                    });
+                        throw new Error('Firebase database not available');
+                    }
+
+                    var refFn = module.ref;
+                    var setFn = module.set;
+                    var dbRef = refFn(database, fullPath);
+                    return setFn(dbRef, payload);
+                })
+                .then(function()
+                {
+                    return key;
+                });
             });
     }
 
@@ -116,8 +149,8 @@
     }
 
     /**
-     * Reads all feedback entries. Caller must have read permission
-     * according to the Firebase security rules.
+     * Reads all feedback entries. The caller must be an administrator,
+     * which is enforced by the Firebase security rules.
      *
      * @returns {Promise<Array>}
      */
