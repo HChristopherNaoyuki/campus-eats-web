@@ -4,18 +4,23 @@
  *
  * Handles new user registration with role selection.
  *
- * CORRECTIONS (Version 13.0):
- * - Removed the inline onclick handler from the Copy button and
- *   replaced it with an event listener in assets/js/auth.js. This
- *   allows the Content Security Policy to remain strict.
- * - Uses the shared escapeOutput() helper
- * - New accounts are activated immediately (is_verified = 1) to match
- *   process document Section 13
+ * CORRECTIONS (Version 14.0 - First User Admin):
+ * - The role dropdown now offers the Admin role only when the users
+ *   table is empty. This is the only path by which an administrator
+ *   account is created. No admin account is provisioned by the
+ *   installer and no default admin credentials exist.
+ * - The server-side validation accepts 'admin' as a submitted role only
+ *   when the users table is still empty at the moment of the POST. A
+ *   crafted request that submits role=admin after the first user exists
+ *   is rejected with the same message as any other invalid role.
+ * - Retains all previous corrections: the inline onclick handler is
+ *   replaced by an event listener in assets/js/auth.js, and the page
+ *   uses the shared escapeOutput() helper.
  *
- * SOURCE: Issue report - items 3, 23
+ * SOURCE: DEMO ACCOUNT REQUIREMENT (Interpretation C)
  * SOURCE: campus-eats-process-document.pdf Section 13
  *
- * @version 13.0
+ * @version 14.0
  */
 
 require_once dirname(__DIR__, 2) . '/config/constants.php';
@@ -27,12 +32,26 @@ require_once dirname(__DIR__, 2) . '/config/error_logging.php';
 
 startSecureSession();
 
+$db = getDB();
+
+// =============================================================================
+// Determine whether this visitor is the first user.
+// =============================================================================
+//
+// If the users table is empty, the visitor is the first user and may
+// register as an administrator. Once any user exists, the Admin role
+// is not offered and not accepted. This is evaluated before the form
+// is rendered and again during the POST, so a delayed submission
+// cannot use the Admin role after another user has been created.
+// =============================================================================
+
+$isFirstUser = ($db->userCount() === 0);
+
 $error = '';
 $success = '';
 $generatedUserId = '';
 $formData = array('full_name' => '', 'email' => '', 'account_type' => 'student');
 
-$db = getDB();
 $csrfToken = getCsrfToken();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST')
@@ -49,10 +68,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
         'Vendor' => 'vendor',
         'vendor' => 'vendor',
         'Standard' => 'standard',
-        'standard' => 'standard'
+        'standard' => 'standard',
+        'Admin' => 'admin',
+        'admin' => 'admin'
     );
 
     $accountType = isset($roleMap[$accountType]) ? $roleMap[$accountType] : 'student';
+
+    // Re-evaluate the first-user state at POST time. If another user
+    // has registered since the form was rendered, admin is no longer
+    // permitted even though the dropdown may still have shown it.
+    $isFirstUserAtPostTime = ($db->userCount() === 0);
 
     $formData = array(
         'full_name' => $fullName,
@@ -71,6 +97,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
     elseif (!filter_var($email, FILTER_VALIDATE_EMAIL))
     {
         $error = 'Please enter a valid email address.';
+    }
+    elseif ($accountType === 'admin' && !$isFirstUserAtPostTime)
+    {
+        $error = 'The administrator account has already been created. Please register as Student, Standard, or Vendor.';
+    }
+    elseif (!in_array($accountType, array('student', 'standard', 'vendor', 'admin'), true))
+    {
+        $error = 'Invalid role selected.';
     }
     else
     {
@@ -126,6 +160,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                         )
                     );
 
+                    // Vendor accounts get a vendor profile. The profile is
+                    // marked as not approved, and it is approved by an
+                    // administrator before the vendor can log in.
                     if ($accountType === 'vendor' && $userId)
                     {
                         $db->insert(
@@ -142,13 +179,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                     }
 
                     $generatedUserId = $uniqueId;
-                    $success = 'Account created successfully. Your 16-character USER ID has been generated. You can now log in immediately.';
+                    $success = 'Account created successfully. Your 16-character USER ID has been generated. You can now log in.';
                     writeLog(
                         "Registration successful: User created with email: $email, USER ID: $uniqueId, Role: $accountType",
                         "REGISTER"
                     );
 
                     generateCsrfToken();
+
+                    // After this registration, the users table is no
+                    // longer empty. The next visitor will not see the
+                    // Admin option.
+                    $isFirstUser = false;
                 }
             }
             catch (Exception $e)
@@ -227,6 +269,20 @@ if (!empty($generatedUserId))
                 </div>
             <?php else: ?>
                 <div class="auth-body">
+                    <?php if ($isFirstUser): ?>
+                        <div class="info-box" style="background: var(--orange-light); border-left: 4px solid var(--orange); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); margin-bottom: var(--space-4); display: flex; gap: var(--space-3); align-items: flex-start;">
+                            <i class="fas fa-crown" style="color: var(--orange); font-size: 1.25rem; margin-top: 2px;"></i>
+                            <div>
+                                <strong>You are the first user.</strong>
+                                <p style="margin: var(--space-1) 0 0; font-size: 0.875rem;">
+                                    No accounts exist yet. You may register this first account as
+                                    an administrator. Once any account exists, the Admin role
+                                    will no longer be offered.
+                                </p>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
                     <form method="POST" action="" id="register-form">
                         <input type="hidden" name="csrf_token" value="<?php echo escapeOutput($csrfToken); ?>">
 
@@ -273,9 +329,17 @@ if (!empty($generatedUserId))
                                     <option value="Student" <?php echo $formData['account_type'] === 'student' ? 'selected' : ''; ?>>Student</option>
                                     <option value="Standard" <?php echo $formData['account_type'] === 'standard' ? 'selected' : ''; ?>>Standard</option>
                                     <option value="Vendor" <?php echo $formData['account_type'] === 'vendor' ? 'selected' : ''; ?>>Vendor</option>
+                                    <?php if ($isFirstUser): ?>
+                                        <option value="Admin" <?php echo $formData['account_type'] === 'admin' ? 'selected' : ''; ?>>Admin (first user only)</option>
+                                    <?php endif; ?>
                                 </select>
                             </div>
-                            <span class="form-hint">Students receive a 2.5% discount on orders.</span>
+                            <span class="form-hint">
+                                Students receive a 2.5% discount on orders.
+                                <?php if ($isFirstUser): ?>
+                                    The Admin role is available only for this first registration.
+                                <?php endif; ?>
+                            </span>
                         </div>
 
                         <button type="submit" id="register-btn" class="btn btn-primary btn-block btn-lg">

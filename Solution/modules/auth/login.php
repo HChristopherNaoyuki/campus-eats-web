@@ -2,16 +2,29 @@
 /**
  * Login Page
  *
- * CORRECTIONS (Version 18.0):
- * - Demo accounts section now lists real credentials from
- *   config/demo_accounts.php, including passwords, instead of fake
- *   addresses that do not exist
- * - Placeholder text and recovery hint now reflect the documented
- *   alphanumeric USER ID format
+ * Authenticates a user by email, username, or 16-character User ID.
  *
- * SOURCE: Issue report - items 7, 9
+ * CORRECTIONS (Version 20.0 - Demo Account Removal):
+ * - Removed the demo accounts table that displayed plaintext emails and
+ *   passwords on the login page. The requirement is that the application
+ *   must not provide default login credentials, sample accounts, or test
+ *   accounts. No such table is rendered.
+ * - Removed the require statement that loaded config/demo_accounts.php
+ *   for the purpose of displaying those credentials. The file is still
+ *   present on disk and is still included by config/database.php, but it
+ *   returns an empty array and contributes nothing to this page.
+ * - The login field label now reads "User ID, Username, or Email" and the
+ *   placeholder reads "16-character User ID, username, or email". This
+ *   reflects the actual authentication logic in includes/auth.php, which
+ *   accepts all three forms after the User ID branch was added.
+ * - Retained all prior corrections: CSRF token in the form, escapeOutput()
+ *   for all dynamic output, and session-based redirect for authenticated
+ *   users.
  *
- * @version 18.0
+ * SOURCE: DEMO ACCOUNT REQUIREMENT (Interpretation C)
+ * SOURCE: Solution/includes/auth.php authenticateUser()
+ *
+ * @version 20.0
  */
 
 require_once dirname(__DIR__, 2) . '/config/constants.php';
@@ -21,29 +34,40 @@ require_once dirname(__DIR__, 2) . '/config/error_logging.php';
 
 startSecureSession();
 
-$error = '';
-$formData = array('email' => '');
-$csrfToken = getCsrfToken();
+// =============================================================================
+// Redirect authenticated users before rendering the login form.
+// =============================================================================
 
 if (isLoggedIn())
 {
     redirectToDashboard();
 }
 
+// =============================================================================
+// Handle form submission.
+// =============================================================================
+
+$error = '';
+$formData = array('email' => '');
+$csrfToken = getCsrfToken();
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST')
 {
-    $identifier = trim($_POST['email'] ?? '');
-    $passwordInput = $_POST['password'] ?? '';
-    $submittedCsrfToken = $_POST['csrf_token'] ?? '';
+    $identifier = trim(isset($_POST['email']) ? $_POST['email'] : '');
+    $passwordInput = isset($_POST['password']) ? $_POST['password'] : '';
+    $submittedCsrfToken = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
 
     $formData['email'] = $identifier;
 
     if (empty($identifier) || empty($passwordInput))
     {
-        $error = 'Please enter both email/username and password.';
+        $error = 'Please enter both your identifier and password.';
     }
     else
     {
+        // authenticateUser() accepts an email address, a username, or a
+        // 16-character User ID. It classifies the identifier internally
+        // and queries the matching column.
         $result = authenticateUser($identifier, $passwordInput, $submittedCsrfToken);
 
         if ($result['success'])
@@ -59,46 +83,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
     $csrfToken = getCsrfToken();
 }
 
+// =============================================================================
+// Helpers.
+// =============================================================================
+
 $pageTitle = 'Sign in';
 
-function redirectToDashboard()
+if (!function_exists('redirectToDashboard'))
 {
-    $accountType = getCurrentUserRole();
-
-    switch ($accountType)
+    /**
+     * Redirects the authenticated user to the dashboard for their role.
+     *
+     * The switch covers all four roles. If the session contains an
+     * unrecognised role, the user is sent to the landing page rather
+     * than to a dashboard they are not permitted to view.
+     *
+     * @return void
+     */
+    function redirectToDashboard()
     {
-        case 'admin':
-            header('Location: ' . BASE_URL . '/modules/admin/dashboard.php');
-            exit();
-        case 'vendor':
-            header('Location: ' . BASE_URL . '/modules/vendor/dashboard.php');
-            exit();
-        case 'student':
-        case 'standard':
-            header('Location: ' . BASE_URL . '/modules/student/dashboard.php');
-            exit();
-        default:
-            header('Location: ' . ROOT_URL . '/index.php');
-            exit();
-    }
-}
+        $accountType = getCurrentUserRole();
 
-// Load demo accounts from the single source of truth
-$demoAccountsFile = dirname(__DIR__, 2) . '/config/demo_accounts.php';
-$demoAccounts = file_exists($demoAccountsFile)
-    ? require $demoAccountsFile
-    : array();
+        switch ($accountType)
+        {
+            case 'admin':
+                header('Location: ' . BASE_URL . '/modules/admin/dashboard.php');
+                exit();
 
-// Show at most one demo account per role
-$demoDisplay = array();
-$seenRoles = array();
+            case 'vendor':
+                header('Location: ' . BASE_URL . '/modules/vendor/dashboard.php');
+                exit();
 
-foreach ($demoAccounts as $account)
-{
-    if (!in_array($account['account_type'], $seenRoles))
-    {
-        $demoDisplay[] = $account;
-        $seenRoles[] = $account['account_type'];
+            case 'student':
+            case 'standard':
+                header('Location: ' . BASE_URL . '/modules/student/dashboard.php');
+                exit();
+
+            default:
+                header('Location: ' . ROOT_URL . '/index.php');
+                exit();
+        }
     }
 }
 ?>
@@ -108,55 +132,9 @@ foreach ($demoAccounts as $account)
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="csrf-token" content="<?php echo escapeOutput($csrfToken); ?>">
-    <title>Sign in · Campus Eats</title>
+    <title>Sign in - Campus Eats</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="<?php echo ASSETS_URL; ?>/css/public.css">
-    <style nonce="<?php echo escapeOutput(CSP_NONCE); ?>">
-        .demo-accounts
-        {
-            font-size: 0.75rem;
-            color: var(--gray-500);
-            margin-top: var(--space-4);
-            padding-top: var(--space-4);
-            border-top: 1px solid var(--gray-200);
-            text-align: left;
-        }
-
-        .demo-accounts strong
-        {
-            display: block;
-            margin-bottom: var(--space-2);
-            color: var(--gray-700);
-        }
-
-        .demo-accounts table
-        {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .demo-accounts th,
-        .demo-accounts td
-        {
-            padding: var(--space-1) var(--space-2);
-            text-align: left;
-            font-size: 0.7rem;
-        }
-
-        .demo-accounts th
-        {
-            color: var(--gray-500);
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-        }
-
-        .demo-accounts td
-        {
-            font-family: var(--font-mono);
-            color: var(--gray-700);
-        }
-    </style>
 </head>
 <body class="auth-page">
     <div class="auth-container">
@@ -181,7 +159,7 @@ foreach ($demoAccounts as $account)
                     <?php echo csrfTokenHtml(); ?>
 
                     <div class="form-group">
-                        <label class="form-label" for="email">User ID or Email</label>
+                        <label class="form-label" for="email">User ID, Username, or Email</label>
                         <div class="input-wrapper">
                             <i class="fas fa-envelope input-icon"></i>
                             <input type="text"
@@ -190,9 +168,13 @@ foreach ($demoAccounts as $account)
                                    class="form-control"
                                    required
                                    value="<?php echo escapeOutput($formData['email']); ?>"
-                                   placeholder="16-character User ID or you@campus.edu"
+                                   placeholder="16-character User ID, username, or email"
                                    autofocus>
                         </div>
+                        <span class="form-hint">
+                            You may sign in with the email address, the username, or the
+                            16-character User ID that was shown when you registered.
+                        </span>
                     </div>
 
                     <div class="form-group">
@@ -215,30 +197,6 @@ foreach ($demoAccounts as $account)
                         <i class="fas fa-arrow-right"></i> Sign in
                     </button>
                 </form>
-
-                <?php if (!empty($demoDisplay)): ?>
-                    <div class="demo-accounts">
-                        <strong>Demo accounts (real credentials)</strong>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Role</th>
-                                    <th>Email</th>
-                                    <th>Password</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($demoDisplay as $account): ?>
-                                    <tr>
-                                        <td><?php echo escapeOutput(ucfirst($account['account_type'])); ?></td>
-                                        <td><?php echo escapeOutput($account['email']); ?></td>
-                                        <td><?php echo escapeOutput($account['password']); ?></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                <?php endif; ?>
             </div>
 
             <div class="auth-footer">
