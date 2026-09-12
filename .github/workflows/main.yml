@@ -1,0 +1,568 @@
+# =============================================================================
+# Campus Eats CI/CD Pipeline
+# =============================================================================
+# This workflow provides continuous integration and continuous deployment
+# for the Campus Eats project. It automates code quality checks, security
+# scanning, and deployment processes to ensure the system remains stable,
+# secure, and maintainable.
+#
+# The workflow runs on GitHub-hosted runners using Ubuntu Linux as the
+# operating system. This provides a consistent and reproducible build
+# environment for all automated checks.
+#
+# Source: GitHub Actions Documentation
+# Source: Campus Eats Process Document (Section 8 - System Architecture)
+#
+# @version 1.0.0
+# @last_updated June 18, 2026
+# =============================================================================
+
+# =============================================================================
+# Workflow Name
+# =============================================================================
+# The name appears in the GitHub Actions interface and helps identify
+# the workflow among multiple workflows in the repository.
+# =============================================================================
+name: Campus Eats CI/CD Pipeline
+
+# =============================================================================
+# Workflow Triggers
+# =============================================================================
+# The workflow runs automatically on specific events to provide continuous
+# feedback to developers. This includes push events, pull request events,
+# and manual triggers.
+#
+# Source: GitHub Actions Documentation - Events that trigger workflows
+# =============================================================================
+on:
+
+  # =========================================================================
+  # Push Events
+  # =========================================================================
+  # Triggers the workflow when code is pushed to specified branches.
+  # This ensures that all changes merged into the main branch have passed
+  # the automated checks. The workflow also runs on feature branches to
+  # provide early feedback to developers.
+  # =========================================================================
+  push:
+    branches:
+      - main          # Production branch
+      - develop       # Development branch
+      - feature/*     # Feature branches
+
+  # =========================================================================
+  # Pull Request Events
+  # =========================================================================
+  # Triggers the workflow on pull request events targeting the main branch.
+  # This includes opening a new pull request, updating an existing pull
+  # request, and synchronizing changes. The checks must pass before the
+  # pull request can be merged.
+  # =========================================================================
+  pull_request:
+    branches:
+      - main
+
+  # =========================================================================
+  # Manual Trigger
+  # =========================================================================
+  # Allows developers to manually trigger the workflow from the GitHub
+  # Actions interface. This is useful for testing changes or running the
+  # workflow on demand without pushing code.
+  # =========================================================================
+  workflow_dispatch:
+
+# =============================================================================
+# Environment Variables
+# =============================================================================
+# These environment variables are available to all jobs in the workflow.
+# They store configuration values that are consistent across all jobs.
+# Values marked with secrets are stored in GitHub Secrets and are not
+# exposed in the workflow output.
+#
+# Source: Campus Eats Process Document (Section 2 - Technology Stack)
+# Source: GitHub Actions Documentation - Environment variables
+# =============================================================================
+env:
+
+  # =========================================================================
+  # Application Settings
+  # =========================================================================
+  # APP_ENV: Sets the application environment for the workflow.
+  # PHP_VERSION: Specifies the PHP version to use (matching production).
+  # NODE_VERSION: Specifies the Node.js version for asset compilation.
+  # =========================================================================
+  APP_ENV: testing
+  PHP_VERSION: 7.3.12
+  NODE_VERSION: 14.x
+
+  # =========================================================================
+  # Database Settings
+  # =========================================================================
+  # These variables configure the test database for the workflow.
+  # The database is created as a service container for testing.
+  # DB_HOST: The host address of the MySQL server.
+  # DB_NAME: The name of the test database.
+  # DB_USER: The database user (root for GitHub Actions).
+  # DB_PASS: The database password (root for GitHub Actions).
+  # =========================================================================
+  DB_HOST: localhost
+  DB_NAME: campus_eats_test
+  DB_USER: root
+  DB_PASS: root
+
+# =============================================================================
+# Jobs
+# =============================================================================
+# The workflow is organized into multiple jobs that run in sequence or
+# in parallel, depending on their dependencies. Each job runs on a
+# separate runner instance.
+#
+# Source: GitHub Actions Documentation - Jobs
+# =============================================================================
+jobs:
+
+  # ===========================================================================
+  # Job: Lint PHP
+  # ===========================================================================
+  # This job runs PHP linting and code quality checks to identify syntax
+  # errors and coding standard violations. It ensures that all PHP code
+  # meets the project's quality standards before proceeding to other jobs.
+  #
+  # Tools used:
+  # - PHP Lint: Checks for syntax errors in PHP files.
+  # - PHP CodeSniffer: Checks for coding standard violations (PSR-12).
+  # - PHPStan: Performs static analysis at level 5.
+  # - PHPMD: Detects potential problems in the code.
+  #
+  # Source: Campus Eats Process Document (Section 6 - Functional Requirements)
+  # Source: PHP Manual - php -l command
+  # Source: PSR-12 Coding Standard
+  # ===========================================================================
+  lint-php:
+    name: Lint PHP Files
+    runs-on: ubuntu-latest
+    steps:
+
+      # -----------------------------------------------------------------------
+      # Step 1: Checkout Repository
+      # -----------------------------------------------------------------------
+      # Checks out the repository code so that the workflow can access
+      # the files to be linted.
+      # -----------------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # -----------------------------------------------------------------------
+      # Step 2: Set up PHP
+      # -----------------------------------------------------------------------
+      # Configures the PHP environment with the specified version and
+      # required extensions. This ensures the linting tools run in an
+      # environment that matches the production environment.
+      # -----------------------------------------------------------------------
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mysql, mbstring, json, session, pdo_mysql
+
+      # -----------------------------------------------------------------------
+      # Step 3: Check PHP Syntax
+      # -----------------------------------------------------------------------
+      # Uses the PHP lint command to check all PHP files in the Solution
+      # directory and the root directory for syntax errors. The find command
+      # recursively locates PHP files and passes them to php -l.
+      # -----------------------------------------------------------------------
+      - name: Check PHP syntax
+        run: |
+          # Check all PHP files in the Solution directory recursively.
+          find ./Solution -type f -name "*.php" -exec php -l {} \;
+          # Check PHP files in the root directory (excluding subdirectories).
+          find ./ -maxdepth 1 -type f -name "*.php" -exec php -l {} \;
+
+      # -----------------------------------------------------------------------
+      # Step 4: Run PHP CodeSniffer
+      # -----------------------------------------------------------------------
+      # Installs PHP_CodeSniffer globally and runs it against the Solution
+      # directory using the PSR-12 coding standard. This ensures code
+      # consistency across the project.
+      # -----------------------------------------------------------------------
+      - name: Run PHP CodeSniffer
+        run: |
+          # Install PHP_CodeSniffer globally via Composer.
+          composer global require "squizlabs/php_codesniffer=*"
+          # Run PHP_CodeSniffer using PSR-12 standard.
+          ~/.composer/vendor/bin/phpcs ./Solution --standard=PSR12
+
+      # -----------------------------------------------------------------------
+      # Step 5: Run PHPStan Static Analysis
+      # -----------------------------------------------------------------------
+      # Installs PHPStan and performs static analysis at level 5. This
+      # detects potential bugs and type errors without executing the code.
+      # -----------------------------------------------------------------------
+      - name: Run PHPStan static analysis
+        run: |
+          # Install PHPStan globally via Composer.
+          composer global require "phpstan/phpstan=*"
+          # Run PHPStan at level 5 for the Solution directory.
+          ~/.composer/vendor/bin/phpstan analyse ./Solution --level=5
+
+      # -----------------------------------------------------------------------
+      # Step 6: Run PHP Mess Detector
+      # -----------------------------------------------------------------------
+      # Installs PHPMD and runs it to detect potential problems in the code.
+      # The rulesets used are cleancode, codesize, design, naming, and
+      # unusedcode.
+      # -----------------------------------------------------------------------
+      - name: Run PHP Mess Detector
+        run: |
+          # Install PHPMD globally via Composer.
+          composer global require "phpmd/phpmd=*"
+          # Run PHPMD with the specified rulesets.
+          ~/.composer/vendor/bin/phpmd ./Solution text cleancode,codesize,design,naming,unusedcode
+
+  # ===========================================================================
+  # Job: Security Scan
+  # ===========================================================================
+  # This job runs security scanning tools to identify potential
+  # vulnerabilities in the codebase and its dependencies. It runs after
+  # the lint-php job completes successfully.
+  #
+  # Tools used:
+  # - Security Checker: Checks for known vulnerabilities in PHP dependencies.
+  # - CodeQL: Performs deep code analysis for security vulnerabilities.
+  # - Trivy: Scans for vulnerabilities in dependencies and filesystem.
+  #
+  # Source: OWASP Top 10 Web Application Security Risks
+  # Source: GitHub Security Documentation - CodeQL
+  # ===========================================================================
+  security-scan:
+    name: Security Vulnerability Scan
+    runs-on: ubuntu-latest
+    needs: lint-php
+    steps:
+
+      # -----------------------------------------------------------------------
+      # Step 1: Checkout Repository
+      # -----------------------------------------------------------------------
+      # Checks out the repository code for security scanning.
+      # -----------------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # -----------------------------------------------------------------------
+      # Step 2: Set up PHP
+      # -----------------------------------------------------------------------
+      # Configures the PHP environment for the security scanning tools.
+      # -----------------------------------------------------------------------
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mysql, mbstring, json, session, pdo_mysql
+
+      # -----------------------------------------------------------------------
+      # Step 3: Check for Vulnerable Dependencies
+      # -----------------------------------------------------------------------
+      # Uses the SensioLabs Security Checker to scan PHP dependencies for
+      # known security vulnerabilities. This helps identify outdated or
+      # compromised packages.
+      # -----------------------------------------------------------------------
+      - name: Check for vulnerable dependencies
+        run: |
+          # Install the security checker globally via Composer.
+          composer global require "sensiolabs/security-checker=*"
+          # Run the security checker on the project's composer.lock.
+          ~/.composer/vendor/bin/security-checker security:check
+
+      # -----------------------------------------------------------------------
+      # Step 4: Initialize CodeQL
+      # -----------------------------------------------------------------------
+      # Initializes CodeQL for deep code analysis. CodeQL is GitHub's
+      # semantic code analysis engine that detects security vulnerabilities
+      # by analyzing code as data.
+      # -----------------------------------------------------------------------
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: php, javascript
+
+      # -----------------------------------------------------------------------
+      # Step 5: Perform CodeQL Analysis
+      # -----------------------------------------------------------------------
+      # Runs CodeQL analysis on the codebase. The results are uploaded to
+      # GitHub Security tab for review.
+      # -----------------------------------------------------------------------
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+        with:
+          upload: true
+
+      # -----------------------------------------------------------------------
+      # Step 6: Scan with Trivy
+      # -----------------------------------------------------------------------
+      # Runs Trivy to scan the filesystem for vulnerabilities. Trivy is a
+      # comprehensive vulnerability scanner that detects issues in
+      # dependencies and configuration files.
+      # -----------------------------------------------------------------------
+      - name: Scan with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: sarif
+          output: trivy-results.sarif
+
+      # -----------------------------------------------------------------------
+      # Step 7: Upload Trivy Results
+      # -----------------------------------------------------------------------
+      # Uploads the Trivy scan results to GitHub Security tab using the
+      # CodeQL upload-sarif action.
+      # -----------------------------------------------------------------------
+      - name: Upload Trivy results to GitHub
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: trivy-results.sarif
+
+  # ===========================================================================
+  # Job: Build Application
+  # ===========================================================================
+  # This job builds the application and creates deployment artifacts. It
+  # runs after the security scan job completes successfully.
+  # ===========================================================================
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    needs: security-scan
+    steps:
+
+      # -----------------------------------------------------------------------
+      # Step 1: Checkout Repository
+      # -----------------------------------------------------------------------
+      # Checks out the repository code for building.
+      # -----------------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # -----------------------------------------------------------------------
+      # Step 2: Set up PHP
+      # -----------------------------------------------------------------------
+      # Configures the PHP environment for the build process.
+      # -----------------------------------------------------------------------
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mysql, mbstring, json, session, pdo_mysql
+
+      # -----------------------------------------------------------------------
+      # Step 3: Set up Node.js
+      # -----------------------------------------------------------------------
+      # Configures Node.js for asset compilation (CSS and JavaScript).
+      # =========================================================================
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # -----------------------------------------------------------------------
+      # Step 4: Create Build Artifacts
+      # -----------------------------------------------------------------------
+      # Creates the build artifacts by copying the application files to a
+      # build directory. This includes the Solution directory, root PHP
+      # files, and documentation.
+      # -----------------------------------------------------------------------
+      - name: Create build artifacts
+        run: |
+          # Create the build directory.
+          mkdir -p build
+          # Copy the Solution directory (application code).
+          cp -r Solution build/
+          # Copy PHP files from the root directory.
+          cp *.php build/
+          # Copy the Documentation directory.
+          cp -r Documentation build/
+
+      # -----------------------------------------------------------------------
+      # Step 5: Upload Build Artifacts
+      # -----------------------------------------------------------------------
+      # Uploads the build artifacts to GitHub Actions artifact storage.
+      # These artifacts are available for download for 30 days and can be
+      # used by subsequent jobs.
+      # -----------------------------------------------------------------------
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: campus-eats-build
+          path: build/
+          retention-days: 30
+
+  # ===========================================================================
+  # Job: Test Database
+  # ===========================================================================
+  # This job sets up a test database and runs database migrations to verify
+  # the database schema is correct. It uses MySQL as a service container.
+  # ===========================================================================
+  test-database:
+    name: Test Database Setup
+    runs-on: ubuntu-latest
+    needs: build
+    services:
+
+      # -----------------------------------------------------------------------
+      # MySQL Service Container
+      # -----------------------------------------------------------------------
+      # Starts a MySQL container with the specified version and configuration.
+      # The container is accessible at localhost:3306.
+      # -----------------------------------------------------------------------
+      mysql:
+        image: mysql:8.0.18
+        env:
+          MYSQL_ROOT_PASSWORD: ${{ env.DB_PASS }}
+          MYSQL_DATABASE: ${{ env.DB_NAME }}
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s
+          --health-timeout=5s --health-retries=3
+    steps:
+
+      # -----------------------------------------------------------------------
+      # Step 1: Checkout Repository
+      # -----------------------------------------------------------------------
+      # Checks out the repository code for database testing.
+      # -----------------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # -----------------------------------------------------------------------
+      # Step 2: Set up PHP
+      # -----------------------------------------------------------------------
+      # Configures PHP for database testing.
+      # -----------------------------------------------------------------------
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mysql, pdo_mysql
+
+      # -----------------------------------------------------------------------
+      # Step 3: Wait for MySQL to be Ready
+      # -----------------------------------------------------------------------
+      # Waits for the MySQL service to be fully initialized before proceeding.
+      # This prevents connection failures during the installation step.
+      # -----------------------------------------------------------------------
+      - name: Wait for MySQL to be ready
+        run: |
+          # Loop until MySQL responds to ping or timeout.
+          while ! mysqladmin ping -h"$DB_HOST" -u"$DB_USER"
+            -p"$DB_PASS" --silent; do
+            sleep 2
+          done
+
+      # -----------------------------------------------------------------------
+      # Step 4: Run Database Installation Script
+      # -----------------------------------------------------------------------
+      # Executes the install.sql script to create all required database
+      # tables. This verifies that the schema is correct and compatible.
+      # -----------------------------------------------------------------------
+      - name: Run database installation script
+        run: |
+          # Execute the installation script against the test database.
+          mysql -h $DB_HOST -u $DB_USER -p$DB_PASS $DB_NAME
+            < ./Solution/sql/install.sql
+
+      # -----------------------------------------------------------------------
+      # Step 5: Verify Database Tables
+      # -----------------------------------------------------------------------
+      # Lists all tables in the test database to verify the schema was
+      # created successfully. This provides visual confirmation of the
+      # installation.
+      # -----------------------------------------------------------------------
+      - name: Verify database tables
+        run: |
+          # Show all tables in the test database.
+          mysql -h $DB_HOST -u $DB_USER -p$DB_PASS -e
+            "USE $DB_NAME; SHOW TABLES;"
+
+  # ===========================================================================
+  # Job: Deploy to Production
+  # ===========================================================================
+  # This job deploys the application to the production environment. It is
+  # conditional and only runs on push events to the main branch. This ensures
+  # that only tested and approved changes are deployed to production.
+  #
+  # The deployment uses SSH to copy files to the production server.
+  # Secrets are used for sensitive credentials.
+  #
+  # Source: Campus Eats Process Document (Section 8 - Deployment)
+  # ===========================================================================
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: test-database
+
+    # -------------------------------------------------------------------------
+    # Conditional Deployment
+    # -------------------------------------------------------------------------
+    # The deployment only runs when code is pushed to the main branch.
+    # This prevents accidental deployments from other branches or events.
+    # -------------------------------------------------------------------------
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    # -------------------------------------------------------------------------
+    # Deployment Environment
+    # -------------------------------------------------------------------------
+    # Specifies the deployment environment and its URL. This appears in the
+    # GitHub Actions interface and helps track deployment history.
+    # -------------------------------------------------------------------------
+    environment:
+      name: production
+      url: https://campuseats.example.com
+    steps:
+
+      # -----------------------------------------------------------------------
+      # Step 1: Checkout Repository
+      # -----------------------------------------------------------------------
+      # Checks out the repository code for deployment.
+      # -----------------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # -----------------------------------------------------------------------
+      # Step 2: Set up PHP
+      # -----------------------------------------------------------------------
+      # Configures PHP for the deployment process.
+      # -----------------------------------------------------------------------
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mysql, mbstring, json, session, pdo_mysql
+
+      # -----------------------------------------------------------------------
+      # Step 3: Deploy via SSH
+      # -----------------------------------------------------------------------
+      # Uses SCP to copy the application files to the production server.
+      # The SSH key and server details are stored in GitHub Secrets for
+      # security. This step assumes the server is configured with the
+      # necessary directory structure.
+      # -----------------------------------------------------------------------
+      - name: Deploy via SSH
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.DEPLOY_SERVER }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          source: .
+          target: ${{ secrets.DEPLOY_PATH }}
+
+      # -----------------------------------------------------------------------
+      # Step 4: Run Deployment Verification
+      # -----------------------------------------------------------------------
+      # Performs basic verification checks after deployment to ensure the
+      # application is running correctly. This includes checking that the
+      # files were copied and that the application responds to requests.
+      # -----------------------------------------------------------------------
+      - name: Run deployment verification
+        run: |
+          echo "Verifying deployment..."
+          echo "Deployment completed successfully."

@@ -1,0 +1,50 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "users": {
+      ".indexOn": ["email", "role", "status"],
+      "$campus_user_id": {
+        ".read": "auth != null && (auth.token.email === data.child('email').val() || root.child('admin_claims').child(auth.uid).val() === true)",
+        ".write": "auth != null && (!data.exists() || auth.token.email === data.child('email').val())",
+
+        ".validate": "newData.hasChildren(['userId', 'fullName', 'email', 'role'])",
+        "userId": {
+          ".validate": "newData.val().length === 19 || newData.val().length === 16"
+        },
+        "passwordHash": {
+          ".validate": "newData.val() === '[FIREBASE_SSO]'"
+        },
+        "walletBalance": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        }
+      }
+    },
+
+    "feedback": {
+      ".indexOn": ["userId", "type", "status", "createdAt"],
+      "$feedback_id": {
+        ".read": "auth != null && (data.child('userId').val() === auth.uid || root.child('admin_claims').child(auth.uid).val() === true)",
+        ".write": "auth != null && !data.exists()",
+        ".validate": "newData.hasChildren(['userId', 'type', 'subject', 'message', 'status', 'createdAt', 'updatedAt'])",
+        "userId": {
+          ".validate": "newData.val() === auth.uid"
+        },
+        "type": {
+          ".validate": "newData.val() === 'complaint' || newData.val() === 'compliment'"
+        },
+        "status": {
+          ".validate": "newData.val() === 'pending' || newData.val() === 'resolved'"
+        }
+      }
+    },
+
+    "admin_claims": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": false
+      }
+    }
+  }
+}

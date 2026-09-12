@@ -1,0 +1,54 @@
+/* =============================================================================
+   Footer Visibility Fix - Ensures footer stays at bottom of page
+   ============================================================================= */
+
+/* Ensure body and html take full height */
+html, body
+{
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body
+{
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Main content should grow to push footer down */
+main
+{
+    flex: 1 0 auto;
+}
+
+/* Footer should not shrink */
+.app-footer,
+footer
+{
+    flex-shrink: 0;
+}
+
+/* Ensure wrapper layouts also support sticky footer */
+.dashboard-wrapper
+{
+    display: flex;
+    min-height: 100vh;
+}
+
+.admin-main,
+.vendor-main,
+.student-main
+{
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.admin-content,
+.vendor-content,
+.student-content
+{
+    flex: 1 0 auto;
+}

@@ -1,0 +1,409 @@
+/**
+ * Campus Eats Global Stylesheet
+ *
+ * This file imports the canonical design system and adds
+ * application-specific styles that are not covered by apple.css.
+ *
+ * CORRECTIONS:
+ * - Removed duplicate :root variable declarations
+ * - Imports apple.css as the design token source
+ * - Contains only styles unique to the application
+ *
+ * Source: campus-eats-process-document.pdf (Section 10 - User Interface Design)
+ *
+ * @version 6.0
+ */
+
+/* Import canonical design system */
+@import url('apple.css');
+
+/* =============================================================================
+   Header and Navigation (Public)
+   ============================================================================= */
+
+header
+{
+    background-color: white;
+    box-shadow: var(--shadow-sm);
+    position: sticky;
+    top: 0;
+    z-index: var(--z-medium);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.95);
+}
+
+.header-content
+{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-3) 0;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+}
+
+.logo-container
+{
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.logo-text
+{
+    font-weight: 600;
+    font-size: 1.25rem;
+    color: var(--orange);
+    letter-spacing: -0.01em;
+    text-decoration: none;
+}
+
+.logo-text i
+{
+    margin-right: var(--space-2);
+}
+
+nav ul
+{
+    display: flex;
+    list-style: none;
+    gap: var(--space-6);
+    flex-wrap: wrap;
+    margin: 0;
+    padding: 0;
+}
+
+nav a
+{
+    text-decoration: none;
+    color: var(--gray-600);
+    font-weight: 500;
+    transition: color var(--transition-fast);
+    position: relative;
+    font-size: 0.875rem;
+}
+
+nav a:hover
+{
+    color: var(--orange);
+}
+
+nav a::after
+{
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -4px;
+    left: 0;
+    background-color: var(--orange);
+    transition: width var(--transition-base);
+}
+
+nav a:hover::after,
+nav a.active::after
+{
+    width: 100%;
+}
+
+nav a.active
+{
+    color: var(--orange);
+}
+
+.auth-buttons
+{
+    display: flex;
+    gap: var(--space-3);
+    align-items: center;
+}
+
+.welcome-text
+{
+    font-weight: 500;
+    color: var(--orange);
+    font-size: 0.875rem;
+}
+
+/* =============================================================================
+   Form Label Row (for forgot password link)
+   ============================================================================= */
+
+.form-label-row
+{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-2);
+}
+
+.forgot-link
+{
+    font-size: 0.75rem;
+    color: var(--orange);
+    text-decoration: none;
+}
+
+.forgot-link:hover
+{
+    text-decoration: underline;
+}
+
+/* =============================================================================
+   Info Box
+   ============================================================================= */
+
+.info-box
+{
+    background: var(--info-bg);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    margin-bottom: var(--space-5);
+    display: flex;
+    gap: var(--space-3);
+    align-items: flex-start;
+}
+
+.info-box i
+{
+    color: var(--orange);
+    font-size: 1.25rem;
+    margin-top: 2px;
+}
+
+.info-box p
+{
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--info-text);
+    line-height: 1.4;
+}
+
+/* =============================================================================
+   User ID Display Section
+   ============================================================================= */
+
+.user-id-section
+{
+    background: var(--gray-50);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    margin: var(--space-4) 0;
+}
+
+.user-id-section label
+{
+    font-size: 0.75rem;
+    color: var(--gray-600);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    display: block;
+    margin-bottom: var(--space-2);
+}
+
+.user-id-display
+{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    background: white;
+    border-radius: var(--radius-sm);
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--gray-200);
+}
+
+.user-id-display code
+{
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--orange);
+    letter-spacing: 0.5px;
+    word-break: break-all;
+}
+
+.btn-copy
+{
+    background: var(--orange);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: var(--space-1) var(--space-3);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    flex-shrink: 0;
+}
+
+.btn-copy:hover
+{
+    background: var(--orange-dark);
+}
+
+.user-id-note
+{
+    font-size: 0.75rem;
+    color: var(--gray-600);
+    margin-top: var(--space-2);
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+/* =============================================================================
+   Password Strength Indicator
+   ============================================================================= */
+
+.password-strength
+{
+    margin-top: var(--space-2);
+    height: 4px;
+    background: var(--gray-200);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.strength-fill
+{
+    width: 0%;
+    height: 100%;
+    transition: width var(--transition-fast);
+}
+
+.strength-weak
+{
+    width: 25%;
+    background: var(--error);
+}
+
+.strength-fair
+{
+    width: 50%;
+    background: var(--warning);
+}
+
+.strength-good
+{
+    width: 75%;
+    background: #10B981;
+}
+
+.strength-strong
+{
+    width: 100%;
+    background: #059669;
+}
+
+/* =============================================================================
+   Demo Credentials
+   ============================================================================= */
+
+.demo-credentials
+{
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    margin-top: var(--space-4);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--gray-200);
+    text-align: left;
+}
+
+.demo-credentials strong
+{
+    display: block;
+    margin-bottom: var(--space-2);
+    color: var(--gray-700);
+}
+
+.return-home
+{
+    margin-top: var(--space-4);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--gray-200);
+}
+
+.return-home a
+{
+    color: var(--orange);
+    text-decoration: none;
+    font-size: 0.875rem;
+}
+
+.return-home a:hover
+{
+    text-decoration: underline;
+}
+
+/* =============================================================================
+   Utility Classes
+   ============================================================================= */
+
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.mt-1 { margin-top: var(--space-1); }
+.mt-2 { margin-top: var(--space-2); }
+.mt-3 { margin-top: var(--space-3); }
+.mt-4 { margin-top: var(--space-4); }
+.mt-5 { margin-top: var(--space-5); }
+.mt-6 { margin-top: var(--space-6); }
+.mt-8 { margin-top: var(--space-8); }
+
+.mb-1 { margin-bottom: var(--space-1); }
+.mb-2 { margin-bottom: var(--space-2); }
+.mb-3 { margin-bottom: var(--space-3); }
+.mb-4 { margin-bottom: var(--space-4); }
+.mb-5 { margin-bottom: var(--space-5); }
+.mb-6 { margin-bottom: var(--space-6); }
+.mb-8 { margin-bottom: var(--space-8); }
+
+.p-1 { padding: var(--space-1); }
+.p-2 { padding: var(--space-2); }
+.p-3 { padding: var(--space-3); }
+.p-4 { padding: var(--space-4); }
+.p-5 { padding: var(--space-5); }
+.p-6 { padding: var(--space-6); }
+
+.hidden { display: none; }
+.visible { display: block; }
+
+.clearfix::after
+{
+    content: "";
+    clear: both;
+    display: table;
+}
+
+/* =============================================================================
+   Responsive Overrides
+   ============================================================================= */
+
+@media (max-width: 768px)
+{
+    .header-content
+    {
+        flex-direction: column;
+    }
+
+    nav ul
+    {
+        justify-content: center;
+    }
+
+    .container
+    {
+        padding: 0 var(--space-4);
+    }
+
+    .user-id-display
+    {
+        flex-direction: column;
+        text-align: center;
+    }
+}

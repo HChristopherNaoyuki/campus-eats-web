@@ -1,0 +1,708 @@
+# =============================================================================
+# Campus Eats Web - CI/CD Pipeline
+# =============================================================================
+# This workflow provides continuous integration and continuous deployment
+# for the Campus Eats web application. It automates code quality checks,
+# security scanning, build verification, and deployment processes.
+#
+# The workflow runs on GitHub-hosted runners using Ubuntu Linux as the
+# operating system. This provides a consistent and reproducible build
+# environment for all automated checks.
+#
+# Source: GitHub Actions Documentation
+# Source: PHP Development Best Practices
+# Source: campus-eats-process-document.pdf (Section 8 - System Architecture)
+#
+# @version 1.0.0
+# @last_updated July 25, 2026
+# =============================================================================
+
+# =============================================================================
+# Workflow Name
+# =============================================================================
+# The name appears in the GitHub Actions interface and helps identify
+# the workflow among multiple workflows in the repository.
+# =============================================================================
+name: Campus Eats Web CI/CD Pipeline
+
+# =============================================================================
+# Workflow Triggers
+# =============================================================================
+# The workflow runs automatically on specific events to provide continuous
+# feedback to developers. This includes push events, pull request events,
+# and manual triggers.
+#
+# Source: GitHub Actions Documentation - Events that trigger workflows
+# =============================================================================
+on:
+  # =========================================================================
+  # Push Events
+  # =========================================================================
+  # Triggers the workflow when code is pushed to specified branches.
+  # This ensures that all changes merged into the main branch have passed
+  # the automated checks. The workflow also runs on feature branches to
+  # provide early feedback to developers.
+  # =========================================================================
+  push:
+    branches:
+      - main
+      - develop
+      - feature/*
+      - bugfix/*
+
+  # =========================================================================
+  # Pull Request Events
+  # =========================================================================
+  # Triggers the workflow on pull request events targeting the main branch.
+  # This includes opening a new pull request, updating an existing pull
+  # request, and synchronizing changes. The checks must pass before the
+  # pull request can be merged.
+  # =========================================================================
+  pull_request:
+    branches:
+      - main
+      - develop
+
+  # =========================================================================
+  # Manual Trigger
+  # =========================================================================
+  # Allows developers to manually trigger the workflow from the GitHub
+  # Actions interface. This is useful for testing changes or running the
+  # workflow on demand without pushing code.
+  # =========================================================================
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      run_tests:
+        description: 'Run all tests'
+        required: true
+        default: true
+        type: boolean
+
+# =============================================================================
+# Environment Variables
+# =============================================================================
+# These environment variables are available to all jobs in the workflow.
+# They store configuration values that are consistent across all jobs.
+# Values marked with secrets are stored in GitHub Secrets and are not
+# exposed in the workflow output.
+#
+# Source: GitHub Actions Documentation - Environment variables
+# =============================================================================
+env:
+  # =========================================================================
+  # Application Settings
+  # =========================================================================
+  APP_NAME: Campus Eats
+  APP_VERSION: 1.0.0
+  PHP_VERSION: 7.3.12
+  NODE_VERSION: 18.x
+  MYSQL_VERSION: 8.0
+
+  # =========================================================================
+  # Database Settings
+  # =========================================================================
+  # These variables configure the test database for the workflow.
+  # The database is created as a service container for testing.
+  # =========================================================================
+  DB_HOST: localhost
+  DB_NAME: campus_eats_test
+  DB_USER: root
+  DB_PASS: root
+
+# =============================================================================
+# Jobs
+# =============================================================================
+# The workflow is organized into multiple jobs that run in sequence or
+# in parallel, depending on their dependencies. Each job runs on a
+# separate runner instance.
+#
+# Source: GitHub Actions Documentation - Jobs
+# =============================================================================
+jobs:
+
+  # ===========================================================================
+  # Job: Validate PHP Syntax
+  # ===========================================================================
+  # This job validates PHP syntax to ensure there are no parse errors.
+  # It checks all PHP files in the repository.
+  #
+  # Source: PHP Manual - php -l command
+  # ===========================================================================
+  validate-php-syntax:
+    name: Validate PHP Syntax
+    runs-on: ubuntu-latest
+    steps:
+      # -----------------------------------------------------------------------
+      # Step 1: Checkout Repository
+      # -----------------------------------------------------------------------
+      # Checks out the repository code so that the workflow can access
+      # the files to be validated.
+      # -----------------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -----------------------------------------------------------------------
+      # Step 2: Set up PHP
+      # -----------------------------------------------------------------------
+      # Configures the PHP environment with the specified version and
+      # required extensions. This ensures the validation runs in an
+      # environment that matches the production environment.
+      # -----------------------------------------------------------------------
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mysql, mbstring, json, session, pdo_mysql, curl, dom, xml, zip
+          tools: composer, phpcs
+
+      # -----------------------------------------------------------------------
+      # Step 3: Validate PHP Syntax
+      # -----------------------------------------------------------------------
+      # Uses the PHP lint command to check all PHP files in the Solution
+      # directory and the root directory for syntax errors.
+      # -----------------------------------------------------------------------
+      - name: Validate PHP Syntax
+        run: |
+          # Check all PHP files in the Solution directory recursively.
+          find ./Solution -type f -name "*.php" -exec php -l {} \;
+          # Check PHP files in the root directory (excluding subdirectories).
+          find ./ -maxdepth 1 -type f -name "*.php" -exec php -l {} \;
+
+  # ===========================================================================
+  # Job: Lint and Code Quality
+  # ===========================================================================
+  # This job runs static code analysis tools to identify potential issues
+  # in the codebase. It ensures that the code meets quality standards
+  # before proceeding to build and test.
+  #
+  # Tools used:
+  # - PHP CodeSniffer: Checks coding standards (PSR-12).
+  # - PHPStan: Static analysis for PHP.
+  # - PHPMD: PHP Mess Detector.
+  # - ESLint: JavaScript linting.
+  # - Stylelint: CSS linting.
+  #
+  # Source: PSR-12 Coding Standard
+  # Source: PHPStan Documentation
+  # ===========================================================================
+  lint:
+    name: Lint and Code Quality
+    runs-on: ubuntu-latest
+    needs: validate-php-syntax
+    steps:
+      # -----------------------------------------------------------------------
+      # Step 1: Checkout Repository
+      # -----------------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -----------------------------------------------------------------------
+      # Step 2: Set up PHP
+      # -----------------------------------------------------------------------
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mysql, mbstring, json, session, pdo_mysql
+          tools: composer, phpcs, phpstan, phpmd
+
+      # -----------------------------------------------------------------------
+      # Step 3: Set up Node.js
+      # -----------------------------------------------------------------------
+      # Configures Node.js for JavaScript and CSS linting.
+      # -----------------------------------------------------------------------
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      # -----------------------------------------------------------------------
+      # Step 4: Install NPM Dependencies
+      # -----------------------------------------------------------------------
+      # Installs Node.js dependencies for linting tools.
+      # -----------------------------------------------------------------------
+      - name: Install NPM dependencies
+        run: |
+          npm install -g eslint stylelint eslint-plugin-html
+
+      # -----------------------------------------------------------------------
+      # Step 5: Run PHP CodeSniffer
+      # -----------------------------------------------------------------------
+      # Installs PHP_CodeSniffer and runs it against the Solution directory
+      # using the PSR-12 coding standard. This ensures code consistency.
+      # -----------------------------------------------------------------------
+      - name: Run PHP CodeSniffer
+        run: phpcs ./Solution --standard=PSR12 --extensions=php --ignore=*/vendor/*,*/assets/*
+
+      # -----------------------------------------------------------------------
+      # Step 6: Run PHPStan Static Analysis
+      # -----------------------------------------------------------------------
+      # Runs PHPStan to detect potential bugs and type errors without
+      # executing the code. The level 5 check is used for balanced analysis.
+      # -----------------------------------------------------------------------
+      - name: Run PHPStan Static Analysis
+        run: phpstan analyse ./Solution --level=5 --error-format=github
+
+      # -----------------------------------------------------------------------
+      # Step 7: Run PHP Mess Detector
+      # -----------------------------------------------------------------------
+      # Runs PHPMD to detect potential problems in the code.
+      # The rulesets used are cleancode, codesize, design, naming, and
+      # unusedcode.
+      # -----------------------------------------------------------------------
+      - name: Run PHP Mess Detector
+        run: phpmd ./Solution text cleancode,codesize,design,naming,unusedcode --ignore-violations-on-exit
+
+      # -----------------------------------------------------------------------
+      # Step 8: Run ESLint (JavaScript)
+      # -----------------------------------------------------------------------
+      # Runs ESLint to check JavaScript code quality and style.
+      # -----------------------------------------------------------------------
+      - name: Run ESLint
+        run: eslint ./Solution/assets/js/**/*.js --max-warnings=0
+        continue-on-error: true
+
+      # -----------------------------------------------------------------------
+      # Step 9: Run Stylelint (CSS)
+      # -----------------------------------------------------------------------
+      # Runs Stylelint to check CSS code quality and style consistency.
+      # -----------------------------------------------------------------------
+      - name: Run Stylelint
+        run: stylelint ./Solution/assets/css/**/*.css --max-warnings=0
+        continue-on-error: true
+
+  # ===========================================================================
+  # Job: Security Scan
+  # ===========================================================================
+  # This job runs security scanning tools to identify potential
+  # vulnerabilities in the codebase and its dependencies.
+  #
+  # Tools used:
+  # - Security Checker: Checks for known vulnerabilities in PHP dependencies.
+  # - CodeQL: Performs deep code analysis for security vulnerabilities.
+  #
+  # Source: OWASP Top 10 Web Application Security Risks
+  # Source: GitHub Security Documentation - CodeQL
+  # ===========================================================================
+  security-scan:
+    name: Security Vulnerability Scan
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      # -----------------------------------------------------------------------
+      # Step 1: Checkout Repository
+      # -----------------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -----------------------------------------------------------------------
+      # Step 2: Set up PHP
+      # -----------------------------------------------------------------------
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mysql, mbstring, json, session, pdo_mysql
+          tools: composer
+
+      # -----------------------------------------------------------------------
+      # Step 3: Check for Vulnerable Dependencies
+      # -----------------------------------------------------------------------
+      # Uses the SensioLabs Security Checker to scan PHP dependencies for
+      # known security vulnerabilities. This helps identify outdated or
+      # compromised packages.
+      # -----------------------------------------------------------------------
+      - name: Check for vulnerable dependencies
+        run: |
+          composer global require "sensiolabs/security-checker=*"
+          ~/.composer/vendor/bin/security-checker security:check
+
+      # -----------------------------------------------------------------------
+      # Step 4: Initialize CodeQL
+      # -----------------------------------------------------------------------
+      # Initializes CodeQL for deep code analysis. CodeQL is GitHub's
+      # semantic code analysis engine that detects security vulnerabilities
+      # by analyzing code as data.
+      # -----------------------------------------------------------------------
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: php, javascript
+
+      # -----------------------------------------------------------------------
+      # Step 5: Perform CodeQL Analysis
+      # -----------------------------------------------------------------------
+      # Runs CodeQL analysis on the codebase. The results are uploaded to
+      # GitHub Security tab for review.
+      # -----------------------------------------------------------------------
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          upload: true
+
+      # -----------------------------------------------------------------------
+      # Step 6: Check for SQL Injection Vulnerabilities
+      # -----------------------------------------------------------------------
+      # Scans PHP files for potential SQL injection vulnerabilities.
+      # This uses grep to find suspicious patterns.
+      # -----------------------------------------------------------------------
+      - name: Check for SQL injection vulnerabilities
+        run: |
+          # Check for direct variable interpolation in SQL queries.
+          # This is a basic check and should be supplemented with more
+          # comprehensive analysis.
+          find ./Solution -type f -name "*.php" -exec grep -n "\"SELECT.*\$" {} \; || true
+          find ./Solution -type f -name "*.php" -exec grep -n "\"INSERT.*\$" {} \; || true
+          find ./Solution -type f -name "*.php" -exec grep -n "\"UPDATE.*\$" {} \; || true
+          find ./Solution -type f -name "*.php" -exec grep -n "\"DELETE.*\$" {} \; || true
+
+      # -----------------------------------------------------------------------
+      # Step 7: Check for XSS Vulnerabilities
+      # -----------------------------------------------------------------------
+      # Scans PHP files for potential XSS vulnerabilities.
+      # This checks for unescaped output using echo without htmlspecialchars.
+      # -----------------------------------------------------------------------
+      - name: Check for XSS vulnerabilities
+        run: |
+          # Check for echo without htmlspecialchars.
+          find ./Solution -type f -name "*.php" -exec grep -n "echo \$_" {} \; || true
+          find ./Solution -type f -name "*.php" -exec grep -n "echo \$.*;" {} \; | grep -v "htmlspecialchars" || true
+
+  # ===========================================================================
+  # Job: Test Database
+  # ===========================================================================
+  # This job sets up a test database and runs database migrations to verify
+  # the database schema is correct. It uses MySQL as a service container.
+  # ===========================================================================
+  test-database:
+    name: Test Database Setup
+    runs-on: ubuntu-latest
+    needs: security-scan
+    services:
+      # -----------------------------------------------------------------------
+      # MySQL Service Container
+      # -----------------------------------------------------------------------
+      # Starts a MySQL container with the specified version and configuration.
+      # The container is accessible at localhost:3306.
+      # -----------------------------------------------------------------------
+      mysql:
+        image: mysql:${{ env.MYSQL_VERSION }}
+        env:
+          MYSQL_ROOT_PASSWORD: ${{ env.DB_PASS }}
+          MYSQL_DATABASE: ${{ env.DB_NAME }}
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s
+          --health-timeout=5s --health-retries=3
+    steps:
+      # -----------------------------------------------------------------------
+      # Step 1: Checkout Repository
+      # -----------------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -----------------------------------------------------------------------
+      # Step 2: Set up PHP
+      # -----------------------------------------------------------------------
+      - name: Set up PHP
+        uses: shivamathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mysql, pdo_mysql
+
+      # -----------------------------------------------------------------------
+      # Step 3: Wait for MySQL to be Ready
+      # -----------------------------------------------------------------------
+      # Waits for the MySQL service to be fully initialized before proceeding.
+      # This prevents connection failures during the installation step.
+      # -----------------------------------------------------------------------
+      - name: Wait for MySQL to be ready
+        run: |
+          # Loop until MySQL responds to ping or timeout.
+          while ! mysqladmin ping -h"$DB_HOST" -u"$DB_USER"
+            -p"$DB_PASS" --silent; do
+            sleep 2
+          done
+
+      # -----------------------------------------------------------------------
+      # Step 4: Run Database Installation Script
+      # -----------------------------------------------------------------------
+      # Executes the install.sql script to create all required database
+      # tables. This verifies that the schema is correct and compatible.
+      # -----------------------------------------------------------------------
+      - name: Run database installation script
+        run: |
+          # Execute the installation script against the test database.
+          mysql -h $DB_HOST -u $DB_USER -p$DB_PASS $DB_NAME
+            < ./Solution/sql/install.sql
+
+      # -----------------------------------------------------------------------
+      # Step 5: Verify Database Tables
+      # -----------------------------------------------------------------------
+      # Lists all tables in the test database to verify the schema was
+      # created successfully. This provides visual confirmation of the
+      # installation.
+      # -----------------------------------------------------------------------
+      - name: Verify database tables
+        run: |
+          # Show all tables in the test database.
+          mysql -h $DB_HOST -u $DB_USER -p$DB_PASS -e
+            "USE $DB_NAME; SHOW TABLES;"
+
+  # ===========================================================================
+  # Job: Validate HTML and CSS
+  # ===========================================================================
+  # This job validates HTML and CSS files for compliance with web standards.
+  # ===========================================================================
+  validate-html-css:
+    name: Validate HTML and CSS
+    runs-on: ubuntu-latest
+    needs: test-database
+    steps:
+      # -----------------------------------------------------------------------
+      # Step 1: Checkout Repository
+      # -----------------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -----------------------------------------------------------------------
+      # Step 2: Set up Node.js
+      # -----------------------------------------------------------------------
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # -----------------------------------------------------------------------
+      # Step 3: Install HTML Validator
+      # -----------------------------------------------------------------------
+      # Installs the HTML validator for validating HTML files.
+      # -----------------------------------------------------------------------
+      - name: Install HTML validator
+        run: npm install -g html-validate
+
+      # -----------------------------------------------------------------------
+      # Step 4: Validate HTML Files
+      # -----------------------------------------------------------------------
+      # Validates all HTML files in the repository for compliance with
+      # HTML5 standards.
+      # -----------------------------------------------------------------------
+      - name: Validate HTML files
+        run: |
+          find ./ -type f -name "*.php" -exec grep -l "<!DOCTYPE html>" {} \; | \
+          while read file; do
+            html-validate "$file" || true
+          done
+
+      # -----------------------------------------------------------------------
+      # Step 5: Validate CSS Files
+      # -----------------------------------------------------------------------
+      # Validates all CSS files for compliance with CSS standards.
+      # -----------------------------------------------------------------------
+      - name: Validate CSS files
+        run: |
+          npm install -g stylelint stylelint-config-standard
+          stylelint ./Solution/assets/css/**/*.css --max-warnings=0 || true
+
+  # ===========================================================================
+  # Job: Deploy to Staging
+  # ===========================================================================
+  # This job deploys the application to the staging environment.
+  # It is conditional and only runs on push events to the develop branch.
+  #
+  # The deployment uses SSH to copy files to the staging server.
+  # Secrets are used for sensitive credentials.
+  # ===========================================================================
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: validate-html-css
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+
+    environment:
+      name: staging
+      url: https://staging.campuseats.example.com
+
+    steps:
+      # -----------------------------------------------------------------------
+      # Step 1: Checkout Repository
+      # -----------------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -----------------------------------------------------------------------
+      # Step 2: Set up PHP
+      # -----------------------------------------------------------------------
+      - name: Set up PHP
+        uses: shivamathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mysql, mbstring, json, session, pdo_mysql
+
+      # -----------------------------------------------------------------------
+      # Step 3: Create Build Artifacts
+      # -----------------------------------------------------------------------
+      # Creates the build artifacts by copying the application files to a
+      # build directory. This includes the Solution directory and root files.
+      # -----------------------------------------------------------------------
+      - name: Create build artifacts
+        run: |
+          # Create the build directory.
+          mkdir -p build
+          # Copy the Solution directory (application code).
+          cp -r Solution build/
+          # Copy PHP files from the root directory.
+          cp *.php build/
+          # Copy the Documentation directory.
+          cp -r Documentation build/
+
+      # -----------------------------------------------------------------------
+      # Step 4: Deploy via SSH
+      # -----------------------------------------------------------------------
+      # Uses SCP to copy the application files to the staging server.
+      # The SSH key and server details are stored in GitHub Secrets.
+      # -----------------------------------------------------------------------
+      - name: Deploy via SSH
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.STAGING_SERVER }}
+          username: ${{ secrets.STAGING_USER }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          source: build/
+          target: ${{ secrets.STAGING_PATH }}
+
+      # -----------------------------------------------------------------------
+      # Step 5: Run Post-Deployment Verification
+      # -----------------------------------------------------------------------
+      - name: Run post-deployment verification
+        run: |
+          echo "Verifying staging deployment..."
+          curl -s -o /dev/null -w "%{http_code}" https://staging.campuseats.example.com/ | grep 200
+          echo "Staging deployment completed successfully."
+
+  # ===========================================================================
+  # Job: Deploy to Production
+  # ===========================================================================
+  # This job deploys the application to the production environment.
+  # It requires manual approval and only runs on push events to the main
+  # branch with a specific tag.
+  #
+  # Source: Software Engineering Best Practices - Deployment
+  # ===========================================================================
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: validate-html-css
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' &&
+        startsWith(github.event.head_commit.message, '[RELEASE]')
+
+    environment:
+      name: production
+      url: https://campuseats.example.com
+
+    steps:
+      # -----------------------------------------------------------------------
+      # Step 1: Checkout Repository
+      # -----------------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -----------------------------------------------------------------------
+      # Step 2: Set up PHP
+      # -----------------------------------------------------------------------
+      - name: Set up PHP
+        uses: shivamathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mysql, mbstring, json, session, pdo_mysql
+
+      # -----------------------------------------------------------------------
+      # Step 3: Create Build Artifacts
+      # -----------------------------------------------------------------------
+      - name: Create build artifacts
+        run: |
+          mkdir -p build
+          cp -r Solution build/
+          cp *.php build/
+          cp -r Documentation build/
+
+      # -----------------------------------------------------------------------
+      # Step 4: Deploy via SSH
+      # -----------------------------------------------------------------------
+      - name: Deploy via SSH
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.PRODUCTION_SERVER }}
+          username: ${{ secrets.PRODUCTION_USER }}
+          key: ${{ secrets.PRODUCTION_SSH_KEY }}
+          source: build/
+          target: ${{ secrets.PRODUCTION_PATH }}
+
+      # -----------------------------------------------------------------------
+      # Step 5: Run Post-Deployment Verification
+      # -----------------------------------------------------------------------
+      - name: Run post-deployment verification
+        run: |
+          echo "Verifying production deployment..."
+          curl -s -o /dev/null -w "%{http_code}" https://campuseats.example.com/ | grep 200
+          echo "Production deployment completed successfully."
+
+  # ===========================================================================
+  # Job: Notification
+  # ===========================================================================
+  # This job sends notifications about the workflow status to the team.
+  # It runs after all other jobs have completed.
+  #
+  # Source: GitHub Actions Documentation - Notifications
+  # ===========================================================================
+  notify:
+    name: Send Notification
+    runs-on: ubuntu-latest
+    needs: [validate-php-syntax, lint, security-scan, test-database,
+            validate-html-css]
+    if: always()
+    steps:
+      # -----------------------------------------------------------------------
+      # Step 1: Determine Workflow Status
+      # -----------------------------------------------------------------------
+      - name: Determine workflow status
+        id: status
+        run: |
+          if [[ "${{ needs.validate-php-syntax.result }}" == "success" &&
+                "${{ needs.lint.result }}" == "success" &&
+                "${{ needs.security-scan.result }}" == "success" &&
+                "${{ needs.test-database.result }}" == "success" &&
+                "${{ needs.validate-html-css.result }}" == "success" ]]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+          fi
+
+      # -----------------------------------------------------------------------
+      # Step 2: Send Notification to Slack
+      # -----------------------------------------------------------------------
+      - name: Send Slack notification
+        if: always()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_CHANNEL: '#ci-cd'
+          SLACK_TITLE: 'Campus Eats Web CI/CD Pipeline'
+          SLACK_MESSAGE: |
+            Workflow: ${{ github.workflow }}
+            Status: ${{ steps.status.outputs.status }}
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+            Author: ${{ github.actor }}
+          SLACK_COLOR: ${{ steps.status.outputs.status == 'success' && '#36a64f' || '#ff0000' }}
+          SLACK_ICON_EMOJI: ${{ steps.status.outputs.status == 'success' && ':white_check_mark:' || ':x:' }}
+          MSG_MINIMAL: true
