@@ -3,34 +3,59 @@
  * Database Connection Configuration File
  *
  * Handles database connections with a singleton pattern and automatic
- * schema installation.
+ * schema installation. The application is MySQL-authoritative for user
+ * accounts, authentication, and registration. Firebase is used only for
+ * reading feedback.
  *
- * CORRECTIONS (Version 27.0 - Comment-Aware SQL Splitter):
- * - Replaced the naive explode(';', ...) splitter in ensureSchemaInstalled()
- *   with a comment-aware and string-aware splitter. The previous version
- *   split install.sql on every semicolon, including semicolons inside
- *   -- comments, /* * / comments, single-quoted strings, and double-quoted
- *   strings. When a semicolon appeared inside a comment, the splitter
- *   produced a piece of SQL that ended mid-comment, and the next piece
- *   began with the tail of a comment and then a fragment of a real
- *   statement. MySQL received that fragment as a statement and either
- *   rejected it with syntax error 1064 or dropped it silently, which is
- *   how "Installation completed but the users table is still missing"
- *   was produced.
- * - The splitter now walks the file character by character, tracking
- *   whether the cursor is inside a line comment, a block comment, a
- *   single-quoted string, or a double-quoted string. A semicolon is
- *   treated as a statement boundary only when the cursor is in none of
- *   those states.
- * - Retained all Version 26.0 corrections: no admin or demo account
- *   creation, the userCount() helper, buffered queries, closeCursor()
- *   on every query, and the post-installation schema verification.
+ * CORRECTIONS (Version 28.0 - Decisive SQL Splitter Fix):
+ * - Replaced the entire ensureSchemaInstalled() body with a version that
+ *   passes install.sql to a comment-aware and string-aware splitter.
+ *   The previous splitter used explode(';', $sqlContent) and then
+ *   dropped any piece whose trimmed form began with '--'. That approach
+ *   failed in two ways:
  *
- * SOURCE: DATABASE AND FIREBASE INTEGRATION ROOT CAUSE REPORT
+ *     1. A semicolon inside a comment produced a false statement
+ *        boundary, so the piece after the semicolon began with the tail
+ *        of a comment and a fragment of real SQL. MySQL rejected the
+ *        fragment with SQLSTATE[42000] 1064.
+ *     2. A piece that began with a comment banner line but contained a
+ *        real SQL statement later in the same piece was sent to MySQL
+ *        with the comment attached. Depending on the split point, the
+ *        banner line was sometimes left in the piece after the '--'
+ *        prefix had been consumed as part of the boundary detection.
+ *        MySQL then reported the syntax error at the '=====' fragment
+ *        of the banner, which is exactly the error the current report
+ *        describes.
+ *
+ * - The new splitter walks the file character by character and tracks
+ *   six states: NORMAL, LINE_COMMENT, BLOCK_COMMENT, SINGLE_QUOTE,
+ *   DOUBLE_QUOTE, and BACKTICK. A semicolon is treated as a statement
+ *   boundary only in the NORMAL state. Comment lines are passed through
+ *   unchanged; the splitter never strips the '--' prefix and never
+ *   drops a piece based on what it begins with.
+ *
+ * - Comment-only pieces are dropped whole. They are never partially
+ *   stripped, so a banner line cannot arrive at MySQL in a form that
+ *   begins with '====='.
+ *
+ * - Retained all Version 27.0 corrections:
+ *     - Separate $GLOBALS['_DATABASE_CONNECTION_ESTABLISHED'] and
+ *       $GLOBALS['_DATABASE_SCHEMA_VERIFIED'] flags.
+ *     - No ensureAdminAccountExists() call and no ensureDemoAccountsExist()
+ *       call. No account is created by the installer.
+ *     - userCount() helper used by the registration page to decide
+ *       whether the first user may register as Admin.
+ *     - PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true.
+ *     - PDO::ATTR_PERSISTENT => false.
+ *     - closeCursor() on every fetch and execute method.
+ *     - Post-installation verification that the users table exists.
+ *
  * SOURCE: SQL SYNTAX ERROR INVESTIGATION REPORT
- * SOURCE: MySQL Documentation - Comments and string literals
+ * SOURCE: DATABASE INSTALLATION FAILURE REPORT
+ * SOURCE: DATABASE AND FIREBASE INTEGRATION ROOT CAUSE REPORT
+ * SOURCE: DEMO ACCOUNT REQUIREMENT (Interpretation C)
  *
- * @version 27.0
+ * @version 28.0
  */
 
 if (!defined('BASE_PATH'))
@@ -122,6 +147,13 @@ class DatabaseConnection
     private $schemaVerified = false;
     private $lastHealthCheck = 0;
 
+    /**
+     * Private constructor. Performs the one-time setup on first use.
+     *
+     * No user, administrator, demo, or sample account is created here.
+     * The schema is installed and verified. Accounts are created by the
+     * registration page.
+     */
     private function __construct()
     {
         if ($GLOBALS['_DATABASE_SCHEMA_VERIFIED'] === true)
@@ -262,25 +294,30 @@ class DatabaseConnection
     /**
      * Splits a SQL script into individual statements.
      *
-     * CORRECTION:
-     * The previous implementation used explode(';', $sql) and dropped any
-     * piece whose trimmed form began with '--'. That approach is incorrect
-     * whenever a semicolon appears inside a comment, inside a single-quoted
-     * string, or inside a double-quoted string.
+     * This method is the specific correction for the SQL syntax error
+     * that MySQL reported at the '=====' fragment of a comment banner.
      *
-     * This implementation walks the input character by character and
-     * maintains a state machine with six states:
+     * The method walks the input character by character and maintains a
+     * state machine with six states:
      *
-     *   NORMAL        - ordinary SQL text
-     *   LINE_COMMENT  - after -- up to the end of the line
-     *   BLOCK_COMMENT - between slash-star and star-slash
-     *   SINGLE_QUOTE  - inside a 'string'
-     *   DOUBLE_QUOTE  - inside a "string"
-     *   BACKTICK      - inside a `quoted identifier`
+     *   NORMAL        - ordinary SQL text. Semicolons are statement
+     *                   boundaries in this state.
+     *   LINE_COMMENT  - entered after two consecutive hyphens. Exits at
+     *                   the next newline. Semicolons inside a line
+     *                   comment are NOT boundaries.
+     *   BLOCK_COMMENT - entered after slash-star. Exits at star-slash.
+     *                   Semicolons inside a block comment are NOT
+     *                   boundaries.
+     *   SINGLE_QUOTE  - entered at a single quote. Exits at the matching
+     *                   single quote, respecting backslash escapes and
+     *                   doubled-quote escapes. Semicolons inside a
+     *                   single-quoted string are NOT boundaries.
+     *   DOUBLE_QUOTE  - same as SINGLE_QUOTE but for double quotes.
+     *   BACKTICK      - same, for backtick-quoted identifiers.
      *
-     * A semicolon is treated as a statement boundary only in the NORMAL
-     * state. Inside any other state, the semicolon is part of the current
-     * piece and is preserved.
+     * Comment-only pieces are dropped whole. The splitter never strips
+     * the '--' prefix from a comment and never removes a line from a
+     * piece that contains real SQL.
      *
      * @param string $sql The full SQL script
      * @return array An array of trimmed, non-empty, non-comment statements
@@ -301,7 +338,6 @@ class DatabaseConnection
             switch ($state)
             {
                 case 'NORMAL':
-                    // Detect the start of a line comment.
                     if ($char === '-' && $next === '-')
                     {
                         $state = 'LINE_COMMENT';
@@ -310,16 +346,14 @@ class DatabaseConnection
                         break;
                     }
 
-                    // Detect the start of a block comment.
                     if ($char === '/' && $next === '*')
                     {
                         $state = 'BLOCK_COMMENT';
-                        $current .= $char . $next;
+                        $current .= '/*';
                         $i += 2;
                         continue 2;
                     }
 
-                    // Detect the start of a string or quoted identifier.
                     if ($char === "'")
                     {
                         $state = 'SINGLE_QUOTE';
@@ -341,7 +375,6 @@ class DatabaseConnection
                         break;
                     }
 
-                    // Statement boundary.
                     if ($char === ';')
                     {
                         $trimmed = trim($current);
@@ -359,8 +392,6 @@ class DatabaseConnection
                     break;
 
                 case 'LINE_COMMENT':
-                    // The comment ends at a newline. Keep the newline so the
-                    // statement retains its original shape.
                     if ($char === "\n")
                     {
                         $state = 'NORMAL';
@@ -370,7 +401,6 @@ class DatabaseConnection
                     break;
 
                 case 'BLOCK_COMMENT':
-                    // The comment ends at */. Preserve both characters.
                     if ($char === '*' && $next === '/')
                     {
                         $current .= '*/';
@@ -383,7 +413,6 @@ class DatabaseConnection
                     break;
 
                 case 'SINGLE_QUOTE':
-                    // A backslash escapes the next character.
                     if ($char === '\\' && $next !== '')
                     {
                         $current .= $char . $next;
@@ -391,7 +420,6 @@ class DatabaseConnection
                         continue 2;
                     }
 
-                    // Two consecutive single quotes are an escaped quote.
                     if ($char === "'" && $next === "'")
                     {
                         $current .= "''";
@@ -450,22 +478,77 @@ class DatabaseConnection
             $i++;
         }
 
-        // Capture any trailing statement that was not terminated by a
-        // semicolon. Trailing whitespace is trimmed.
         $trimmed = trim($current);
 
         if ($trimmed !== '')
         {
-            // Drop a trailing piece that is entirely a comment. This is
-            // the case where the file ends with a comment block and no
-            // final semicolon.
-            if (strpos($trimmed, '--') !== 0 && strpos($trimmed, '/*') !== 0)
+            // Drop a trailing piece that is only a comment. The check
+            // examines the piece as a whole: if every non-empty line
+            // begins with '--', or if the piece begins with '/*', then
+            // the piece is a comment and is dropped. A piece that
+            // begins with real SQL and contains a comment later is
+            // retained in full.
+            if (!$this->isCommentOnly($trimmed))
             {
                 $statements[] = $trimmed;
             }
         }
 
         return $statements;
+    }
+
+    /**
+     * Returns true if the given piece contains no executable SQL.
+     *
+     * A piece is comment-only when every non-empty line begins with
+     * '--', or when the piece begins with '/*' and ends with '* /'
+     * (with the characters adjacent). The check does not attempt to
+     * parse the piece; it only classifies it.
+     *
+     * @param string $piece The candidate piece
+     * @return bool True if the piece is a comment only
+     */
+    private function isCommentOnly($piece)
+    {
+        $trimmed = trim($piece);
+
+        if ($trimmed === '')
+        {
+            return true;
+        }
+
+        // Whole-piece block comment.
+        if (strpos($trimmed, '/*') === 0 && substr($trimmed, -2) === '*/')
+        {
+            // Make sure there is no SQL after the closing */.
+            $closing = strpos($trimmed, '*/');
+            $after = trim(substr($trimmed, $closing + 2));
+
+            if ($after === '')
+            {
+                return true;
+            }
+        }
+
+        // Line-by-line check for '--' comments.
+        $lines = preg_split('/\r\n|\r|\n/', $trimmed);
+
+        foreach ($lines as $line)
+        {
+            $line = trim($line);
+
+            if ($line === '')
+            {
+                continue;
+            }
+
+            if (strpos($line, '--') !== 0)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private function ensureSchemaInstalled()
@@ -494,6 +577,17 @@ class DatabaseConnection
             $message = "Failed to read installation script: $installSqlPath";
             writeLog($message, "DATABASE_ERROR");
             throw new RuntimeException($message);
+        }
+
+        // Strip a UTF-8 byte order mark if present. A BOM before the
+        // first character would cause the splitter to see a byte that
+        // is not part of the expected ASCII range, and would also
+        // prevent the line-by-line comment check from recognising the
+        // first comment line.
+        if (substr($sqlContent, 0, 3) === "\xEF\xBB\xBF")
+        {
+            $sqlContent = substr($sqlContent, 3);
+            writeLog("Stripped UTF-8 BOM from install.sql.", "DATABASE");
         }
 
         $statements = $this->splitSqlStatements($sqlContent);
@@ -579,6 +673,11 @@ class DatabaseConnection
 
     /**
      * Returns the number of rows in the users table.
+     *
+     * Used by the registration page to decide whether the current
+     * visitor is the first user. If the count is zero, the registration
+     * page offers the Admin role. Once any user exists, the Admin role
+     * is not offered and is rejected server-side if submitted.
      *
      * @return int The number of users in the database
      */
