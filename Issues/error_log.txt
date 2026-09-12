@@ -148,3 +148,19 @@ Stack trace:
 #4 C:\wamp64\www\campus-eats-web\Solution\modules\auth\login.php(47): authenticateUser('john.doe@exampl...', ' \tAdminPass123!', '6e1a43e20384081...')
 #5 {main}
 [2026-09-12 13:56:40] [AUDIT] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Audit: system - exception (Result: error)
+[2026-09-12 14:02:21] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (single canonical CSP with nonce)
+[2026-09-12 14:02:21] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request: GET /api/Restaurant (Attempt 1)
+[2026-09-12 14:02:21] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] cURL error 60 (CURLE_SSL_CACERT): SSL certificate problem: unable to get local issuer certificate (url: https://fakerestaurantapi.runasp.net/api/Restaurant)
+[2026-09-12 14:02:21] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] Permanent cURL failure (error 60). Not retrying.
+[2026-09-12 14:02:21] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request failed after 1 attempt(s): API request failed: SSL certificate problem: unable to get local issuer certificate
+[2026-09-12 14:02:21] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] Error fetching restaurants from API: API request failed: SSL certificate problem: unable to get local issuer certificate
+[2026-09-12 14:02:26] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Secure session started successfully
+[2026-09-12 14:02:39] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Secure session started successfully
+[2026-09-12 14:02:39] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] CSRF token validated successfully
+[2026-09-12 14:02:39] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] PDO connection opened to database 'campus_eats'.
+[2026-09-12 14:02:39] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Database 'campus_eats' ensured to exist.
+[2026-09-12 14:02:39] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Schema probe: users table not found. Running install.sql.
+[2026-09-12 14:02:39] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Install statement 1 failed: SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '` statement at the top. The previous
+--   version relied on the caller having se' at line 1 | Statement: ` statement at the top. The previous -- version relied on the caller having selected the database. When run by -- the application that was true, because the DSN
+[2026-09-12 14:02:39] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 37nikmpbbdb3e6nn2bq6m63lqc] Database Connection Error: SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '` statement at the top. The previous
+--   version relied on the caller having se' at line 1

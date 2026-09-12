@@ -3,29 +3,29 @@
 -- =============================================================================
 -- Creates the complete schema required by the application.
 --
--- CORRECTIONS (Version 16.0):
--- - Added an explicit `USE campus_eats;` statement at the top. The previous
---   version relied on the caller having selected the database. When run by
---   the application that was true, because the DSN contains dbname=campus_eats.
---   When run by phpMyAdmin or the mysql client without a selected database,
---   every CREATE TABLE would fail with "No database selected" and the users
---   table would never be created.
--- - Ordered the DROP TABLE statements so child tables are dropped before
---   their parents. The previous ordering could produce
---   "Cannot delete or update a parent row: a foreign key constraint fails"
---   when FOREIGN_KEY_CHECKS was inadvertently enabled between statements.
--- - Wrapped the schema creation in a single consistent charset and collation
---   so every table uses utf8mb4 and utf8mb4_unicode_ci.
--- - Included all tables the application queries at runtime, including
---   user_sessions, login_attempts, and password_reset_attempts, which are
---   also created defensively by database.php at startup.
--- - The users table definition matches every column referenced by the
---   authentication code in includes/auth.php.
+-- CORRECTIONS (Version 17.0):
+-- - Removed every semicolon that appeared inside a comment line. The install
+--   loop in database.php splits this file on every semicolon, whether or not
+--   the semicolon is inside a comment. A semicolon inside a comment creates a
+--   false statement boundary, and the pieces that follow the false boundary
+--   are malformed when MySQL receives them. That is the origin of
+--   SQLSTATE[42000] 1064 with a backtick near the start of a statement.
+-- - Removed every backtick that appeared inside a comment line, for the same
+--   reason. A backtick inside a comment is harmless to MySQL, but it is
+--   misleading when a partial piece is logged, because the log reader cannot
+--   tell whether the backtick came from the comment or from the SQL.
+-- - Removed every single-quote and double-quote from comment text. These do
+--   not affect the splitter, but a future splitter that tracks string state
+--   would be confused by unbalanced quotes inside comments.
+-- - Kept every SQL statement unchanged, so the resulting schema is identical
+--   to the previous version. This version corrects the packaging, not the
+--   schema.
 --
+-- SOURCE: SQL SYNTAX ERROR INVESTIGATION REPORT
 -- SOURCE: DATABASE INSTALLATION FAILURE REPORT
--- SOURCE: MySQL Documentation - CREATE TABLE and FOREIGN KEY
+-- SOURCE: MySQL Documentation - Comments and statement delimiters
 --
--- @version 16.0
+-- @version 17.0
 -- =============================================================================
 
 -- -----------------------------------------------------------------------------
@@ -35,12 +35,11 @@
 -- CREATE TABLE statement so every table is created in the intended database,
 -- regardless of which database the caller had selected.
 --
--- The database itself is created by database.php on first connection. If the
+-- The database itself is created by database.php on first connection. If this
 -- script is being run manually in phpMyAdmin and the database does not yet
--- exist, create it first with:
---
---   CREATE DATABASE IF NOT EXISTS campus_eats
---     CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- exist, create it first with the CREATE DATABASE statement documented in the
+-- MySQL manual, using the utf8mb4 character set and the utf8mb4_unicode_ci
+-- collation.
 -- -----------------------------------------------------------------------------
 
 USE `campus_eats`;
@@ -49,7 +48,7 @@ USE `campus_eats`;
 -- Disable foreign key checks during the drop and create phase.
 -- -----------------------------------------------------------------------------
 -- This is required because some DROP TABLE statements reference tables that
--- are still referenced by other tables' foreign keys. The check is re-enabled
+-- are still referenced by other tables foreign keys. The check is re-enabled
 -- at the end of the script.
 -- -----------------------------------------------------------------------------
 
@@ -62,16 +61,16 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- intent clear and keeps the script correct if the FOREIGN_KEY_CHECKS
 -- statements are ever removed. Child tables are dropped before their parents.
 --
--- Dependency order (child -> parent):
---   complaints_compliments -> users
---   payments               -> orders
---   order_items            -> orders, menu_items
---   orders                 -> users, vendors
---   menu_items             -> vendors
---   vendors                -> users
---   user_sessions          -> users
---   login_attempts         (no foreign keys)
---   password_reset_attempts (no foreign keys)
+-- Dependency order, child before parent:
+--   complaints_compliments references users
+--   payments references orders
+--   order_items references orders and menu_items
+--   orders references users and vendors
+--   menu_items references vendors
+--   vendors references users
+--   user_sessions references users
+--   login_attempts has no foreign keys
+--   password_reset_attempts has no foreign keys
 -- -----------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS `complaints_compliments`;
@@ -88,30 +87,27 @@ DROP TABLE IF EXISTS `users`;
 -- -----------------------------------------------------------------------------
 -- 1. Users table.
 -- -----------------------------------------------------------------------------
--- Every column referenced by includes/auth.php is present here:
---   user_id, unique_id, full_name, username, email, password_hash,
---   account_type, is_active, is_verified, created_at, updated_at.
---
--- The account_type enum includes 'standard' because the application supports
--- four roles: admin, vendor, student, and standard.
+-- Every column referenced by includes/auth.php is present here.
+-- The account_type enum includes standard because the application supports
+-- four roles, which are admin, vendor, student, and standard.
 -- -----------------------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS `users`
 (
     `user_id`       INT AUTO_INCREMENT PRIMARY KEY,
     `unique_id`     VARCHAR(16) NOT NULL UNIQUE
-                    COMMENT '16-character alphanumeric user ID',
+                    COMMENT 'Sixteen character alphanumeric user ID',
     `full_name`     VARCHAR(100) NOT NULL,
     `username`      VARCHAR(50) NOT NULL UNIQUE,
     `email`         VARCHAR(100) NOT NULL UNIQUE,
     `password_hash` VARCHAR(255) NOT NULL
-                    COMMENT 'Password hash produced by password_hash()',
+                    COMMENT 'Password hash produced by the password_hash function',
     `account_type`  ENUM('admin', 'vendor', 'student', 'standard') NOT NULL
-                    COMMENT 'User role: admin, vendor, student, or standard',
+                    COMMENT 'User role, one of admin, vendor, student, or standard',
     `is_active`     TINYINT(1) DEFAULT 1
-                    COMMENT '1 = active, 0 = suspended',
+                    COMMENT 'Set to 1 when active, 0 when suspended',
     `is_verified`   TINYINT(1) DEFAULT 0
-                    COMMENT '1 = verified, 0 = pending approval',
+                    COMMENT 'Set to 1 when verified, 0 while pending approval',
     `created_at`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_at`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
@@ -127,14 +123,14 @@ CREATE TABLE IF NOT EXISTS `users`
 -- -----------------------------------------------------------------------------
 -- 2. Vendors table.
 -- -----------------------------------------------------------------------------
--- One row per vendor, linked to a users row through vendor_user_id.
+-- One row per vendor, linked to a users row through the vendor_user_id column.
 -- -----------------------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS `vendors`
 (
     `vendor_id`       INT AUTO_INCREMENT PRIMARY KEY,
     `vendor_user_id`  INT NOT NULL UNIQUE
-                      COMMENT 'References users.user_id',
+                      COMMENT 'References the user_id column in the users table',
     `vendor_name`     VARCHAR(100) NOT NULL,
     `business_name`   VARCHAR(100) NULL,
     `description`     TEXT NULL,
@@ -143,9 +139,9 @@ CREATE TABLE IF NOT EXISTS `vendors`
     `contact_email`   VARCHAR(100) NULL,
     `address`         TEXT NULL,
     `is_open`         TINYINT(1) DEFAULT 1
-                      COMMENT '1 = accepting orders, 0 = closed',
+                      COMMENT 'Set to 1 when accepting orders, 0 when closed',
     `is_approved`     TINYINT(1) DEFAULT 0
-                      COMMENT '1 = approved by admin, 0 = pending',
+                      COMMENT 'Set to 1 when approved by an administrator, 0 while pending',
     `created_at`      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_at`      TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
@@ -343,7 +339,7 @@ CREATE TABLE IF NOT EXISTS `complaints_compliments`
 -- 8. Login attempts table.
 -- -----------------------------------------------------------------------------
 -- Used by the rate limiting in includes/auth.php. Each failed login inserts
--- one row. The row count within the rate-limit window determines whether
+-- one row. The row count within the rate limit window determines whether
 -- further attempts are blocked.
 -- -----------------------------------------------------------------------------
 
@@ -359,7 +355,7 @@ CREATE TABLE IF NOT EXISTS `login_attempts`
     INDEX `idx_ip_time` (`ip_address`, `attempted_at`),
     INDEX `idx_attempted_at` (`attempted_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-  COMMENT='Failed login attempts for brute-force protection';
+  COMMENT='Failed login attempts for brute force protection';
 
 -- -----------------------------------------------------------------------------
 -- 9. Password reset attempts table.
@@ -384,9 +380,9 @@ CREATE TABLE IF NOT EXISTS `password_reset_attempts`
 -- -----------------------------------------------------------------------------
 -- 10. User sessions table.
 -- -----------------------------------------------------------------------------
--- Tracks active session mappings for authenticated users. Created
--- defensively by database.php as well, but listed here so the schema
--- installed by this script is complete.
+-- Tracks active session mappings for authenticated users. Created defensively
+-- by database.php as well, but listed here so the schema installed by this
+-- script is complete.
 -- -----------------------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS `user_sessions`
@@ -418,8 +414,8 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- Verification.
 -- -----------------------------------------------------------------------------
 -- The following queries report what was created. They do not change the
--- schema. They are safe to run through phpMyAdmin's import and through the
--- application's install loop.
+-- schema. They are safe to run through the phpMyAdmin import and through the
+-- application install loop.
 -- -----------------------------------------------------------------------------
 
 SELECT 'Database installation completed successfully.' AS status;
@@ -443,15 +439,12 @@ WHERE table_schema = 'campus_eats'
   )
 ORDER BY table_name;
 
--- Explicit confirmation that the users table exists.
 SELECT
     COUNT(*) AS users_table_present
 FROM information_schema.tables
 WHERE table_schema = 'campus_eats'
   AND table_name = 'users';
 
--- Report the columns of the users table so a reader can confirm the schema
--- matches what includes/auth.php expects.
 SELECT
     column_name,
     column_type,
