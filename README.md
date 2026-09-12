@@ -400,11 +400,6 @@ campus-eats-web/
         └── (EMPTY FOLDER)
 ```
 
-The `Documentation/Documentation.md` file is this document. The
-`Documentation/requirements/` folder contains the original project
-requirements. The `Documentation/reports/` folder has been removed and
-its content merged into this file.
-
 ---
 
 ## 6. Technology Stack
