@@ -4,32 +4,45 @@
  *
  * Provides a unified HTTP client for the Fake Restaurant API.
  *
- * CORRECTIONS (Version 3.0):
- * - Replaced file_get_contents() with cURL for all HTTP requests.
- *   file_get_contents() over HTTPS produced
- *     "SSL operation failed with code 1. OpenSSL Error messages:
- *      error:0A000086:SSL routines::certificate verify failed"
- *   on the target WampServer + PHP 8.3.28 + mod_fcgid environment.
- *   cURL respects the curl.cainfo setting from php.ini, produces
- *   actionable error codes, and can be verified independently.
- * - Distinguished TLS and DNS failures from transient network failures.
- *   TLS verification failures and DNS resolution failures are permanent
- *   for the lifetime of the request and are no longer retried, since a
- *   retry cannot change the outcome and only multiplies log entries.
- * - Retries are now performed only for timeouts and connection resets,
- *   using an exponential backoff instead of a fixed one-second delay.
- * - Added curl_error() and curl_errno() reporting so the next failure
- *   names the OpenSSL error directly, rather than emitting three
- *   separate file_get_contents() warnings.
- * - Preserved the public method signatures (getAllRestaurants,
- *   getRestaurantMenu, getRestaurantById, and so on), so no caller
+ * CORRECTIONS (Version 4.0):
+ * - Removed all references to cURL named constants that are not defined
+ *   in older cURL builds. The version bundled with the target WampServer
+ *   does not define CURLE_PEER_FAILED_VERIFICATION, which caused:
+ *
+ *     Application Error
+ *     Message: Undefined constant "CURLE_PEER_FAILED_VERIFICATION"
+ *     File: Solution/includes/api_service.php
+ *     Line: 162
+ *     Stack: isPermanentCurlFailure(60) -> request(...) -> getAllRestaurants()
+ *
+ *   The method now uses plain integer error codes so it behaves the same
+ *   on every cURL version from 7.17.0 onward.
+ * - The cURL error code list was reviewed against the current cURL
+ *   documentation. The values used are:
+ *     1  = CURLE_UNSUPPORTED_PROTOCOL
+ *     3  = CURLE_URL_MALFORMAT
+ *     6  = CURLE_COULDNT_RESOLVE_HOST
+ *     51 = CURLE_PEER_FAILED_VERIFICATION / legacy CURLE_SSL_CACERT
+ *     58 = CURLE_SSL_CERTPROBLEM
+ *     59 = CURLE_SSL_CIPHER
+ *     60 = CURLE_SSL_CACERT (unified with 51 from cURL 7.62.0)
+ *   See: https://curl.se/libcurl/c/libcurl-errors.html
+ * - Retained all Version 3.0 corrections:
+ *     - cURL instead of file_get_contents().
+ *     - Retry only on transient failures, not on TLS or DNS failures.
+ *     - Exponential backoff instead of a fixed one-second delay.
+ *     - Non-2xx HTTP responses raise an actionable exception.
+ *     - One log line per failure instead of three.
+ * - Preserved all public method signatures (getAllRestaurants,
+ *   getRestaurantMenu, getRestaurantById, and the rest), so no caller
  *   needs to change.
  *
  * SOURCE: Issues/audit_log.txt 2026-09-12 13:16:33 through 13:16:57
+ * SOURCE: https://curl.se/libcurl/c/libcurl-errors.html
  * SOURCE: PHP Manual - cURL Functions
  * SOURCE: PHP Manual - OpenSSL certificate verification
  *
- * @version 3.0
+ * @version 4.0
  */
 
 if (!defined('BASE_PATH'))
@@ -144,28 +157,71 @@ class ApiService
     }
 
     /**
-     * Returns true if the given curl error code indicates a permanent
+     * Returns true if the given cURL error code indicates a permanent
      * failure that should not be retried.
      *
-     * The list is intentionally conservative. Timeouts and connection
-     * resets are transient; TLS verification and DNS resolution are not.
+     * CORRECTION:
+     * This method previously referenced CURLE_PEER_FAILED_VERIFICATION
+     * by name. That constant was introduced in cURL 7.62.0. On older
+     * cURL builds, the constant does not exist, and PHP 8 raises a
+     * fatal Error when it is referenced. The method now uses the plain
+     * integer values, which are stable across every cURL version from
+     * 7.17.0 onward.
      *
-     * @param int $curlErrno The value from curl_errno()
-     * @return bool
+     * The values are taken directly from the cURL error code list:
+     *   https://curl.se/libcurl/c/libcurl-errors.html
+     *
+     * @param int $curlErrno The value returned by curl_errno()
+     * @return bool True if the failure is permanent
      */
     private function isPermanentCurlFailure($curlErrno)
     {
+        // Values are documented at https://curl.se/libcurl/c/libcurl-errors.html
         $permanent = array(
-            CURLE_SSL_CACERT,             // 60 - CA certificate rejected
-            CURLE_SSL_CERTPROBLEM,        // 58 - local certificate problem
-            CURLE_SSL_CIPHER,             // 59 - no usable cipher
-            CURLE_PEER_FAILED_VERIFICATION, // 51 - peer certificate rejected
-            CURLE_COULDNT_RESOLVE_HOST,   // 6  - DNS lookup failed
-            CURLE_URL_MALFORMAT,          // 3  - malformed URL
-            CURLE_UNSUPPORTED_PROTOCOL    // 1  - protocol not supported
+            1,  // CURLE_UNSUPPORTED_PROTOCOL
+            3,  // CURLE_URL_MALFORMAT
+            6,  // CURLE_COULDNT_RESOLVE_HOST
+            51, // CURLE_PEER_FAILED_VERIFICATION / legacy CURLE_SSL_CACERT
+            58, // CURLE_SSL_CERTPROBLEM
+            59, // CURLE_SSL_CIPHER
+            60  // CURLE_SSL_CACERT (unified with 51 from cURL 7.62.0)
         );
 
-        return in_array($curlErrno, $permanent, true);
+        return in_array((int)$curlErrno, $permanent, true);
+    }
+
+    /**
+     * Returns a human-readable label for a cURL error code.
+     *
+     * The label is written into the audit log alongside the numeric code
+     * so a reader does not have to look up the number. The labels are
+     * deliberately the same strings used in the cURL documentation, so
+     * a search for the label finds the authoritative description.
+     *
+     * @param int $curlErrno The value returned by curl_errno()
+     * @return string The label, or "UNKNOWN" if the code is not recognised
+     */
+    private function describeCurlError($curlErrno)
+    {
+        $labels = array(
+            1  => 'CURLE_UNSUPPORTED_PROTOCOL',
+            3  => 'CURLE_URL_MALFORMAT',
+            6  => 'CURLE_COULDNT_RESOLVE_HOST',
+            7  => 'CURLE_COULDNT_CONNECT',
+            28 => 'CURLE_OPERATION_TIMEDOUT',
+            35 => 'CURLE_SSL_CONNECT_ERROR',
+            51 => 'CURLE_PEER_FAILED_VERIFICATION',
+            52 => 'CURLE_GOT_NOTHING',
+            56 => 'CURLE_RECV_ERROR',
+            58 => 'CURLE_SSL_CERTPROBLEM',
+            59 => 'CURLE_SSL_CIPHER',
+            60 => 'CURLE_SSL_CACERT',
+            77 => 'CURLE_SSL_CACERT_BADFILE'
+        );
+
+        return isset($labels[(int)$curlErrno])
+            ? $labels[(int)$curlErrno]
+            : 'UNKNOWN_CURL_ERROR';
     }
 
     /**
@@ -241,6 +297,11 @@ class ApiService
 
             $curl = curl_init();
 
+            if ($curl === false)
+            {
+                throw new Exception("Failed to initialise cURL.");
+            }
+
             $curlOptions = array(
                 CURLOPT_URL            => $url,
                 CURLOPT_RETURNTRANSFER => true,
@@ -292,11 +353,13 @@ class ApiService
             if ($curlErrno !== 0)
             {
                 // Build a single actionable log message instead of three
-                // separate warnings. The OpenSSL detail, when present, is
-                // included verbatim so the certificate failure is obvious.
+                // separate warnings. The numeric code, the symbolic label,
+                // and the human-readable message are all included so the
+                // next reader does not have to look anything up.
                 $errorMessage = sprintf(
-                    "cURL error %d: %s (url: %s)",
+                    "cURL error %d (%s): %s (url: %s)",
                     $curlErrno,
+                    $this->describeCurlError($curlErrno),
                     $curlError,
                     $url
                 );

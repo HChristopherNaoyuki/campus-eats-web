@@ -38,3 +38,40 @@ error:0A000086:SSL routines::certificate verify failed in C:\wamp64\www\campus-e
 [2026-09-12 13:16:57] [PHP_ERROR] [ERROR] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] PHP Error: file_get_contents(https://fakerestaurantapi.runasp.net/api/Restaurant): Failed to open stream: operation failed in C:\wamp64\www\campus-eats-web\Solution\includes\api_service.php on line 141
 [2026-09-12 13:16:57] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request failed after 3 attempts: Failed to fetch API response
 [2026-09-12 13:16:57] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] Error fetching restaurants from API: Failed to fetch API response
+[2026-09-12 13:21:11] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (single canonical CSP with nonce)
+[2026-09-12 13:21:11] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request: GET /api/Restaurant (Attempt 1)
+[2026-09-12 13:21:11] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] cURL error 60: SSL certificate problem: unable to get local issuer certificate (url: https://fakerestaurantapi.runasp.net/api/Restaurant)
+[2026-09-12 13:21:11] [EXCEPTION] [ERROR] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] Uncaught Exception: Undefined constant "CURLE_PEER_FAILED_VERIFICATION" in C:\wamp64\www\campus-eats-web\Solution\includes\api_service.php on line 162
+Stack trace:
+#0 C:\wamp64\www\campus-eats-web\Solution\includes\api_service.php(311): ApiService->isPermanentCurlFailure(60)
+#1 C:\wamp64\www\campus-eats-web\Solution\includes\api_service.php(416): ApiService->request('/api/Restaurant')
+#2 C:\wamp64\www\campus-eats-web\index.php(115): ApiService->getAllRestaurants()
+#3 {main}
+[2026-09-12 13:21:11] [AUDIT] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] Audit: system - exception (Result: error)
+[2026-09-12 13:23:19] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (single canonical CSP with nonce)
+[2026-09-12 13:23:19] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request: GET /api/Restaurant (Attempt 1)
+[2026-09-12 13:23:20] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] cURL error 60 (CURLE_SSL_CACERT): SSL certificate problem: unable to get local issuer certificate (url: https://fakerestaurantapi.runasp.net/api/Restaurant)
+[2026-09-12 13:23:20] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] Permanent cURL failure (error 60). Not retrying.
+[2026-09-12 13:23:20] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request failed after 1 attempt(s): API request failed: SSL certificate problem: unable to get local issuer certificate
+[2026-09-12 13:23:20] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] Error fetching restaurants from API: API request failed: SSL certificate problem: unable to get local issuer certificate
+[2026-09-12 13:23:27] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] Security headers set (single canonical CSP with nonce)
+[2026-09-12 13:23:32] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (single canonical CSP with nonce)
+[2026-09-12 13:23:32] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request: GET /api/Restaurant (Attempt 1)
+[2026-09-12 13:23:33] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] cURL error 60 (CURLE_SSL_CACERT): SSL certificate problem: unable to get local issuer certificate (url: https://fakerestaurantapi.runasp.net/api/Restaurant)
+[2026-09-12 13:23:33] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] Permanent cURL failure (error 60). Not retrying.
+[2026-09-12 13:23:33] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request failed after 1 attempt(s): API request failed: SSL certificate problem: unable to get local issuer certificate
+[2026-09-12 13:23:33] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] Error fetching restaurants from API: API request failed: SSL certificate problem: unable to get local issuer certificate
+[2026-09-12 13:23:39] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] Security headers set (single canonical CSP with nonce)
+[2026-09-12 13:23:45] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] Security headers set (single canonical CSP with nonce)
+[2026-09-12 13:23:50] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (single canonical CSP with nonce)
+[2026-09-12 13:23:50] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request: GET /api/Restaurant (Attempt 1)
+[2026-09-12 13:23:51] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] cURL error 60 (CURLE_SSL_CACERT): SSL certificate problem: unable to get local issuer certificate (url: https://fakerestaurantapi.runasp.net/api/Restaurant)
+[2026-09-12 13:23:51] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] Permanent cURL failure (error 60). Not retrying.
+[2026-09-12 13:23:51] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request failed after 1 attempt(s): API request failed: SSL certificate problem: unable to get local issuer certificate
+[2026-09-12 13:23:51] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] Error fetching restaurants from API: API request failed: SSL certificate problem: unable to get local issuer certificate
+[2026-09-12 13:27:08] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (single canonical CSP with nonce)
+[2026-09-12 13:27:08] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request: GET /api/Restaurant (Attempt 1)
+[2026-09-12 13:27:16] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] cURL error 60 (CURLE_SSL_CACERT): SSL certificate problem: unable to get local issuer certificate (url: https://fakerestaurantapi.runasp.net/api/Restaurant)
+[2026-09-12 13:27:16] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] Permanent cURL failure (error 60). Not retrying.
+[2026-09-12 13:27:16] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] API request failed after 1 attempt(s): API request failed: SSL certificate problem: unable to get local issuer certificate
+[2026-09-12 13:27:16] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: ihgvfnl3semk1qhu6v52vb3are] Error fetching restaurants from API: API request failed: SSL certificate problem: unable to get local issuer certificate
