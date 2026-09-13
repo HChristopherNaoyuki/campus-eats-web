@@ -1,0 +1,74 @@
+[2026-09-12 19:10:57] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (single canonical CSP with nonce)
+[2026-09-12 19:10:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: r14pcbifci613rdf6ju8ioss05] API request: GET /api/Restaurant (Attempt 1)
+[2026-09-12 19:10:58] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: r14pcbifci613rdf6ju8ioss05] cURL error 60 (CURLE_SSL_CACERT): SSL certificate problem: unable to get local issuer certificate (url: https://fakerestaurantapi.runasp.net/api/Restaurant)
+[2026-09-12 19:10:58] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: r14pcbifci613rdf6ju8ioss05] Permanent cURL failure (error 60). Not retrying.
+[2026-09-12 19:10:58] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: r14pcbifci613rdf6ju8ioss05] API request failed after 1 attempt(s): API request failed: SSL certificate problem: unable to get local issuer certificate
+[2026-09-12 19:10:58] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: r14pcbifci613rdf6ju8ioss05] Error fetching restaurants from API: API request failed: SSL certificate problem: unable to get local issuer certificate
+[2026-09-12 19:10:58] [EXCEPTION] [ERROR] [IP: 127.0.0.1] [User: guest] [Session: r14pcbifci613rdf6ju8ioss05] Uncaught Exception: Call to undefined function isActivePublicPage() in C:\wamp64\www\campus-eats-web\Solution\includes\public_header.php on line 83
+Stack trace:
+#0 C:\wamp64\www\campus-eats-web\index.php(186): include_once()
+#1 {main}
+[2026-09-12 19:10:58] [AUDIT] [INFO] [IP: 127.0.0.1] [User: guest] [Session: r14pcbifci613rdf6ju8ioss05] Audit: system - exception (Result: error)
+[2026-09-12 19:12:00] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (single canonical CSP with nonce)
+[2026-09-12 19:12:00] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: r14pcbifci613rdf6ju8ioss05] API request: GET /api/Restaurant (Attempt 1)
+[2026-09-12 19:12:00] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: r14pcbifci613rdf6ju8ioss05] cURL error 60 (CURLE_SSL_CACERT): SSL certificate problem: unable to get local issuer certificate (url: https://fakerestaurantapi.runasp.net/api/Restaurant)
+[2026-09-12 19:12:00] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: r14pcbifci613rdf6ju8ioss05] Permanent cURL failure (error 60). Not retrying.
+[2026-09-12 19:12:00] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: r14pcbifci613rdf6ju8ioss05] API request failed after 1 attempt(s): API request failed: SSL certificate problem: unable to get local issuer certificate
+[2026-09-12 19:12:00] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: r14pcbifci613rdf6ju8ioss05] Error fetching restaurants from API: API request failed: SSL certificate problem: unable to get local issuer certificate
+[2026-09-12 19:12:00] [EXCEPTION] [ERROR] [IP: 127.0.0.1] [User: guest] [Session: r14pcbifci613rdf6ju8ioss05] Uncaught Exception: Call to undefined function isActivePublicPage() in C:\wamp64\www\campus-eats-web\Solution\includes\public_header.php on line 83
+Stack trace:
+#0 C:\wamp64\www\campus-eats-web\index.php(186): include_once()
+#1 {main}
+[2026-09-12 19:12:00] [AUDIT] [INFO] [IP: 127.0.0.1] [User: guest] [Session: r14pcbifci613rdf6ju8ioss05] Audit: system - exception (Result: error)
+[2026-09-12 19:12:01] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (single canonical CSP with nonce)
+[2026-09-12 19:12:01] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: r14pcbifci613rdf6ju8ioss05] API request: GET /api/Restaurant (Attempt 1)
+[2026-09-12 19:12:03] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: r14pcbifci613rdf6ju8ioss05] cURL error 60 (CURLE_SSL_CACERT): SSL certificate problem: unable to get local issuer certificate (url: https://fakerestaurantapi.runasp.net/api/Restaurant)
+[2026-09-12 19:12:03] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: r14pcbifci613rdf6ju8ioss05] Permanent cURL failure (error 60). Not retrying.
+[2026-09-12 19:12:03] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: r14pcbifci613rdf6ju8ioss05] API request failed after 1 attempt(s): API request failed: SSL certificate problem: unable to get local issuer certificate
+[2026-09-12 19:12:03] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: r14pcbifci613rdf6ju8ioss05] Error fetching restaurants from API: API request failed: SSL certificate problem: unable to get local issuer certificate
+[2026-09-12 19:12:03] [EXCEPTION] [ERROR] [IP: 127.0.0.1] [User: guest] [Session: r14pcbifci613rdf6ju8ioss05] Uncaught Exception: Call to undefined function isActivePublicPage() in C:\wamp64\www\campus-eats-web\Solution\includes\public_header.php on line 83
+Stack trace:
+#0 C:\wamp64\www\campus-eats-web\index.php(186): include_once()
+#1 {main}
+[2026-09-12 19:12:03] [AUDIT] [INFO] [IP: 127.0.0.1] [User: guest] [Session: r14pcbifci613rdf6ju8ioss05] Audit: system - exception (Result: error)
+[2026-09-13 06:10:16] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (single canonical CSP with nonce)
+[2026-09-13 06:10:16] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: vtcbdhturom5l5oaj5vkkongfj] API request: GET /api/Restaurant (Attempt 1)
+[2026-09-13 06:10:17] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: vtcbdhturom5l5oaj5vkkongfj] cURL error 60 (CURLE_SSL_CACERT): SSL certificate problem: unable to get local issuer certificate (url: https://fakerestaurantapi.runasp.net/api/Restaurant)
+[2026-09-13 06:10:17] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: vtcbdhturom5l5oaj5vkkongfj] Permanent cURL failure (error 60). Not retrying.
+[2026-09-13 06:10:17] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: vtcbdhturom5l5oaj5vkkongfj] API request failed after 1 attempt(s): API request failed: SSL certificate problem: unable to get local issuer certificate
+[2026-09-13 06:10:17] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: vtcbdhturom5l5oaj5vkkongfj] Error fetching restaurants from API: API request failed: SSL certificate problem: unable to get local issuer certificate
+[2026-09-13 06:10:17] [EXCEPTION] [ERROR] [IP: 127.0.0.1] [User: guest] [Session: vtcbdhturom5l5oaj5vkkongfj] Uncaught Exception: Call to undefined function isActivePublicPage() in C:\wamp64\www\campus-eats-web\Solution\includes\public_header.php on line 83
+Stack trace:
+#0 C:\wamp64\www\campus-eats-web\index.php(186): include_once()
+#1 {main}
+[2026-09-13 06:10:17] [AUDIT] [INFO] [IP: 127.0.0.1] [User: guest] [Session: vtcbdhturom5l5oaj5vkkongfj] Audit: system - exception (Result: error)
+[2026-09-13 06:14:21] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (single canonical CSP with nonce)
+[2026-09-13 06:14:21] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: vtcbdhturom5l5oaj5vkkongfj] API request: GET /api/Restaurant (Attempt 1)
+[2026-09-13 06:14:22] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: vtcbdhturom5l5oaj5vkkongfj] cURL error 60 (CURLE_SSL_CACERT): SSL certificate problem: unable to get local issuer certificate (url: https://fakerestaurantapi.runasp.net/api/Restaurant)
+[2026-09-13 06:14:22] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: vtcbdhturom5l5oaj5vkkongfj] Permanent cURL failure (error 60). Not retrying.
+[2026-09-13 06:14:22] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: vtcbdhturom5l5oaj5vkkongfj] API request failed after 1 attempt(s): API request failed: SSL certificate problem: unable to get local issuer certificate
+[2026-09-13 06:14:22] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: vtcbdhturom5l5oaj5vkkongfj] Error fetching restaurants from API: API request failed: SSL certificate problem: unable to get local issuer certificate
+[2026-09-13 06:14:30] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (single canonical CSP with nonce)
+[2026-09-13 06:14:30] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: vtcbdhturom5l5oaj5vkkongfj] API request: GET /api/Restaurant (Attempt 1)
+[2026-09-13 06:14:31] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: vtcbdhturom5l5oaj5vkkongfj] cURL error 60 (CURLE_SSL_CACERT): SSL certificate problem: unable to get local issuer certificate (url: https://fakerestaurantapi.runasp.net/api/Restaurant)
+[2026-09-13 06:14:31] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: vtcbdhturom5l5oaj5vkkongfj] Permanent cURL failure (error 60). Not retrying.
+[2026-09-13 06:14:31] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: vtcbdhturom5l5oaj5vkkongfj] API request failed after 1 attempt(s): API request failed: SSL certificate problem: unable to get local issuer certificate
+[2026-09-13 06:14:31] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: vtcbdhturom5l5oaj5vkkongfj] Error fetching restaurants from API: API request failed: SSL certificate problem: unable to get local issuer certificate
+[2026-09-13 06:14:50] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: vtcbdhturom5l5oaj5vkkongfj] PDO connection opened to database 'campus_eats'.
+[2026-09-13 06:14:50] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: vtcbdhturom5l5oaj5vkkongfj] Database 'campus_eats' ensured to exist.
+[2026-09-13 06:14:50] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: vtcbdhturom5l5oaj5vkkongfj] Schema probe: users table not found. Running install.sql.
+[2026-09-13 06:14:50] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: vtcbdhturom5l5oaj5vkkongfj] Parsed 23 SQL statement(s) from install.sql.
+[2026-09-13 06:14:50] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: vtcbdhturom5l5oaj5vkkongfj] Install statement 1 failed: SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '- Campus Eats Database Schema
+- Version 20.0
+-
+- Creates the ten tables used by ' at line 1 | Statement: - Campus Eats Database Schema - Version 20.0 - - Creates the ten tables used by the application. The script does not - insert any row. Demonstration data is inserted separately by - Solution/sql/seed.
+[2026-09-13 06:14:50] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: vtcbdhturom5l5oaj5vkkongfj] Database Connection Error: SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '- Campus Eats Database Schema
+- Version 20.0
+-
+- Creates the ten tables used by ' at line 1
+[2026-09-13 06:14:59] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (single canonical CSP with nonce)
+[2026-09-13 06:14:59] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: vtcbdhturom5l5oaj5vkkongfj] API request: GET /api/Restaurant (Attempt 1)
+[2026-09-13 06:15:00] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: vtcbdhturom5l5oaj5vkkongfj] cURL error 60 (CURLE_SSL_CACERT): SSL certificate problem: unable to get local issuer certificate (url: https://fakerestaurantapi.runasp.net/api/Restaurant)
+[2026-09-13 06:15:00] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: vtcbdhturom5l5oaj5vkkongfj] Permanent cURL failure (error 60). Not retrying.
+[2026-09-13 06:15:00] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: vtcbdhturom5l5oaj5vkkongfj] API request failed after 1 attempt(s): API request failed: SSL certificate problem: unable to get local issuer certificate
+[2026-09-13 06:15:00] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: vtcbdhturom5l5oaj5vkkongfj] Error fetching restaurants from API: API request failed: SSL certificate problem: unable to get local issuer certificate
