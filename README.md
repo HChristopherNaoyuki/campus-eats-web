@@ -279,6 +279,9 @@ campus-eats-web/
 ├── index.php
 ├── privacy.php
 ├── terms.php
+├── .github/
+│   └── workflows/
+│       └── ci-cd.yml
 ├── Documentation/
 │   └── requirements/
 │       └── campus-eats-process-document.pdf
