@@ -1,0 +1,29 @@
+# CI/CD Pipeline
+# This workflow doesn't actually do anything yet — it's just a friendly placeholder
+# so the repo doesn't feel empty. Think of it as a "Hello, world!" for automation.
+
+name: CI/CD Pipeline
+
+# When should this pipeline wake up?
+on:
+  # Whenever someone pushes to main — gently remind them we're here.
+  push:
+    branches: [main]
+
+  # Whenever someone opens a PR against main — say hi, do nothing.
+  pull_request:
+    branches: [main]
+
+jobs:
+  # A job so simple it could nap through it.
+  verify:
+    # Just a placeholder name. Honest, if nothing else.
+    name: Placeholder
+
+    # Runs on GitHub's latest Ubuntu image. Fresh, clean, and ready to do nothing.
+    runs-on: ubuntu-latest
+
+    steps:
+      # The one and only step. It prints a message and calls it a day.
+      - name: Placeholder step
+        run: echo "No checks configured yet. This step is a placeholder."
