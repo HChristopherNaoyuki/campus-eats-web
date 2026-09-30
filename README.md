@@ -326,8 +326,9 @@ campus-eats-web/
     │   │   ├── cart.js
     │   │   ├── checkout.js
     │   │   ├── dashboard-common.js
-    │   │   ├── firebase.js
     │   │   ├── feedback-firebase.js
+    │   │   ├── firebase-sync.js
+    │   │   ├── firebase.js
     │   │   ├── main.js
     │   │   ├── payment-modal.js
     │   │   ├── student.js
