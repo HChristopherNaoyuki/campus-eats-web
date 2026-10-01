@@ -1,19 +1,19 @@
 <?php
 /**
- * Order Tracking Page for Students and Standard Users
+ * Order History Page for Students and Standard Users
  *
- * This page displays real-time order tracking information.
+ * This page displays a list of the user's past orders.
  *
- * CORRECTIONS (Version 16.0 - Standard User Access Fix):
+ * CORRECTIONS (Version 17.0 - Standard User Access Fix):
  * - Replaced requireStudent() with requireStudentOrStandard()
- * - Standard users can now track their orders
+ * - Standard users can now view their order history
  * - Fixes FUNC-02 from the scope note
  *
- * SOURCE: campus-eats-process-document.pdf (Section 6.1 - Track order status)
- * SOURCE: Mockups - Order tracking design
+ * SOURCE: campus-eats-process-document.pdf (Section 6.1 - View order history)
+ * SOURCE: Mockups - Order history design
  * SOURCE: Scope Note - FUNC-02
  *
- * @version 16.0
+ * @version 17.0
  */
 
 // Load required dependencies
@@ -26,9 +26,9 @@ require_once dirname(__DIR__, 2) . '/config/error_logging.php';
 startSecureSession();
 
 // =============================================================================
-// CORRECTION: FUNC-02 - Allow Standard users to track orders
+// CORRECTION: FUNC-02 - Allow Standard users to view order history
 // Previous code called requireStudent() which blocked Standard users.
-// Standard users now have full access to order tracking.
+// Standard users now have full access to order history.
 // Source: Scope Note - FUNC-02
 // =============================================================================
 requireStudentOrStandard();
@@ -37,174 +37,85 @@ $db = getDB();
 $currentUser = getCurrentUser();
 $csrfToken = getCsrfToken();
 
-function getTableColumns($db, $tableName)
-{
-    $allowedTables = array('orders', 'payments', 'users', 'vendors', 'menu_items', 'order_items');
+// Get filter parameter
+$filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
+$page = max(1, (int)($_GET['page'] ?? 1));
+$perPage = 10;
+$offset = ($page - 1) * $perPage;
 
-    if (!in_array($tableName, $allowedTables, true))
+// Build query based on filter
+$statusCondition = '';
+$params = array('user_id' => $currentUser['user_id']);
+
+if ($filter === 'pending')
+{
+    $statusCondition = "AND o.order_status IN ('pending', 'accepted', 'preparing', 'ready')";
+}
+elseif ($filter === 'completed')
+{
+    $statusCondition = "AND o.order_status = 'completed'";
+}
+elseif ($filter === 'cancelled')
+{
+    $statusCondition = "AND o.order_status = 'cancelled'";
+}
+
+try
+{
+    // Get total count
+    $countResult = $db->fetchOne(
+        "SELECT COUNT(*) as count FROM orders o
+         WHERE o.user_id = :user_id $statusCondition",
+        $params
+    );
+    $totalOrders = (int)($countResult['count'] ?? 0);
+    $totalPages = ceil($totalOrders / $perPage);
+
+    // Fetch orders with items
+    $sql = "SELECT
+                o.order_id,
+                o.order_number,
+                o.order_status,
+                o.total_amount,
+                o.pickup_time,
+                o.order_placed_at,
+                o.special_requests,
+                v.vendor_name,
+                v.vendor_id
+            FROM orders o
+            JOIN vendors v ON o.vendor_id = v.vendor_id
+            WHERE o.user_id = :user_id $statusCondition
+            ORDER BY o.order_placed_at DESC
+            LIMIT :limit OFFSET :offset";
+
+    $stmt = $db->getConnection()->prepare($sql);
+    $stmt->bindValue(':user_id', $currentUser['user_id'], PDO::PARAM_INT);
+    $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+    $stmt->execute();
+    $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Fetch items for each order
+    foreach ($orders as &$order)
     {
-        writeLog("Attempted to access non-allowed table: $tableName", "SECURITY");
-        return array();
+        $items = $db->fetchAll(
+            "SELECT oi.quantity, oi.unit_price, oi.subtotal, mi.item_name
+             FROM order_items oi
+             JOIN menu_items mi ON oi.item_id = mi.item_id
+             WHERE oi.order_id = :order_id",
+            array('order_id' => $order['order_id'])
+        );
+        $order['items'] = $items;
     }
-
-    try
-    {
-        $columns = $db->fetchAll("SHOW COLUMNS FROM `$tableName`");
-        $columnNames = array();
-
-        foreach ($columns as $column)
-        {
-            $columnNames[] = $column['Field'];
-        }
-
-        return $columnNames;
-    }
-    catch (Exception $e)
-    {
-        writeLog("Failed to get table columns for $tableName: " . $e->getMessage(), "ORDER_TRACKING");
-        return array();
-    }
+    unset($order);
 }
-
-$orderId = isset($_GET['order_id']) ? (int)$_GET['order_id'] : 0;
-
-if ($orderId <= 0)
+catch (Exception $e)
 {
-    writeLog("Order tracking: Invalid order ID: $orderId", "ORDER_TRACKING");
-    header('Location: order_history.php');
-    exit();
-}
-
-$orderColumns = getTableColumns($db, 'orders');
-
-$selectFields = array(
-    'o.order_id',
-    'o.order_number',
-    'o.order_status',
-    'o.total_amount',
-    'o.pickup_time',
-    'o.special_requests',
-    'o.order_placed_at',
-    'v.vendor_name',
-    'v.vendor_id'
-);
-
-if (in_array('subtotal', $orderColumns))
-{
-    $selectFields[] = 'o.subtotal';
-}
-else
-{
-    $selectFields[] = '0 as subtotal';
-}
-
-if (in_array('service_fee', $orderColumns))
-{
-    $selectFields[] = 'o.service_fee';
-}
-else
-{
-    $selectFields[] = '0 as service_fee';
-}
-
-if (in_array('tax', $orderColumns))
-{
-    $selectFields[] = 'o.tax';
-}
-else
-{
-    $selectFields[] = '0 as tax';
-}
-
-if (in_array('rounding_adjustment', $orderColumns))
-{
-    $selectFields[] = 'o.rounding_adjustment';
-}
-else
-{
-    $selectFields[] = '0 as rounding_adjustment';
-}
-
-if (in_array('transaction_id', $orderColumns))
-{
-    $selectFields[] = 'o.transaction_id';
-}
-else
-{
-    $selectFields[] = 'NULL as transaction_id';
-}
-
-$selectClause = implode(', ', $selectFields);
-
-$order = $db->fetchOne
-(
-    "SELECT $selectClause
-     FROM orders o
-     JOIN vendors v ON o.vendor_id = v.vendor_id
-     WHERE o.order_id = :order_id AND o.user_id = :user_id",
-    array(
-        'order_id' => $orderId,
-        'user_id' => $currentUser['user_id']
-    )
-);
-
-if (!$order)
-{
-    writeLog("Order tracking: Order not found or access denied for order ID: $orderId", "ORDER_TRACKING");
-    header('Location: order_history.php');
-    exit();
-}
-
-$orderItems = $db->fetchAll
-(
-    "SELECT oi.quantity, oi.unit_price, oi.subtotal, mi.item_name
-     FROM order_items oi
-     JOIN menu_items mi ON oi.item_id = mi.item_id
-     WHERE oi.order_id = :order_id",
-    array('order_id' => $orderId)
-);
-
-$progressPercent = 0;
-$statusMessage = '';
-$statusIcon = '';
-
-switch ($order['order_status'])
-{
-    case ORDER_STATUS_PENDING:
-        $progressPercent = 0;
-        $statusMessage = 'Your order has been received and is awaiting vendor confirmation.';
-        $statusIcon = 'fa-clock';
-        break;
-    case ORDER_STATUS_ACCEPTED:
-        $progressPercent = 25;
-        $statusMessage = 'Your order has been accepted by the vendor.';
-        $statusIcon = 'fa-check';
-        break;
-    case ORDER_STATUS_PREPARING:
-        $progressPercent = 50;
-        $statusMessage = 'Your order is being prepared.';
-        $statusIcon = 'fa-utensils';
-        break;
-    case ORDER_STATUS_READY:
-        $progressPercent = 75;
-        $statusMessage = 'Your order is ready for pickup!';
-        $statusIcon = 'fa-concierge-bell';
-        break;
-    case ORDER_STATUS_COMPLETED:
-        $progressPercent = 100;
-        $statusMessage = 'Thank you for using Campus Eats. Order completed.';
-        $statusIcon = 'fa-check-double';
-        break;
-    case ORDER_STATUS_CANCELLED:
-        $progressPercent = 0;
-        $statusMessage = 'This order has been cancelled.';
-        $statusIcon = 'fa-ban';
-        break;
-    default:
-        $progressPercent = 0;
-        $statusMessage = 'Status update pending.';
-        $statusIcon = 'fa-question';
-        break;
+    writeLog("Order history error: " . $e->getMessage(), "ORDER_HISTORY");
+    $orders = array();
+    $totalOrders = 0;
+    $totalPages = 0;
+    $error = "Unable to load order history. Please try again later.";
 }
 
 function getOrderStatusBadgeClass($status)
@@ -225,31 +136,17 @@ function getOrderStatusText($status)
 {
     switch ($status)
     {
-        case ORDER_STATUS_PENDING:   return 'Pending Confirmation';
+        case ORDER_STATUS_PENDING:   return 'Pending';
         case ORDER_STATUS_ACCEPTED:  return 'Accepted';
         case ORDER_STATUS_PREPARING: return 'Preparing';
-        case ORDER_STATUS_READY:     return 'Ready for Pickup';
+        case ORDER_STATUS_READY:     return 'Ready';
         case ORDER_STATUS_COMPLETED: return 'Completed';
         case ORDER_STATUS_CANCELLED: return 'Cancelled';
-        default: return 'Pending';
+        default: return ucfirst($status);
     }
 }
 
-function getOrderStatusIcon($status)
-{
-    switch ($status)
-    {
-        case ORDER_STATUS_PENDING:   return 'fa-clock';
-        case ORDER_STATUS_ACCEPTED:  return 'fa-check';
-        case ORDER_STATUS_PREPARING: return 'fa-utensils';
-        case ORDER_STATUS_READY:     return 'fa-concierge-bell';
-        case ORDER_STATUS_COMPLETED: return 'fa-check-double';
-        case ORDER_STATUS_CANCELLED: return 'fa-ban';
-        default: return 'fa-question';
-    }
-}
-
-function escapeTrackingOutput($string)
+function escapeHistoryOutput($string)
 {
     if ($string === null) return '';
     return htmlspecialchars($string, ENT_QUOTES, 'UTF-8');
@@ -260,240 +157,129 @@ function escapeTrackingOutput($string)
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="csrf-token" content="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
-    <title>Track Order · Campus Eats</title>
+    <meta name="csrf-token" content="<?php echo escapeHistoryOutput($csrfToken); ?>">
+    <title>My Orders · Campus Eats</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="<?php echo ASSETS_URL; ?>/css/apple.css">
     <style>
-        .tracking-container
+        .filter-tabs
+        {
+            display: flex;
+            gap: var(--space-2);
+            flex-wrap: wrap;
+            margin-bottom: var(--space-5);
+        }
+
+        .filter-btn
+        {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-2) var(--space-4);
+            border-radius: var(--radius-full);
+            font-size: 0.8125rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all var(--transition-fast);
+            background: white;
+            color: var(--gray-700);
+            border: 1px solid var(--gray-200);
+        }
+
+        .filter-btn:hover
+        {
+            background: var(--orange-light);
+            border-color: var(--orange);
+            color: var(--orange);
+        }
+
+        .filter-btn.active
+        {
+            background: var(--orange);
+            border-color: var(--orange);
+            color: white;
+        }
+
+        .order-card
         {
             background: white;
-            border-radius: var(--radius-xl);
-            box-shadow: var(--shadow-md);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--space-4);
             overflow: hidden;
+            box-shadow: var(--shadow-sm);
             border: 1px solid var(--gray-100);
+            transition: box-shadow var(--transition-base);
         }
 
-        .tracking-header
+        .order-card:hover
         {
-            background: linear-gradient(135deg, var(--orange), var(--orange-dark));
-            color: white;
-            padding: var(--space-4) var(--space-6);
-            text-align: center;
+            box-shadow: var(--shadow-md);
         }
 
-        .tracking-header h1 { color: white; margin-bottom: var(--space-2); font-size: 1.5rem; }
-        .tracking-header p { opacity: 0.9; margin-bottom: 0; }
-
-        .order-info-card
+        .order-card-header
         {
-            padding: var(--space-4) var(--space-6);
+            background: var(--gray-50);
+            padding: var(--space-3) var(--space-5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--space-3);
             border-bottom: 1px solid var(--gray-200);
         }
 
-        .order-info-grid
+        .order-number
         {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: var(--space-4);
-        }
-
-        .order-info-item
-        {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .order-info-label
-        {
-            font-size: 0.6875rem;
-            color: var(--gray-500);
-            text-transform: uppercase;
-            letter-spacing: 0.02em;
-            margin-bottom: var(--space-1);
-        }
-
-        .order-info-value
-        {
-            font-size: 0.9375rem;
-            font-weight: 500;
+            font-weight: 600;
             color: var(--gray-800);
         }
 
-        .transaction-id
+        .order-date
         {
-            font-family: monospace;
             font-size: 0.75rem;
-            background: var(--gray-100);
-            padding: var(--space-1) var(--space-2);
-            border-radius: var(--radius-sm);
-            display: inline-block;
-        }
-
-        .tracking-steps
-        {
-            padding: var(--space-4) var(--space-6);
-            position: relative;
-        }
-
-        .steps-container
-        {
-            display: flex;
-            justify-content: space-between;
-            position: relative;
-            margin: var(--space-5) 0;
-        }
-
-        .tracking-step
-        {
-            text-align: center;
-            flex: 1;
-            position: relative;
-            z-index: var(--z-low);
-        }
-
-        .step-icon
-        {
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: var(--gray-200);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto var(--space-3);
-            font-size: 1.25rem;
             color: var(--gray-500);
-            transition: all var(--transition-base);
         }
 
-        .tracking-step.completed .step-icon
+        .order-card-body
         {
-            background: var(--success);
-            color: white;
+            padding: var(--space-4) var(--space-5);
         }
 
-        .tracking-step.active .step-icon
+        .order-items
         {
-            background: var(--orange);
-            color: white;
-            box-shadow: 0 0 0 4px var(--orange-light);
+            margin-bottom: var(--space-4);
         }
 
-        .tracking-step p { margin: 0; font-weight: 500; font-size: 0.8125rem; }
-        .tracking-step small { font-size: 0.6875rem; color: var(--gray-500); }
-
-        .progress-bar-container
-        {
-            position: absolute;
-            top: 28px;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background-color: var(--gray-200);
-            z-index: var(--z-negative);
-            border-radius: var(--radius-full);
-        }
-
-        .progress-fill
-        {
-            height: 100%;
-            background: linear-gradient(90deg, var(--orange), var(--orange-dark));
-            width: 0%;
-            transition: width var(--transition-slow);
-            border-radius: var(--radius-full);
-        }
-
-        .status-message
-        {
-            text-align: center;
-            padding: var(--space-4);
-            background: var(--gray-50);
-            border-radius: var(--radius-lg);
-            margin-top: var(--space-4);
-        }
-
-        .status-message i { font-size: 2rem; color: var(--orange); margin-bottom: var(--space-2); }
-        .status-message p { margin: 0; font-weight: 500; color: var(--gray-700); }
-
-        .items-section { padding: var(--space-4) var(--space-6); border-top: 1px solid var(--gray-200); }
-
-        .items-table
-        {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: var(--space-4);
-        }
-
-        .items-table th,
-        .items-table td
-        {
-            padding: var(--space-2) var(--space-3);
-            text-align: left;
-            border-bottom: 1px solid var(--gray-200);
-        }
-
-        .items-table th
-        {
-            background: var(--gray-50);
-            font-weight: 600;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            color: var(--gray-600);
-        }
-
-        .receipt-summary
-        {
-            background: var(--gray-50);
-            padding: var(--space-3) var(--space-4);
-            border-radius: var(--radius-md);
-            margin-top: var(--space-4);
-        }
-
-        .receipt-row
+        .order-item
         {
             display: flex;
             justify-content: space-between;
-            padding: var(--space-1) 0;
-            font-size: 0.8125rem;
+            padding: var(--space-2) 0;
+            border-bottom: 1px solid var(--gray-100);
+            font-size: 0.875rem;
         }
 
-        .receipt-total
+        .order-item:last-child
+        {
+            border-bottom: none;
+        }
+
+        .order-footer
+        {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: var(--space-3);
+            border-top: 1px solid var(--gray-200);
+            flex-wrap: wrap;
+            gap: var(--space-3);
+        }
+
+        .order-total
         {
             font-weight: 700;
-            font-size: 0.9375rem;
+            font-size: 1.125rem;
             color: var(--orange);
-            border-top: 1px solid var(--gray-300);
-            margin-top: var(--space-1);
-            padding-top: var(--space-2);
-        }
-
-        .special-requests
-        {
-            background: var(--gray-50);
-            padding: var(--space-3) var(--space-4);
-            border-radius: var(--radius-md);
-            margin-top: var(--space-4);
-        }
-
-        .special-requests p { margin-top: var(--space-2); font-size: 0.875rem; color: var(--gray-700); }
-
-        .action-buttons
-        {
-            padding: var(--space-4) var(--space-6);
-            border-top: 1px solid var(--gray-200);
-            display: flex;
-            gap: var(--space-3);
-            justify-content: center;
-        }
-
-        .auto-refresh-note
-        {
-            text-align: center;
-            font-size: 0.75rem;
-            color: var(--gray-500);
-            padding: var(--space-3);
-            border-top: 1px solid var(--gray-200);
         }
 
         .status-pending { background: var(--warning-bg); color: var(--warning-text); }
@@ -503,64 +289,70 @@ function escapeTrackingOutput($string)
         .status-completed { background: var(--gray-200); color: var(--gray-700); }
         .status-cancelled { background: var(--error-bg); color: var(--error-text); }
 
-        @media (max-width: 768px)
+        .empty-state
         {
-            .tracking-step p { font-size: 0.7rem; }
-            .step-icon { width: 44px; height: 44px; font-size: 1rem; }
-            .progress-bar-container { top: 22px; }
-            .order-info-grid { grid-template-columns: 1fr; gap: var(--space-2); }
-
-            .items-table,
-            .items-table tbody,
-            .items-table tr,
-            .items-table td
-            {
-                display: block;
-            }
-
-            .items-table thead { display: none; }
-
-            .items-table tr
-            {
-                margin-bottom: var(--space-2);
-                padding: var(--space-2);
-                border: 1px solid var(--gray-200);
-                border-radius: var(--radius-md);
-            }
-
-            .items-table td
-            {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: var(--space-1) var(--space-2);
-                border-bottom: none;
-            }
-
-            .items-table td::before
-            {
-                content: attr(data-label);
-                font-weight: 600;
-                font-size: 0.75rem;
-                color: var(--gray-500);
-                margin-right: var(--space-3);
-            }
-
-            .action-buttons { flex-direction: column; }
-            .action-buttons .btn { width: 100%; }
-            .tracking-header { padding: var(--space-3) var(--space-4); }
-            .tracking-header h1 { font-size: 1.25rem; }
+            text-align: center;
+            padding: var(--space-12) var(--space-6);
+            color: var(--gray-500);
         }
 
-        @media (max-width: 480px)
+        .empty-state i
         {
-            .tracking-steps { padding: var(--space-3) var(--space-4); }
-            .steps-container { margin: var(--space-3) 0; }
-            .step-icon { width: 36px; height: 36px; font-size: 0.875rem; }
-            .progress-bar-container { top: 18px; }
-            .order-info-card { padding: var(--space-3) var(--space-4); }
-            .items-section { padding: var(--space-3) var(--space-4); }
-            .action-buttons { padding: var(--space-3) var(--space-4); }
+            font-size: 3rem;
+            margin-bottom: var(--space-4);
+            color: var(--gray-300);
+        }
+
+        .empty-state h3
+        {
+            color: var(--gray-600);
+            margin-bottom: var(--space-2);
+        }
+
+        .pagination
+        {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-2);
+            margin-top: var(--space-6);
+        }
+
+        .pagination-item
+        {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 2.25rem;
+            height: 2.25rem;
+            padding: 0 var(--space-3);
+            font-size: 0.875rem;
+            color: var(--gray-700);
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            transition: all var(--transition-fast);
+            background: white;
+            border: 1px solid var(--gray-200);
+        }
+
+        .pagination-item:hover
+        {
+            background: var(--orange-light);
+            border-color: var(--orange);
+            color: var(--orange);
+        }
+
+        .pagination-item.active
+        {
+            background: var(--orange);
+            border-color: var(--orange);
+            color: white;
+        }
+
+        @media (max-width: 768px)
+        {
+            .filter-tabs { justify-content: center; }
+            .order-card-header { flex-direction: column; text-align: center; }
+            .order-footer { flex-direction: column; text-align: center; }
         }
     </style>
 </head>
@@ -571,165 +363,100 @@ function escapeTrackingOutput($string)
         <main class="main-content" id="main-content">
             <div class="student-content">
                 <div class="container">
-                    <div class="tracking-container">
-                        <div class="tracking-header">
-                            <h1><i class="fas fa-truck"></i> Track Your Order</h1>
-                            <p>Real-time updates for order #<?php echo escapeTrackingOutput($order['order_number']); ?></p>
-                        </div>
-
-                        <div class="order-info-card">
-                            <div class="order-info-grid">
-                                <div class="order-info-item">
-                                    <span class="order-info-label">Vendor</span>
-                                    <span class="order-info-value">
-                                        <i class="fas fa-store"></i>
-                                        <?php echo escapeTrackingOutput($order['vendor_name']); ?>
-                                    </span>
-                                </div>
-                                <div class="order-info-item">
-                                    <span class="order-info-label">Order Placed</span>
-                                    <span class="order-info-value">
-                                        <i class="fas fa-calendar-alt"></i>
-                                        <?php echo date('F j, Y \a\t g:i A', strtotime($order['order_placed_at'])); ?>
-                                    </span>
-                                </div>
-                                <?php if (!empty($order['pickup_time'])): ?>
-                                <div class="order-info-item">
-                                    <span class="order-info-label">Pickup Time</span>
-                                    <span class="order-info-value">
-                                        <i class="fas fa-clock"></i>
-                                        <?php echo escapeTrackingOutput($order['pickup_time']); ?>
-                                    </span>
-                                </div>
-                                <?php endif; ?>
-                                <?php if (!empty($order['transaction_id']) && $order['transaction_id'] !== 'NULL'): ?>
-                                <div class="order-info-item">
-                                    <span class="order-info-label">Transaction ID</span>
-                                    <span class="order-info-value transaction-id">
-                                        <i class="fas fa-hashtag"></i>
-                                        <?php echo escapeTrackingOutput($order['transaction_id']); ?>
-                                    </span>
-                                </div>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-
-                        <div class="tracking-steps">
-                            <div class="steps-container">
-                                <div class="tracking-step <?php echo $progressPercent >= 0 ? 'completed' : ''; ?> <?php echo $order['order_status'] === ORDER_STATUS_PENDING ? 'active' : ''; ?>">
-                                    <div class="step-icon"><i class="fas fa-receipt"></i></div>
-                                    <p>Order Placed</p>
-                                    <small><?php echo date('g:i A', strtotime($order['order_placed_at'])); ?></small>
-                                </div>
-                                <div class="tracking-step <?php echo $progressPercent >= 25 ? 'completed' : ''; ?> <?php echo $order['order_status'] === ORDER_STATUS_ACCEPTED ? 'active' : ''; ?>">
-                                    <div class="step-icon"><i class="fas fa-check"></i></div>
-                                    <p>Accepted</p>
-                                </div>
-                                <div class="tracking-step <?php echo $progressPercent >= 50 ? 'completed' : ''; ?> <?php echo $order['order_status'] === ORDER_STATUS_PREPARING ? 'active' : ''; ?>">
-                                    <div class="step-icon"><i class="fas fa-utensils"></i></div>
-                                    <p>Preparing</p>
-                                </div>
-                                <div class="tracking-step <?php echo $progressPercent >= 75 ? 'completed' : ''; ?> <?php echo $order['order_status'] === ORDER_STATUS_READY ? 'active' : ''; ?>">
-                                    <div class="step-icon"><i class="fas fa-concierge-bell"></i></div>
-                                    <p>Ready</p>
-                                </div>
-                                <div class="tracking-step <?php echo $progressPercent >= 100 ? 'completed' : ''; ?> <?php echo $order['order_status'] === ORDER_STATUS_COMPLETED ? 'active' : ''; ?>">
-                                    <div class="step-icon"><i class="fas fa-check-double"></i></div>
-                                    <p>Completed</p>
-                                </div>
-                                <div class="progress-bar-container">
-                                    <div class="progress-fill" style="width: <?php echo $progressPercent; ?>%;"></div>
-                                </div>
-                            </div>
-
-                            <div class="status-message">
-                                <i class="fas <?php echo $statusIcon; ?>"></i>
-                                <p><?php echo $statusMessage; ?></p>
-                            </div>
-                        </div>
-
-                        <div class="items-section">
-                            <h3><i class="fas fa-shopping-cart"></i> Order Items</h3>
-                            <table class="items-table">
-                                <thead>
-                                    <tr>
-                                        <th>Item</th>
-                                        <th>Quantity</th>
-                                        <th>Unit Price</th>
-                                        <th>Subtotal</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($orderItems as $item): ?>
-                                    <tr>
-                                        <td data-label="Item"><?php echo escapeTrackingOutput($item['item_name']); ?></td>
-                                        <td data-label="Quantity"><?php echo $item['quantity']; ?></td>
-                                        <td data-label="Unit Price">R <?php echo number_format($item['unit_price'], 2); ?></td>
-                                        <td data-label="Subtotal">R <?php echo number_format($item['subtotal'], 2); ?></td>
-                                    </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <div class="receipt-summary">
-                            <?php if (isset($order['subtotal']) && $order['subtotal'] > 0): ?>
-                            <div class="receipt-row">
-                                <span>Subtotal:</span>
-                                <span>R <?php echo number_format($order['subtotal'], 2); ?></span>
-                            </div>
-                            <?php endif; ?>
-
-                            <?php if (isset($order['service_fee']) && $order['service_fee'] > 0): ?>
-                            <div class="receipt-row">
-                                <span>Service Fee:</span>
-                                <span>R <?php echo number_format($order['service_fee'], 2); ?></span>
-                            </div>
-                            <?php endif; ?>
-
-                            <?php if (isset($order['tax']) && $order['tax'] > 0): ?>
-                            <div class="receipt-row">
-                                <span>Tax (20%):</span>
-                                <span>R <?php echo number_format($order['tax'], 2); ?></span>
-                            </div>
-                            <?php endif; ?>
-
-                            <?php if (isset($order['rounding_adjustment']) && $order['rounding_adjustment'] != 0): ?>
-                            <div class="receipt-row">
-                                <span>Rounding Adjustment:</span>
-                                <span>R <?php echo number_format($order['rounding_adjustment'], 2); ?></span>
-                            </div>
-                            <?php endif; ?>
-
-                            <div class="receipt-row receipt-total">
-                                <span>Total Paid:</span>
-                                <span>R <?php echo number_format($order['total_amount'], 2); ?></span>
-                            </div>
-                        </div>
-
-                        <?php if (!empty($order['special_requests'])): ?>
-                        <div class="special-requests">
-                            <strong><i class="fas fa-comment-dots"></i> Special Requests:</strong>
-                            <p><?php echo nl2br(escapeTrackingOutput($order['special_requests'])); ?></p>
-                        </div>
-                        <?php endif; ?>
-
-                        <div class="action-buttons">
-                            <a href="order_history.php" class="btn btn-outline">
-                                <i class="fas fa-history"></i> Back to Orders
-                            </a>
-                            <?php if ($order['order_status'] === ORDER_STATUS_COMPLETED): ?>
-                            <a href="dashboard.php" class="btn btn-primary">
-                                <i class="fas fa-store"></i> Order Again
-                            </a>
-                            <?php endif; ?>
-                        </div>
-
-                        <div class="auto-refresh-note">
-                            <i class="fas fa-sync-alt"></i>
-                            Page automatically refreshes every 30 seconds for real-time updates.
-                        </div>
+                    <div class="page-header">
+                        <h1>My Orders</h1>
+                        <p>View your order history and track current orders</p>
                     </div>
+
+                    <div class="filter-tabs">
+                        <a href="?filter=all&page=1" class="filter-btn <?php echo $filter === 'all' ? 'active' : ''; ?>">
+                            <i class="fas fa-list"></i> All Orders
+                        </a>
+                        <a href="?filter=pending&page=1" class="filter-btn <?php echo $filter === 'pending' ? 'active' : ''; ?>">
+                            <i class="fas fa-clock"></i> Active
+                        </a>
+                        <a href="?filter=completed&page=1" class="filter-btn <?php echo $filter === 'completed' ? 'active' : ''; ?>">
+                            <i class="fas fa-check-double"></i> Completed
+                        </a>
+                        <a href="?filter=cancelled&page=1" class="filter-btn <?php echo $filter === 'cancelled' ? 'active' : ''; ?>">
+                            <i class="fas fa-ban"></i> Cancelled
+                        </a>
+                    </div>
+
+                    <?php if (empty($orders)): ?>
+                        <div class="empty-state">
+                            <i class="fas fa-receipt"></i>
+                            <h3>No Orders Found</h3>
+                            <p>You haven't placed any orders yet.</p>
+                            <a href="dashboard.php" class="btn btn-primary">Browse Vendors</a>
+                        </div>
+                    <?php else: ?>
+                        <?php foreach ($orders as $order): ?>
+                            <div class="order-card">
+                                <div class="order-card-header">
+                                    <div>
+                                        <span class="order-number">
+                                            <i class="fas fa-hashtag"></i>
+                                            <?php echo escapeHistoryOutput($order['order_number']); ?>
+                                        </span>
+                                        <span class="order-date">
+                                            <?php echo date('M j, Y g:i A', strtotime($order['order_placed_at'])); ?>
+                                        </span>
+                                    </div>
+                                    <span class="badge <?php echo getOrderStatusBadgeClass($order['order_status']); ?>">
+                                        <?php echo getOrderStatusText($order['order_status']); ?>
+                                    </span>
+                                </div>
+                                <div class="order-card-body">
+                                    <p style="margin-bottom: var(--space-3);">
+                                        <i class="fas fa-store" style="color: var(--orange);"></i>
+                                        <strong><?php echo escapeHistoryOutput($order['vendor_name']); ?></strong>
+                                    </p>
+
+                                    <div class="order-items">
+                                        <?php foreach ($order['items'] as $item): ?>
+                                            <div class="order-item">
+                                                <span><?php echo $item['quantity']; ?>x <?php echo escapeHistoryOutput($item['item_name']); ?></span>
+                                                <span>R <?php echo number_format($item['subtotal'], 2); ?></span>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+
+                                    <div class="order-footer">
+                                        <div class="order-total">
+                                            Total: R <?php echo number_format($order['total_amount'], 2); ?>
+                                        </div>
+                                        <div style="display: flex; gap: var(--space-2);">
+                                            <a href="order_tracking.php?order_id=<?php echo $order['order_id']; ?>" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-truck"></i> Track Order
+                                            </a>
+                                            <?php if ($order['order_status'] === ORDER_STATUS_COMPLETED): ?>
+                                                <a href="dashboard.php" class="btn btn-outline btn-sm">
+                                                    <i class="fas fa-redo"></i> Order Again
+                                                </a>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+
+                        <?php if ($totalPages > 1): ?>
+                            <div class="pagination">
+                                <?php if ($page > 1): ?>
+                                    <a href="?page=<?php echo $page - 1; ?>&filter=<?php echo $filter; ?>" class="pagination-item">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                <?php endif; ?>
+                                <span class="pagination-item active"><?php echo $page; ?> of <?php echo $totalPages; ?></span>
+                                <?php if ($page < $totalPages): ?>
+                                    <a href="?page=<?php echo $page + 1; ?>&filter=<?php echo $filter; ?>" class="pagination-item">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                <?php endif; ?>
+                            </div>
+                        <?php endif; ?>
+                    <?php endif; ?>
                 </div>
             </div>
         </main>
@@ -740,34 +467,5 @@ function escapeTrackingOutput($string)
     </button>
 
     <script src="<?php echo ASSETS_URL; ?>/js/dashboard-common.js"></script>
-    <script>
-        let refreshTimeout = null;
-
-        function startAutoRefresh()
-        {
-            if (refreshTimeout)
-            {
-                clearTimeout(refreshTimeout);
-            }
-            refreshTimeout = setTimeout(function()
-            {
-                location.reload();
-            }, 30000);
-        }
-
-        document.addEventListener('DOMContentLoaded', function()
-        {
-            startAutoRefresh();
-        });
-
-        window.addEventListener('beforeunload', function()
-        {
-            if (refreshTimeout)
-            {
-                clearTimeout(refreshTimeout);
-                refreshTimeout = null;
-            }
-        });
-    </script>
 </body>
 </html>
