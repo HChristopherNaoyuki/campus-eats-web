@@ -3,33 +3,42 @@
  * Submit Feedback Page
  *
  * Allows a logged-in student, standard user, or vendor to submit a
- * complaint or compliment.
+ * complaint or compliment. The record is written to MySQL, which is the
+ * authoritative store. A projection is then written to Firebase so the
+ * client-side feedback view can read it in real time.
  *
- * CORRECTIONS (Version 16.0 - MySQL Only):
- * - Removed every Firebase write from this page. The feedback record is
- *   written to the MySQL complaints_compliments table only. Firebase is
- *   used on this page for reading a user's own past submissions, not for
- *   writing new ones.
- * - Removed the $_SESSION['firebase_feedback_pending'] and
- *   $_SESSION['firebase_feedback_data'] session keys. Nothing in the
- *   codebase ever read those keys, so the "submitted to both systems"
- *   message they enabled was false.
- * - The success message now describes what actually happens: the record
- *   is stored in the application database and reviewed by administrators.
- * - The page no longer loads firebase.js or feedback-firebase.js. Those
- *   scripts are only needed for reading, not for submitting.
- * - Retains the CSRF protection, the validation on subject and message
- *   length, and the shared escapeOutput() helper.
+ * COMPLIANCE WITH FIREBASE RULES
  *
- * SOURCE: Review item 7 - Feedback / Firebase integration is non-functional
+ * The Firebase Realtime Database rules for the feedback node require
+ * the following fields to be present when a record is written:
  *
- * @version 16.0
+ *   userId, type, subject, message, userName, userEmail, status,
+ *   createdAt, updatedAt
+ *
+ * The type field must be the lowercase string complaint or compliment.
+ * The status field must be the lowercase string pending or resolved.
+ * The createdAt and updatedAt fields must be non-empty strings.
+ *
+ * This page constructs the Firebase payload through the
+ * FirebaseSyncHelper class, which enforces those constraints before
+ * the write is attempted. If the payload cannot satisfy the rules, the
+ * helper throws, and this page records the failure without affecting
+ * the MySQL record, which has already been committed.
+ *
+ * The existing database rules are not modified by this page.
+ *
+ * SOURCE: Existing Firebase Realtime Database rules, feedback node.
+ * SOURCE: Campus Eats Technical Audit Report, Section 3.3.
+ * SOURCE: Review item 7.
+ *
+ * @version 17.0
  */
 
 require_once dirname(__DIR__, 2) . '/config/constants.php';
 require_once dirname(__DIR__, 2) . '/includes/auth.php';
 require_once dirname(__DIR__, 2) . '/config/database.php';
 require_once dirname(__DIR__, 2) . '/config/error_logging.php';
+require_once dirname(__DIR__, 2) . '/config/firebase_sync_helper.php';
 
 startSecureSession();
 
@@ -100,7 +109,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
         {
             try
             {
-                $result = $db->insert(
+                // Step one: write the authoritative record to MySQL.
+                $mysqlEntryId = $db->insert(
                     "INSERT INTO complaints_compliments
                         (user_id, entry_type, subject, message, is_resolved, created_at)
                      VALUES
@@ -113,18 +123,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                     )
                 );
 
-                if ($result)
+                if (!$mysqlEntryId)
+                {
+                    $error = 'Failed to submit feedback. Please try again later.';
+                }
+                else
                 {
                     $typeLabel = ($entryType === 'complaint') ? 'Complaint' : 'Compliment';
                     $success = "Your $typeLabel has been submitted successfully. "
                              . "An administrator will review it.";
                     $formData = array('entry_type' => 'compliment', 'subject' => '', 'message' => '');
                     $csrfToken = getCsrfToken();
-                    writeLog("Feedback submitted by user $userId (Role: $accountType)", "FEEDBACK");
-                }
-                else
-                {
-                    $error = 'Failed to submit feedback. Please try again later.';
+
+                    writeLog(
+                        "Feedback submitted by user $userId (Role: $accountType) "
+                            . "to MySQL with entry ID $mysqlEntryId",
+                        "FEEDBACK"
+                    );
+
+                    // Step two: project the record to Firebase so the
+                    // client-side view can read it in real time. The
+                    // projection is best-effort. A failure here does not
+                    // undo the MySQL write, which remains authoritative.
+                    //
+                    // The Firebase write requires an ID token. The token
+                    // is supplied by the client through the JavaScript
+                    // layer and stored in the session by the client-side
+                    // authentication flow. When the token is not present,
+                    // the projection is skipped and a log entry records
+                    // the reason.
+                    $firebaseIdToken = isset($_SESSION['firebase_id_token'])
+                        ? $_SESSION['firebase_id_token']
+                        : null;
+
+                    if ($firebaseIdToken === null || $firebaseIdToken === '')
+                    {
+                        writeLog(
+                            "Firebase feedback projection skipped: "
+                                . "no Firebase ID token in session.",
+                            "FIREBASE_SYNC"
+                        );
+                    }
+                    else
+                    {
+                        try
+                        {
+                            $syncHelper = new FirebaseSyncHelper($firebaseIdToken);
+                            $syncHelper->projectFeedback($mysqlEntryId);
+
+                            writeLog(
+                                "Firebase feedback projection succeeded for "
+                                    . "MySQL entry ID $mysqlEntryId",
+                                "FIREBASE_SYNC"
+                            );
+                        }
+                        catch (Exception $projectionError)
+                        {
+                            writeLog(
+                                "Firebase feedback projection failed for "
+                                    . "MySQL entry ID $mysqlEntryId: "
+                                    . $projectionError->getMessage(),
+                                "FIREBASE_SYNC_ERROR"
+                            );
+                        }
+                    }
                 }
             }
             catch (Exception $e)

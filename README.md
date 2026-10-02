@@ -301,6 +301,7 @@ campus-eats-web/
     │   ├── get_orders.php
     │   ├── get_vendors.php
     │   ├── process_payment.php
+    │   ├── store_firebase_token.php
     │   ├── update_cart.php
     │   ├── update_menu_item.php
     │   └── vendor_respond_order.php
@@ -327,6 +328,7 @@ campus-eats-web/
     │   │   ├── checkout.js
     │   │   ├── dashboard-common.js
     │   │   ├── feedback-firebase.js
+    │   │   ├── firebase-auth-bridge.js
     │   │   ├── firebase-sync.js
     │   │   ├── firebase.js
     │   │   ├── main.js
@@ -339,13 +341,15 @@ campus-eats-web/
     │   ├── constants.php
     │   ├── database.php
     │   ├── demo_accounts.php
-    │   └── error_logging.php
+    │   ├── error_logging.php
+    │   └── firebase_sync_helper.php
     ├── includes/
     │   ├── admin_sidebar.php
     │   ├── api_service.php
     │   ├── auth.php
     │   ├── dashboard_header.php
     │   ├── firebase_config.php
+    │   ├── firebase_writer.php
     │   ├── footer.php
     │   ├── i18n.php
     │   ├── oauth_google.php
