@@ -5,62 +5,26 @@
  * Handles Google Sign-In for the Campus Eats application. The flow used
  * here is the OAuth 2.0 authorization code flow.
  *
- * How the flow works:
+ * CORRECTIONS (Version 2.0 - Technical Audit Report):
+ * - Set GOOGLE_CLIENT_ID to the value supplied by the project owner:
+ *   64265928399-tl7gi0kkolvke8k7etaio9h66ov44hi3.apps.googleusercontent.com
+ * - GOOGLE_CLIENT_ID now prefers getenv('GOOGLE_CLIENT_ID') and falls
+ *   back to the hard-coded public client identifier. The client ID is
+ *   a public value and is safe to include in the repository.
+ * - GOOGLE_CLIENT_SECRET still reads only from
+ *   getenv('GOOGLE_CLIENT_SECRET'). The secret must be set by an
+ *   administrator in the server environment and must never be committed
+ *   to the repository.
+ * - Added a clear error message when the secret is missing, so the
+ *   failure is visible rather than silent.
  *
- *   1. The login or register page renders a "Sign in with Google" link
- *      that points at this file with ?action=start.
- *   2. This file builds the Google authorization URL, includes the
- *      application's state value, and redirects the browser to Google.
- *   3. Google authenticates the user and redirects back to the callback
- *      URL registered with the Google Cloud project.
- *   4. The callback URL is this same file with ?action=callback. It
- *      verifies the state value, exchanges the authorization code for
- *      an ID token, verifies the token, and reads the user's email and
- *      name.
- *   5. The file looks up or creates a row in the MySQL users table for
- *      that email, sets the application session, and redirects to the
- *      dashboard for the user's role.
- *
- * REQUIRED CONFIGURATION:
- *
- * Before the Google button will work, two constants below must be set:
- *
- *   GOOGLE_CLIENT_ID
- *   GOOGLE_CLIENT_SECRET
- *
- * They are obtained from the Google Cloud Console at
- * https://console.cloud.google.com/apis/credentials. When creating the
- * OAuth 2.0 client, register this exact redirect URI:
- *
- *   http://localhost/campus-eats-web/Solution/modules/auth/google_callback.php
- *
- * The redirect URI must match character for character, including the
- * scheme, host, port, and path. A mismatch produces the Google error
- * "redirect_uri_mismatch".
- *
- * If the constants are empty, the file returns a clear error instead of
- * attempting to redirect. This makes the missing configuration visible
- * rather than producing a broken login attempt.
- *
- * CORRECTIONS (Version 1.0):
- * - Initial implementation.
- * - The file is self-contained: it starts the session, loads the auth
- *   module, and performs the code exchange without depending on any
- *   other Google-specific helper.
- * - The state parameter is a random value stored in the session and
- *   verified on the callback. This prevents CSRF on the OAuth flow.
- * - The ID token is verified against Google's public keys. If
- *   verification fails, the request is rejected.
- * - A user with a matching email is reused. A user without a matching
- *   email is created with the Standard role, so that a Google sign-in
- *   does not silently produce an administrator.
- *
+ * SOURCE: Campus Eats Technical Audit Report, Sections 3.1 and 5.
  * SOURCE: Google Identity Documentation - OAuth 2.0 for Web Server
- *         Applications
- * SOURCE: NOTES - Make use of single sign-on (SSO). Users should also
+ *         Applications.
+ * SOURCE: Notes - Make use of single sign-on (SSO). Users should also
  *         be able to use Google SSO.
  *
- * @version 1.0
+ * @version 2.0
  */
 
 if (!defined('BASE_PATH'))
@@ -77,25 +41,50 @@ require_once BASE_PATH . '/config/error_logging.php';
 // Configuration
 // =============================================================================
 //
-// REPLACE THE TWO CONSTANTS BELOW WITH VALUES FROM THE GOOGLE CLOUD
-// CONSOLE BEFORE THE GOOGLE BUTTON WILL WORK.
+// The client ID is a public identifier. It is safe to store it in the
+// repository. It is the value registered with the Google Cloud project
+// that owns the OAuth 2.0 client.
 //
-// The redirect URI must be registered with the Google Cloud project
-// when the OAuth 2.0 client is created. It is this path:
+// The client secret is not a public value. It must be supplied through
+// the GOOGLE_CLIENT_SECRET environment variable. If the secret is not
+// set, the OAuth flow cannot complete the token exchange, and the
+// googleIsConfigured() function returns false so the caller can display
+// a clear message instead of attempting a redirect that cannot succeed.
 //
-//   BASE_URL . '/modules/auth/google_callback.php'
-//
-// The value is computed at runtime so it matches the deployment.
+// The redirect URI is computed at runtime so it matches the deployment.
+// It must be registered in the Google Cloud Console for every host that
+// will run the application.
 // =============================================================================
 
 if (!defined('GOOGLE_CLIENT_ID'))
 {
-    define('GOOGLE_CLIENT_ID', '');
+    $clientIdFromEnv = getenv('GOOGLE_CLIENT_ID');
+
+    if ($clientIdFromEnv !== false && $clientIdFromEnv !== '')
+    {
+        define('GOOGLE_CLIENT_ID', $clientIdFromEnv);
+    }
+    else
+    {
+        define(
+            'GOOGLE_CLIENT_ID',
+            '64265928399-tl7gi0kkolvke8k7etaio9h66ov44hi3.apps.googleusercontent.com'
+        );
+    }
 }
 
 if (!defined('GOOGLE_CLIENT_SECRET'))
 {
-    define('GOOGLE_CLIENT_SECRET', '');
+    $clientSecretFromEnv = getenv('GOOGLE_CLIENT_SECRET');
+
+    if ($clientSecretFromEnv !== false)
+    {
+        define('GOOGLE_CLIENT_SECRET', $clientSecretFromEnv);
+    }
+    else
+    {
+        define('GOOGLE_CLIENT_SECRET', '');
+    }
 }
 
 // =============================================================================
@@ -131,7 +120,12 @@ if (!function_exists('googleIsConfigured'))
     /**
      * Returns true if the Google OAuth credentials have been set.
      *
-     * @return bool
+     * Both the client ID and the client secret are required for the
+     * authorization code flow to complete. The client ID is always
+     * present because it has a default value. The client secret has no
+     * default and must be supplied through the environment.
+     *
+     * @return bool True when both values are present
      */
     function googleIsConfigured()
     {
@@ -147,7 +141,12 @@ if (!function_exists('googleRedirectUri'))
     /**
      * Returns the redirect URI that must be registered with Google.
      *
-     * @return string
+     * The URI is computed from BASE_URL so it matches the deployment.
+     * It must be registered exactly, including scheme, host, port, and
+     * path, in the Google Cloud Console for every host that will run
+     * the application.
+     *
+     * @return string The redirect URI
      */
     function googleRedirectUri()
     {
@@ -160,7 +159,7 @@ if (!function_exists('googleStartUrl'))
     /**
      * Returns the URL of the file that initiates the flow.
      *
-     * @return string
+     * @return string The start URL
      */
     function googleStartUrl()
     {
@@ -173,7 +172,7 @@ if (!function_exists('googleStateToken'))
     /**
      * Generates and stores a one-time state value for CSRF protection.
      *
-     * @return string
+     * @return string The state token
      */
     function googleStateToken()
     {
@@ -197,7 +196,7 @@ if (!function_exists('googleVerifyStateToken'))
      * Verifies and consumes the state value from a callback.
      *
      * @param string $submitted The state value from the query string
-     * @return bool
+     * @return bool True if the state is valid
      */
     function googleVerifyStateToken($submitted)
     {
@@ -604,7 +603,7 @@ if (!function_exists('googleFindOrCreateUser'))
         }
 
         $uniqueId = generateAlphanumericUserId('standard');
-        $username = explode('@', $email)[0] . '_' . rand(1000, 9999);
+        $username = explode('@', $email)[0] . '_' . random_int(1000, 9999);
 
         $userId = $db->insert(
             "INSERT INTO users
@@ -756,9 +755,9 @@ if ($action === 'start')
     if (!googleIsConfigured())
     {
         googleRenderError(
-            'Google SSO is not configured on this server. '
-                . 'An administrator must set GOOGLE_CLIENT_ID and '
-                . 'GOOGLE_CLIENT_SECRET in Solution/includes/oauth_google.php.'
+            'Google SSO is not fully configured on this server. '
+                . 'An administrator must set the GOOGLE_CLIENT_SECRET '
+                . 'environment variable. The client ID is already present.'
         );
     }
 

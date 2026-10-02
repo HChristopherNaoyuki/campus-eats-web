@@ -21,6 +21,15 @@
       }
     },
 
+    "orders": {
+      ".indexOn": ["customerId", "vendorId", "status", "timestamp"],
+      "$order_id": {
+        ".read": "auth != null && (data.child('customerId').val() === auth.uid || data.child('vendorId').val() === auth.uid || root.child('admin_claims').child(auth.uid).val() === true)",
+        ".write": "auth != null && (!data.exists() || data.child('customerId').val() === auth.uid)",
+        ".validate": "newData.hasChildren(['orderId', 'customerId', 'status'])"
+      }
+    },
+
     "feedback": {
       ".indexOn": ["userId", "type", "status", "createdAt"],
       "$feedback_id": {
@@ -35,6 +44,42 @@
         },
         "status": {
           ".validate": "newData.val() === 'pending' || newData.val() === 'resolved'"
+        }
+      }
+    },
+
+    "coupons": {
+      ".indexOn": ["code", "isActive", "assignedUserId"],
+      "$coupon_code": {
+        ".read": "auth != null && (data.child('assignedUserId').val() === auth.uid || data.child('isActive').val() === true || root.child('admin_claims').child(auth.uid).val() === true)",
+        ".write": "auth != null && root.child('admin_claims').child(auth.uid).val() === true",
+        ".validate": "newData.hasChildren(['code', 'discountPercent', 'isActive'])"
+      }
+    },
+
+    "sync": {
+      ".indexOn": ["lastSyncAt"],
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('admin_claims').child(auth.uid).val() === true)",
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.hasChildren(['lastSyncAt'])",
+        "lastSyncAt": {
+          ".validate": "newData.isString() && newData.val().length > 0"
+        },
+        "lastPage": {
+          ".validate": "newData.isString() && newData.val().length <= 255"
+        },
+        "cartItemCount": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "currentOrderId": {
+          ".validate": "newData.isString() && newData.val().length <= 64"
+        },
+        "currentOrderStatus": {
+          ".validate": "newData.isString() && newData.val().length <= 32"
+        },
+        "$other": {
+          ".validate": false
         }
       }
     },
