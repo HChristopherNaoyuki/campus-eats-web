@@ -984,3 +984,24 @@ if (!function_exists('getDB'))
         return DatabaseConnection::getInstance();
     }
 }
+
+// =============================================================================
+// CORS Configuration
+// =============================================================================
+//
+// ALLOWED_CORS_ORIGIN is the single origin that the API endpoints
+// reflect in the Access-Control-Allow-Origin header. Each deployment
+// sets this value to its own origin. When the value is empty, the
+// header is omitted and the browser applies its default same-origin
+// policy.
+//
+// SOURCE: Technical Audit and Fixes Report.
+// =============================================================================
+
+if (!defined('ALLOWED_CORS_ORIGIN'))
+{
+    define(
+        'ALLOWED_CORS_ORIGIN',
+        getenv('ALLOWED_CORS_ORIGIN') ?: 'http://localhost'
+    );
+}

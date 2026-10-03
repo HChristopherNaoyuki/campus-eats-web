@@ -1,0 +1,54 @@
+[2026-10-02 16:06:26] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (single canonical CSP with nonce)
+[2026-10-02 16:06:26] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mtinh5rvs441h2roqjjp11q7br] API request: GET /api/Restaurant (Attempt 1)
+[2026-10-02 16:06:29] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mtinh5rvs441h2roqjjp11q7br] cURL error 60 (CURLE_SSL_CACERT): SSL certificate problem: unable to get local issuer certificate (url: https://fakerestaurantapi.runasp.net/api/Restaurant)
+[2026-10-02 16:06:29] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mtinh5rvs441h2roqjjp11q7br] Permanent cURL failure (error 60). Not retrying.
+[2026-10-02 16:06:29] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mtinh5rvs441h2roqjjp11q7br] API request failed after 1 attempt(s): API request failed: SSL certificate problem: unable to get local issuer certificate
+[2026-10-02 16:06:29] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mtinh5rvs441h2roqjjp11q7br] Error fetching restaurants from API: API request failed: SSL certificate problem: unable to get local issuer certificate
+[2026-10-02 16:07:54] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mtinh5rvs441h2roqjjp11q7br] CSRF token validated successfully
+[2026-10-02 16:07:54] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mtinh5rvs441h2roqjjp11q7br] PDO connection opened to database 'campus_eats'.
+[2026-10-02 16:07:54] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mtinh5rvs441h2roqjjp11q7br] Database 'campus_eats' ensured to exist.
+[2026-10-02 16:07:54] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mtinh5rvs441h2roqjjp11q7br] Schema probe: users table not found. Running install.sql.
+[2026-10-02 16:07:54] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mtinh5rvs441h2roqjjp11q7br] Parsed 23 SQL statement(s) from install.sql.
+[2026-10-02 16:07:54] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mtinh5rvs441h2roqjjp11q7br] Install statement 1 failed: SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '- Campus Eats Database Schema
+- Version 20.0
+-
+- Creates the ten tables used by ' at line 1 | Statement: - Campus Eats Database Schema - Version 20.0 - - Creates the ten tables used by the application. The script does not - insert any row. Demonstration data is inserted separately by - Solution/sql/seed.
+[2026-10-02 16:07:54] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: mtinh5rvs441h2roqjjp11q7br] Database Connection Error: SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '- Campus Eats Database Schema
+- Version 20.0
+-
+- Creates the ten tables used by ' at line 1
+[2026-10-03 11:56:24] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (single canonical CSP with nonce)
+[2026-10-03 11:56:24] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 99toc9fe66l0a31ugqr3ljccu1] API request: GET /api/Restaurant (Attempt 1)
+[2026-10-03 11:56:24] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 99toc9fe66l0a31ugqr3ljccu1] cURL error 60 (CURLE_SSL_CACERT): SSL certificate problem: unable to get local issuer certificate (url: https://fakerestaurantapi.runasp.net/api/Restaurant)
+[2026-10-03 11:56:24] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 99toc9fe66l0a31ugqr3ljccu1] Permanent cURL failure (error 60). Not retrying.
+[2026-10-03 11:56:24] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 99toc9fe66l0a31ugqr3ljccu1] API request failed after 1 attempt(s): API request failed: SSL certificate problem: unable to get local issuer certificate
+[2026-10-03 11:56:24] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 99toc9fe66l0a31ugqr3ljccu1] Error fetching restaurants from API: API request failed: SSL certificate problem: unable to get local issuer certificate
+[2026-10-03 11:59:28] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 99toc9fe66l0a31ugqr3ljccu1] Security headers set (single canonical CSP with nonce)
+[2026-10-03 11:59:30] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 99toc9fe66l0a31ugqr3ljccu1] Security headers set (single canonical CSP with nonce)
+[2026-10-03 11:59:32] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (single canonical CSP with nonce)
+[2026-10-03 11:59:32] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 99toc9fe66l0a31ugqr3ljccu1] API request: GET /api/Restaurant (Attempt 1)
+[2026-10-03 11:59:32] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 99toc9fe66l0a31ugqr3ljccu1] cURL error 60 (CURLE_SSL_CACERT): SSL certificate problem: unable to get local issuer certificate (url: https://fakerestaurantapi.runasp.net/api/Restaurant)
+[2026-10-03 11:59:32] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 99toc9fe66l0a31ugqr3ljccu1] Permanent cURL failure (error 60). Not retrying.
+[2026-10-03 11:59:32] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 99toc9fe66l0a31ugqr3ljccu1] API request failed after 1 attempt(s): API request failed: SSL certificate problem: unable to get local issuer certificate
+[2026-10-03 11:59:32] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 99toc9fe66l0a31ugqr3ljccu1] Error fetching restaurants from API: API request failed: SSL certificate problem: unable to get local issuer certificate
+[2026-10-03 11:59:34] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 99toc9fe66l0a31ugqr3ljccu1] Security headers set (single canonical CSP with nonce)
+[2026-10-03 11:59:42] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 99toc9fe66l0a31ugqr3ljccu1] Security headers set (single canonical CSP with nonce)
+[2026-10-03 11:59:44] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (single canonical CSP with nonce)
+[2026-10-03 11:59:44] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 99toc9fe66l0a31ugqr3ljccu1] API request: GET /api/Restaurant (Attempt 1)
+[2026-10-03 11:59:45] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 99toc9fe66l0a31ugqr3ljccu1] cURL error 60 (CURLE_SSL_CACERT): SSL certificate problem: unable to get local issuer certificate (url: https://fakerestaurantapi.runasp.net/api/Restaurant)
+[2026-10-03 11:59:45] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 99toc9fe66l0a31ugqr3ljccu1] Permanent cURL failure (error 60). Not retrying.
+[2026-10-03 11:59:45] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 99toc9fe66l0a31ugqr3ljccu1] API request failed after 1 attempt(s): API request failed: SSL certificate problem: unable to get local issuer certificate
+[2026-10-03 11:59:45] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 99toc9fe66l0a31ugqr3ljccu1] Error fetching restaurants from API: API request failed: SSL certificate problem: unable to get local issuer certificate
+[2026-10-03 12:05:37] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 99toc9fe66l0a31ugqr3ljccu1] CSRF token validated successfully
+[2026-10-03 12:05:37] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 99toc9fe66l0a31ugqr3ljccu1] PDO connection opened to database 'campus_eats'.
+[2026-10-03 12:05:37] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 99toc9fe66l0a31ugqr3ljccu1] Database 'campus_eats' ensured to exist.
+[2026-10-03 12:05:37] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 99toc9fe66l0a31ugqr3ljccu1] Schema probe: users table not found. Running install.sql.
+[2026-10-03 12:05:37] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 99toc9fe66l0a31ugqr3ljccu1] Parsed 23 SQL statement(s) from install.sql.
+[2026-10-03 12:05:37] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 99toc9fe66l0a31ugqr3ljccu1] Install statement 1 failed: SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '- Campus Eats Database Schema
+- Version 20.0
+-
+- Creates the ten tables used by ' at line 1 | Statement: - Campus Eats Database Schema - Version 20.0 - - Creates the ten tables used by the application. The script does not - insert any row. Demonstration data is inserted separately by - Solution/sql/seed.
+[2026-10-03 12:05:37] [DATABASE_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: 99toc9fe66l0a31ugqr3ljccu1] Database Connection Error: SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '- Campus Eats Database Schema
+- Version 20.0
+-
+- Creates the ten tables used by ' at line 1

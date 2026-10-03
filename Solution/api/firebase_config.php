@@ -6,29 +6,44 @@
  * The browser JavaScript fetches this once on page load and uses it
  * to initialize the Firebase Web SDK.
  *
- * CORRECTIONS (Version 2.0):
- * - Removed the wildcard CORS header. Only the application origin is
- *   reflected, matching the pattern used elsewhere in the API layer.
- * - Rejects OPTIONS preflight with 200 and empty body.
- * - Returns 405 for any method other than GET.
- * - Returns a clear JSON error if Firebase is not configured.
+ * CORRECTIONS (Version 3.0 - Technical Audit and Fixes Report):
+ * - The allowed origin is now read from the ALLOWED_CORS_ORIGIN
+ *   constant defined in Solution/config/constants.php. The previous
+ *   version hard-coded https://campuseats.example.com, which meant
+ *   that development hosts received an empty CORS header and could
+ *   not fetch the configuration. The constant allows each deployment
+ *   to set the correct origin without modifying this file.
+ * - The endpoint continues to require GET. OPTIONS is answered with
+ *   200 and an empty body so preflight requests succeed.
+ * - The endpoint continues to return a clear JSON error when Firebase
+ *   is not configured.
  *
- * SOURCE: Review item 14 - Firebase configuration
+ * SOURCE: Technical Audit and Fixes Report.
+ * SOURCE: Review item 14 - Firebase configuration.
  *
- * @version 2.0
+ * @version 3.0
  */
 
 header('Content-Type: application/json');
 
-header(
-    'Access-Control-Allow-Origin: ' .
-    (
-        isset($_SERVER['HTTP_ORIGIN']) &&
-        $_SERVER['HTTP_ORIGIN'] === 'https://campuseats.example.com'
-        ? $_SERVER['HTTP_ORIGIN']
-        : ''
-    )
-);
+// =============================================================================
+// CORS Header
+// =============================================================================
+//
+// The allowed origin is read from the ALLOWED_CORS_ORIGIN constant. The
+// constant is defined in Solution/config/constants.php. When the
+// constant is not defined or is an empty string, the header is omitted
+// so the browser applies its default same-origin policy.
+// =============================================================================
+
+$allowedOrigin = defined('ALLOWED_CORS_ORIGIN') ? ALLOWED_CORS_ORIGIN : '';
+$requestOrigin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
+
+if ($allowedOrigin !== '' && $requestOrigin === $allowedOrigin)
+{
+    header('Access-Control-Allow-Origin: ' . $allowedOrigin);
+}
+
 header('Access-Control-Allow-Methods: GET, OPTIONS');
 header('Access-Control-Allow-Credentials: true');
 
@@ -41,7 +56,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS')
 if ($_SERVER['REQUEST_METHOD'] !== 'GET')
 {
     http_response_code(405);
-    echo json_encode(array('success' => false, 'message' => 'Method not allowed. Use GET.'));
+    echo json_encode(array(
+        'success' => false,
+        'message' => 'Method not allowed. Use GET.'
+    ));
     exit();
 }
 
