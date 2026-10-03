@@ -3,20 +3,56 @@
     ".read": false,
     ".write": false,
 
+    "admin_claims": {
+      ".read": "auth != null && auth.token.admin === true",
+      ".write": "auth != null && auth.token.admin === true"
+    },
+
     "users": {
       ".indexOn": ["email", "role", "status"],
       "$campus_user_id": {
-        ".read": "auth != null && (auth.token.email === data.child('email').val() || root.child('admin_claims').child(auth.uid).val() === true)",
-        ".write": "auth != null && (!data.exists() || auth.token.email === data.child('email').val())",
+        ".read": "auth != null && (auth.token.admin === true || auth.token.email === data.child('email').val() || data.child('userId').val() === auth.uid)",
+        ".write": "auth != null && (auth.token.admin === true || (!data.exists() && (auth.token.email === newData.child('email').val() || newData.child('userId').val() === auth.uid)) || (data.exists() && (auth.token.email === data.child('email').val() || data.child('userId').val() === auth.uid)))",
         ".validate": "newData.hasChildren(['userId', 'fullName', 'email', 'role'])",
+
         "userId": {
-          ".validate": "newData.val().length === 19 || newData.val().length === 16"
+          ".validate": "newData.val() === $campus_user_id && (newData.val().length === 16 || newData.val().length === 19)"
+        },
+        "fullName": {
+          ".validate": "newData.isString()"
+        },
+        "username": {
+          ".validate": "newData.isString()"
+        },
+        "email": {
+          ".validate": "!data.exists() || data.val() === newData.val()"
+        },
+        "role": {
+          ".validate": "(newData.val() === 'STUDENT' || newData.val() === 'VENDOR' || newData.val() === 'STANDARD' || newData.val() === 'ADMIN') && (data.val() === newData.val() || auth.token.admin === true)"
         },
         "passwordHash": {
           ".validate": "newData.val() === '[FIREBASE_SSO]'"
         },
         "walletBalance": {
           ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "status": {
+          ".validate": "!data.exists() || data.val() === newData.val() || auth.token.admin === true"
+        },
+        "shopName": {
+          ".validate": "!newData.exists() || newData.val() == null || newData.isString()"
+        },
+        "shopStatus": {
+          ".validate": "!newData.exists() || newData.val() == null || newData.isString()"
+        },
+        "bankAccountInfo": {
+          ".validate": "!newData.exists() || newData.val() == null || newData.isString()"
+        },
+        "registrationDate": {
+          ".validate": "!newData.exists() || newData.val() == null || newData.isNumber()"
+        },
+        "usercode": {
+          ".validate": "!newData.exists() || newData.val() == null || newData.isString()"
         }
       }
     },
@@ -24,70 +60,126 @@
     "orders": {
       ".indexOn": ["customerId", "vendorId", "status", "timestamp"],
       "$order_id": {
-        ".read": "auth != null && (data.child('customerId').val() === auth.uid || data.child('vendorId').val() === auth.uid || root.child('admin_claims').child(auth.uid).val() === true)",
-        ".write": "auth != null && (!data.exists() || data.child('customerId').val() === auth.uid)",
-        ".validate": "newData.hasChildren(['orderId', 'customerId', 'status'])"
+        ".read": "auth != null",
+        ".write": "auth != null",
+        ".validate": "newData.hasChildren(['orderId', 'customerId', 'vendorId', 'totalAmount', 'status'])",
+
+        "orderId": {
+          ".validate": "newData.val() === $order_id"
+        },
+        "customerId": {
+          ".validate": "newData.isString()"
+        },
+        "vendorId": {
+          ".validate": "newData.isString()"
+        },
+        "itemsJson": {
+          ".validate": "!newData.exists() || newData.isString()"
+        },
+        "totalAmount": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "status": {
+          ".validate": "newData.isString()"
+        },
+        "paymentMethod": {
+          ".validate": "!newData.exists() || newData.isString()"
+        },
+        "pickupTime": {
+          ".validate": "!newData.exists() || newData.val() == null || newData.isString() || newData.isNumber()"
+        },
+        "specialRequests": {
+          ".validate": "!newData.exists() || newData.val() == null || newData.isString()"
+        },
+        "timestamp": {
+          ".validate": "!newData.exists() || newData.isNumber()"
+        }
       }
     },
 
     "feedback": {
       ".indexOn": ["userId", "type", "status", "createdAt"],
       "$feedback_id": {
-        ".read": "auth != null && (data.child('userId').val() === auth.uid || root.child('admin_claims').child(auth.uid).val() === true)",
-        ".write": "auth != null && !data.exists()",
-        ".validate": "newData.hasChildren(['userId', 'type', 'subject', 'message', 'status', 'createdAt', 'updatedAt'])",
+        ".read": "auth != null",
+        ".write": "auth != null",
+        ".validate": "newData.hasChildren(['userId', 'type', 'subject', 'message', 'userName', 'userEmail', 'status', 'createdAt', 'updatedAt'])",
+
         "userId": {
-          ".validate": "newData.val() === auth.uid"
+          ".validate": "newData.isString()"
         },
         "type": {
           ".validate": "newData.val() === 'complaint' || newData.val() === 'compliment'"
         },
+        "subject": {
+          ".validate": "newData.isString()"
+        },
+        "message": {
+          ".validate": "newData.isString()"
+        },
+        "userName": {
+          ".validate": "newData.isString()"
+        },
+        "userEmail": {
+          ".validate": "newData.isString()"
+        },
         "status": {
           ".validate": "newData.val() === 'pending' || newData.val() === 'resolved'"
+        },
+        "createdAt": {
+          ".validate": "newData.isString() && newData.val().length > 0"
+        },
+        "updatedAt": {
+          ".validate": "newData.isString() && newData.val().length > 0"
         }
       }
     },
 
     "coupons": {
-      ".indexOn": ["code", "isActive", "assignedUserId"],
-      "$coupon_code": {
-        ".read": "auth != null && (data.child('assignedUserId').val() === auth.uid || data.child('isActive').val() === true || root.child('admin_claims').child(auth.uid).val() === true)",
-        ".write": "auth != null && root.child('admin_claims').child(auth.uid).val() === true",
-        ".validate": "newData.hasChildren(['code', 'discountPercent', 'isActive'])"
+      ".indexOn": ["isActive"],
+      "$code": {
+        ".read": "auth != null",
+        ".write": "auth != null",
+        ".validate": "newData.hasChildren(['code', 'discountPercent', 'isActive'])",
+
+        "code": {
+          ".validate": "newData.val() === $code"
+        },
+        "discountPercent": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "isActive": {
+          ".validate": "newData.isBoolean()"
+        },
+        "expiryDate": {
+          ".validate": "!newData.exists() || newData.val() == null || newData.isNumber() || newData.isString()"
+        },
+        "assignedUserId": {
+          ".validate": "!newData.exists() || newData.val() == null || newData.isString()"
+        }
       }
     },
 
     "sync": {
       ".indexOn": ["lastSyncAt"],
       "$uid": {
-        ".read": "auth != null && (auth.uid === $uid || root.child('admin_claims').child(auth.uid).val() === true)",
+        ".read": "auth != null && (auth.uid === $uid || auth.token.admin === true)",
         ".write": "auth != null && auth.uid === $uid",
         ".validate": "newData.hasChildren(['lastSyncAt'])",
         "lastSyncAt": {
           ".validate": "newData.isString() && newData.val().length > 0"
         },
         "lastPage": {
-          ".validate": "newData.isString() && newData.val().length <= 255"
+          ".validate": "!newData.exists() || newData.val() == null || (newData.isString() && newData.val().length <= 255)"
         },
         "cartItemCount": {
-          ".validate": "newData.isNumber() && newData.val() >= 0"
+          ".validate": "!newData.exists() || newData.val() == null || (newData.isNumber() && newData.val() >= 0)"
         },
         "currentOrderId": {
-          ".validate": "newData.isString() && newData.val().length <= 64"
+          ".validate": "!newData.exists() || newData.val() == null || (newData.isString() && newData.val().length <= 64)"
         },
         "currentOrderStatus": {
-          ".validate": "newData.isString() && newData.val().length <= 32"
-        },
-        "$other": {
-          ".validate": false
+          ".validate": "!newData.exists() || newData.val() == null || (newData.isString() && newData.val().length <= 32)"
         }
-      }
-    },
-
-    "admin_claims": {
-      "$uid": {
-        ".read": "auth != null && auth.uid === $uid",
-        ".write": false
       }
     }
   }

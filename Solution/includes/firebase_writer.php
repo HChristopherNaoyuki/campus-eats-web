@@ -13,6 +13,22 @@
  * Firebase server rejects it, and this file surfaces that rejection as
  * an exception so the calling code can handle it.
  *
+ * CORRECTIONS (Version 1.1 - Technical Audit Report):
+ * - The normaliseRoleForFirebase() helper is the single source of truth
+ *   for the mapping from the lowercase MySQL account_type values to the
+ *   uppercase Firebase role values. The rule
+ *   users/$campus_user_id/role accepts only STUDENT, VENDOR, STANDARD,
+ *   and ADMIN. Every caller that writes a user record passes the
+ *   lowercase MySQL value to writeUser(), and writeUser() calls this
+ *   helper. This keeps the mapping in one place and prevents the
+ *   mapping from drifting between files.
+ *
+ * - The file header comment now names the audit finding the helper
+ *   addresses. No functional change was required in this file. The
+ *   defect identified by the audit was in firebase_sync_helper.php,
+ *   which performed its own role mapping in addition to the mapping
+ *   performed here.
+ *
  * COMPLIANCE NOTES
  *
  * 1. Users node. The rules require:
@@ -52,15 +68,13 @@
  * The rules require auth != null for the users, orders, feedback, and
  * coupons nodes. The application writes with a Firebase ID token that
  * the client obtains from the Firebase Authentication SDK. The token is
- * passed to this file through the calling context. When the application
- * writes with the Firebase Admin SDK instead, the token requirement is
- * satisfied by the service account. This file uses the REST API with an
- * ID token supplied by the caller.
+ * passed to this file through the calling context.
  *
  * SOURCE: Existing Firebase Realtime Database rules, firebase.rules.json.
- * SOURCE: Campus Eats Technical Audit Report, Sections 3.2 and 3.3.
+ * SOURCE: Campus Eats PHP Web Platform - Technical Audit Report,
+ *         Sections 1, 2, 3, and 9.
  *
- * @version 1.0
+ * @version 1.1
  */
 
 if (!defined('BASE_PATH'))
@@ -219,7 +233,8 @@ class FirebaseWriter
      *
      * The rule accepts only STUDENT, VENDOR, STANDARD, and ADMIN. The
      * application stores lowercase role values in MySQL. This method
-     * performs the conversion required for the Firebase projection.
+     * performs the conversion required for the Firebase projection. It
+     * is the single source of truth for the mapping.
      *
      * @param string $role The role in lowercase
      * @return string The role in uppercase
@@ -298,6 +313,13 @@ class FirebaseWriter
     {
         $canonicalId = self::normaliseUserIdForFirebase($userId);
 
+        // The role is converted from the lowercase MySQL value to the
+        // uppercase value the rule requires. The helper is the single
+        // source of truth for the mapping.
+        $role = self::normaliseRoleForFirebase(
+            isset($userData['role']) ? $userData['role'] : 'student'
+        );
+
         // The userId field must equal the node key.
         $payload = array(
             'userId'       => $canonicalId,
@@ -307,9 +329,7 @@ class FirebaseWriter
             'email'        => isset($userData['email'])
                 ? (string)$userData['email']
                 : '',
-            'role'         => self::normaliseRoleForFirebase(
-                isset($userData['role']) ? $userData['role'] : 'student'
-            ),
+            'role'         => $role,
             'passwordHash' => '[FIREBASE_SSO]'
         );
 
@@ -391,7 +411,8 @@ class FirebaseWriter
         $this->request('PUT', $path, $payload);
 
         writeLog(
-            "Firebase user write succeeded for $canonicalId ("
+            "Firebase user write succeeded for $canonicalId "
+                . "(role: $role, "
                 . ($isNewUser ? 'create' : 'update') . ")",
             "FIREBASE"
         );
@@ -412,7 +433,9 @@ class FirebaseWriter
      */
     public function writeFeedback($feedbackId, $data)
     {
-        $type = isset($data['type']) ? strtolower((string)$data['type']) : '';
+        $type = isset($data['type'])
+            ? strtolower((string)$data['type'])
+            : '';
 
         if ($type !== 'complaint' && $type !== 'compliment')
         {
@@ -421,7 +444,9 @@ class FirebaseWriter
             );
         }
 
-        $status = isset($data['status']) ? strtolower((string)$data['status']) : '';
+        $status = isset($data['status'])
+            ? strtolower((string)$data['status'])
+            : '';
 
         if ($status !== 'pending' && $status !== 'resolved')
         {
@@ -446,12 +471,17 @@ class FirebaseWriter
         }
 
         $payload = array(
-            'userId'    => isset($data['userId']) ? (string)$data['userId'] : '',
+            'userId'    => isset($data['userId'])
+                ? (string)$data['userId'] : '',
             'type'      => $type,
-            'subject'   => isset($data['subject']) ? (string)$data['subject'] : '',
-            'message'   => isset($data['message']) ? (string)$data['message'] : '',
-            'userName'  => isset($data['userName']) ? (string)$data['userName'] : '',
-            'userEmail' => isset($data['userEmail']) ? (string)$data['userEmail'] : '',
+            'subject'   => isset($data['subject'])
+                ? (string)$data['subject'] : '',
+            'message'   => isset($data['message'])
+                ? (string)$data['message'] : '',
+            'userName'  => isset($data['userName'])
+                ? (string)$data['userName'] : '',
+            'userEmail' => isset($data['userEmail'])
+                ? (string)$data['userEmail'] : '',
             'status'    => $status,
             'createdAt' => $createdAt,
             'updatedAt' => $updatedAt
@@ -503,15 +533,12 @@ class FirebaseWriter
         $payload = array(
             'orderId'     => (string)$orderId,
             'customerId'  => isset($data['customerId'])
-                ? (string)$data['customerId']
-                : '',
+                ? (string)$data['customerId'] : '',
             'vendorId'    => isset($data['vendorId'])
-                ? (string)$data['vendorId']
-                : '',
+                ? (string)$data['vendorId'] : '',
             'totalAmount' => $totalAmount,
             'status'      => isset($data['status'])
-                ? (string)$data['status']
-                : 'pending'
+                ? (string)$data['status'] : 'pending'
         );
 
         // Optional fields. Each is written only when a value is supplied

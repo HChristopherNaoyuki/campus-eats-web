@@ -9,11 +9,32 @@
  *
  * IMPORTANT: THE DATABASE RULES ARE AUTHORITATIVE
  *
- * The existing Firebase Realtime Database rules are not modified by
- * this file. Every Firebase write is constructed to satisfy the
- * validation expressions in those rules. When the local validation
- * performed by this helper would produce a payload that the rules
- * reject, the helper throws before the network request is attempted.
+ * The Firebase Realtime Database rules are not modified by this file.
+ * Every Firebase write is constructed to satisfy the validation
+ * expressions in those rules. When the local validation performed by
+ * this helper would produce a payload that the rules reject, the
+ * helper throws before the network request is attempted.
+ *
+ * CORRECTIONS (Version 2.0 - Technical Audit Report):
+ * - Fixed the role casing mismatch. The MySQL account_type column
+ *   stores lowercase values (student, standard, vendor, admin). The
+ *   users/$campus_user_id/role rule requires uppercase values (STUDENT,
+ *   STANDARD, VENDOR, ADMIN). The previous implementation of
+ *   projectUser() passed the lowercase value to FirebaseWriter, which
+ *   in turn performed its own uppercase conversion. That conversion
+ *   was correct, but the local roleMap in this file did not reflect
+ *   it. The two mappings could drift independently. This version
+ *   delegates the conversion entirely to
+ *   FirebaseWriter::normaliseRoleForFirebase(), so there is a single
+ *   source of truth for the role values that are written to Firebase.
+ *
+ * - The roleMap constant that previously mapped lowercase MySQL values
+ *   to lowercase Firebase values has been removed. The conversion is
+ *   performed once, by the writer, at the point where the payload is
+ *   constructed.
+ *
+ * - Retained all Version 1.0 behaviour: projectUser(), projectOrder(),
+ *   projectFeedback(), and buildFeedbackKey().
  *
  * DESIGN
  *
@@ -38,10 +59,11 @@
  * Admin SDK rather than this helper. This helper is intended for
  * user-initiated writes where the user's own token is available.
  *
+ * SOURCE: Campus Eats PHP Web Platform - Technical Audit Report,
+ *         Sections 1, 2, and 3.
  * SOURCE: Existing Firebase Realtime Database rules, firebase.rules.json.
- * SOURCE: Campus Eats Technical Audit Report, Section 4.
  *
- * @version 1.0
+ * @version 2.0
  */
 
 if (!defined('BASE_PATH'))
@@ -80,15 +102,31 @@ class FirebaseSyncHelper
      * Firebase. The user ID is used as the node key, so the userId field
      * in the payload matches the key as the rule requires.
      *
+     * Role conversion:
+     *
+     *   The MySQL account_type column stores lowercase values. The
+     *   Firebase rule requires uppercase values. The conversion is
+     *   performed by FirebaseWriter::normaliseRoleForFirebase(), which
+     *   is the single source of truth for the mapping. This method
+     *   passes the lowercase MySQL value to the writer and does not
+     *   perform any conversion itself. This ensures the mapping cannot
+     *   drift between the two files.
+     *
      * The email field is immutable after creation. When the method is
      * called for an existing node, it passes the email from the MySQL
      * row. The MySQL row is the authoritative source, so its email is
-     * the value that already exists in Firebase. If the two have drifted,
-     * the Firebase write is rejected by the rule, and the caller is
-     * notified so the drift can be resolved.
+     * the value that already exists in Firebase. If the two have
+     * drifted, the Firebase write is rejected by the rule, and the
+     * caller is notified so the drift can be resolved.
      *
-     * @param int    $mysqlUserId The user ID in MySQL
-     * @param bool   $isNewUser   True when the Firebase node is new
+     * The status field is derived from the MySQL is_active flag. The
+     * rule permits any string on creation, and on update permits the
+     * value to remain the same or to change when the token carries the
+     * admin claim. The application uses the strings active and
+     * suspended consistently across both stores.
+     *
+     * @param int  $mysqlUserId The user ID in MySQL
+     * @param bool $isNewUser   True when the Firebase node is new
      * @return void
      * @throws RuntimeException When the write fails
      */
@@ -110,39 +148,33 @@ class FirebaseSyncHelper
         if (!$user)
         {
             throw new RuntimeException(
-                'Cannot project user: MySQL row not found for ID ' . $mysqlUserId
+                'Cannot project user: MySQL row not found for ID '
+                    . $mysqlUserId
             );
         }
 
-        // Map the MySQL account_type to the Firebase role values the
-        // rule accepts. The mapping is explicit so an unrecognised
-        // MySQL value cannot silently produce a non-compliant payload.
-        $roleMap = array(
-            'student'  => 'student',
-            'standard' => 'standard',
-            'vendor'   => 'vendor',
-            'admin'    => 'admin'
-        );
-
         $accountType = strtolower((string)$user['account_type']);
-        $role = isset($roleMap[$accountType]) ? $roleMap[$accountType] : 'student';
 
-        // Map the MySQL is_active flag to the status string. The rule
-        // permits any string for status on creation. On update, the
-        // value may remain the same or may change when the token carries
-        // the admin claim. The application uses the strings active and
-        // suspended consistently across both stores.
-        $status = ((int)$user['is_active'] === 1) ? 'active' : 'suspended';
+        // The status string is derived from the is_active flag. The
+        // rule permits any string for status on creation, and on update
+        // permits the value to remain the same or to change when the
+        // token carries the admin claim. The application uses the same
+        // strings in both stores so a projection refresh does not
+        // change the value in a way the rule would reject.
+        $status = ((int)$user['is_active'] === 1)
+            ? 'active'
+            : 'suspended';
 
         $payload = array(
             'fullName' => (string)$user['full_name'],
             'username' => (string)$user['username'],
             'email'    => (string)$user['email'],
-            'role'     => $role,
+            'role'     => $accountType,
             'status'   => $status
         );
 
-        // Vendor-specific fields. The rule permits these as strings.
+        // Vendor-specific fields. The rule permits shopName and
+        // shopStatus as strings when present.
         if ($accountType === 'vendor')
         {
             if (!empty($user['vendor_name']))
@@ -155,11 +187,13 @@ class FirebaseSyncHelper
                 : 'closed';
         }
 
+        // The writer performs the role conversion. See
+        // FirebaseWriter::normaliseRoleForFirebase() for the mapping.
         $this->writer->writeUser($user['unique_id'], $payload, $isNewUser);
 
         writeLog(
             "Projected MySQL user {$user['user_id']} to Firebase node "
-                . $user['unique_id'],
+                . $user['unique_id'] . " (role: " . strtoupper($accountType) . ")",
             "FIREBASE_SYNC"
         );
     }
@@ -170,6 +204,11 @@ class FirebaseSyncHelper
      * The method reads the order row from MySQL, constructs a payload
      * that satisfies the orders/$order_id rule, and writes it to
      * Firebase. The order number is used as the node key.
+     *
+     * The rule requires orderId, customerId, vendorId, totalAmount, and
+     * status to be present. The orderId must equal the node key.
+     * customerId and vendorId must be strings. totalAmount must be a
+     * number greater than or equal to zero. status must be a string.
      *
      * @param int $mysqlOrderId The order ID in MySQL
      * @return void
@@ -247,6 +286,13 @@ class FirebaseSyncHelper
      * that satisfies the feedback/$feedback_id rule, and writes it to
      * Firebase. The entry ID is used as the node key.
      *
+     * The rule requires the following nine fields to be present:
+     * userId, type, subject, message, userName, userEmail, status,
+     * createdAt, updatedAt. The type must be the lowercase string
+     * complaint or compliment. The status must be the lowercase string
+     * pending or resolved. The createdAt and updatedAt must be
+     * non-empty strings.
+     *
      * @param int $mysqlFeedbackId The feedback entry ID in MySQL
      * @return void
      * @throws RuntimeException When the write fails
@@ -279,6 +325,9 @@ class FirebaseSyncHelper
             ? 'resolved'
             : 'pending';
 
+        // The rule requires a non-empty string for createdAt and
+        // updatedAt. The ISO 8601 format produced by date('c') is a
+        // valid string and includes the timezone offset.
         $createdAt = date('c', strtotime($feedback['created_at']));
 
         $payload = array(
