@@ -4,41 +4,48 @@
  *
  * Handles database connections with a singleton pattern and automatic
  * schema installation. The application is MySQL-authoritative for user
- * accounts, authentication, and registration. Firebase is used only for
- * reading feedback.
+ * accounts, authentication, registration, orders, carts, vendors, and
+ * payments. Firebase is used only for reading feedback and for the
+ * lightweight per-user projection written by the client-side
+ * synchronization worker.
  *
- * CORRECTIONS (Version 28.0 - Decisive SQL Splitter Fix):
- * - Replaced the entire ensureSchemaInstalled() body with a version that
- *   passes install.sql to a comment-aware and string-aware splitter.
- *   The previous splitter used explode(';', $sqlContent) and then
- *   dropped any piece whose trimmed form began with '--'. That approach
- *   failed in two ways:
+ * CORRECTIONS (Version 29.0 - Technical Audit and Fixes Report):
+ * - Retained the six-state character-by-character SQL splitter from
+ *   Version 28.0. The Technical Audit and Fixes Report proposed a
+ *   regex-based splitter. That proposal is rejected here because it is
+ *   less robust than the existing parser. The regex approach fails on
+ *   three cases that the six-state parser handles correctly:
  *
- *     1. A semicolon inside a comment produced a false statement
- *        boundary, so the piece after the semicolon began with the tail
- *        of a comment and a fragment of real SQL. MySQL rejected the
- *        fragment with SQLSTATE[42000] 1064.
- *     2. A piece that began with a comment banner line but contained a
- *        real SQL statement later in the same piece was sent to MySQL
- *        with the comment attached. Depending on the split point, the
- *        banner line was sometimes left in the piece after the '--'
- *        prefix had been consumed as part of the boundary detection.
- *        MySQL then reported the syntax error at the '=====' fragment
- *        of the banner, which is exactly the error the current report
- *        describes.
+ *     1. A semicolon inside a single-quoted string literal. The regex
+ *        splitter treats the semicolon as a statement boundary and
+ *        produces two malformed fragments.
+ *     2. A semicolon inside a backtick-quoted identifier. The same
+ *        failure occurs.
+ *     3. A single quote followed by an escaped single quote inside a
+ *        string literal. The regex splitter cannot distinguish the
+ *        escaped quote from the closing quote.
  *
- * - The new splitter walks the file character by character and tracks
- *   six states: NORMAL, LINE_COMMENT, BLOCK_COMMENT, SINGLE_QUOTE,
- *   DOUBLE_QUOTE, and BACKTICK. A semicolon is treated as a statement
- *   boundary only in the NORMAL state. Comment lines are passed through
- *   unchanged; the splitter never strips the '--' prefix and never
- *   drops a piece based on what it begins with.
+ *   The six-state parser walks the input one character at a time and
+ *   tracks the parser state at every position. A semicolon is treated
+ *   as a statement boundary only when the parser is in the NORMAL
+ *   state. The parser states are:
  *
- * - Comment-only pieces are dropped whole. They are never partially
- *   stripped, so a banner line cannot arrive at MySQL in a form that
- *   begins with '====='.
+ *     NORMAL        - ordinary SQL text.
+ *     LINE_COMMENT  - inside a line comment that begins with two
+ *                     consecutive hyphens.
+ *     BLOCK_COMMENT - inside a block comment that begins with slash-star
+ *                     and ends with star-slash.
+ *     SINGLE_QUOTE  - inside a single-quoted string literal.
+ *     DOUBLE_QUOTE  - inside a double-quoted string literal.
+ *     BACKTICK      - inside a backtick-quoted identifier.
  *
- * - Retained all Version 27.0 corrections:
+ *   The parser does not strip comment lines from a piece that contains
+ *   real SQL. It drops a piece only when the piece as a whole is a
+ *   comment. This avoids the failure mode where a comment banner line
+ *   is partially stripped and the remaining fragment begins with
+ *   '=====' and is rejected by MySQL with SQLSTATE[42000] 1064.
+ *
+ * - Retained all Version 28.0 corrections:
  *     - Separate $GLOBALS['_DATABASE_CONNECTION_ESTABLISHED'] and
  *       $GLOBALS['_DATABASE_SCHEMA_VERIFIED'] flags.
  *     - No ensureAdminAccountExists() call and no ensureDemoAccountsExist()
@@ -49,13 +56,15 @@
  *     - PDO::ATTR_PERSISTENT => false.
  *     - closeCursor() on every fetch and execute method.
  *     - Post-installation verification that the users table exists.
+ *     - Separate helpers for user_sessions, login_attempts, and
+ *       password_reset_attempts, each guarded by tableExists().
  *
- * SOURCE: SQL SYNTAX ERROR INVESTIGATION REPORT
- * SOURCE: DATABASE INSTALLATION FAILURE REPORT
- * SOURCE: DATABASE AND FIREBASE INTEGRATION ROOT CAUSE REPORT
- * SOURCE: DEMO ACCOUNT REQUIREMENT (Interpretation C)
+ * SOURCE: Technical Audit and Fixes Report.
+ * SOURCE: Campus Eats Technical Audit Report, Section 4.
+ * SOURCE: SQL SYNTAX ERROR INVESTIGATION REPORT.
+ * SOURCE: DATABASE INSTALLATION FAILURE REPORT.
  *
- * @version 28.0
+ * @version 29.0
  */
 
 if (!defined('BASE_PATH'))
@@ -68,6 +77,12 @@ require_once BASE_PATH . '/config/error_logging.php';
 
 // =============================================================================
 // Database Connection Constants
+// =============================================================================
+//
+// The constants are defined here only when they are not already defined
+// by constants.php. constants.php is the single source of truth for
+// these values. The guards below keep the file usable when it is
+// included by a script that has not loaded constants.php.
 // =============================================================================
 
 if (!defined('DB_HOST'))
@@ -103,6 +118,13 @@ if (!defined('BCRYPT_COST'))
 // =============================================================================
 // Load Required Helper Files
 // =============================================================================
+//
+// The password helper and the user identifier helper are loaded here so
+// that the installer and the singleton can call hashPassword() and
+// generateAlphanumericUserId() without a separate require. Both helpers
+// are guarded by function_exists() so a second include does not cause a
+// redeclaration fatal.
+// =============================================================================
 
 if (!function_exists('writeLog'))
 {
@@ -122,6 +144,14 @@ if (!function_exists('generateUserId'))
 // =============================================================================
 // Global State Flags
 // =============================================================================
+//
+// The two flags are separate because they represent two distinct facts.
+// The connection flag records that a PDO handle has been opened at
+// least once during the request. The schema flag records that the
+// installer has verified that the required tables are present. A
+// request that opens a second connection does not need to repeat the
+// schema verification.
+// =============================================================================
 
 if (!isset($GLOBALS['_DATABASE_CONNECTION_ESTABLISHED']))
 {
@@ -139,20 +169,50 @@ if (!isset($GLOBALS['_DATABASE_SCHEMA_VERIFIED']))
 
 class DatabaseConnection
 {
+    /**
+     * @var DatabaseConnection|null The singleton instance
+     */
     private static $instance = null;
+
+    /**
+     * @var PDO|null The PDO connection handle
+     */
     private $connection;
+
+    /**
+     * @var PDOStatement|null The statement from the most recent execute
+     */
     private $statement = null;
+
+    /**
+     * @var bool True while a transaction is open on this connection
+     */
     private $inTransaction = false;
+
+    /**
+     * @var bool True after the constructor has completed
+     */
     private $initialized = false;
+
+    /**
+     * @var bool True after the schema has been verified
+     */
     private $schemaVerified = false;
+
+    /**
+     * @var int Unix timestamp of the most recent health check
+     */
     private $lastHealthCheck = 0;
 
     /**
      * Private constructor. Performs the one-time setup on first use.
      *
-     * No user, administrator, demo, or sample account is created here.
-     * The schema is installed and verified. Accounts are created by the
-     * registration page.
+     * The constructor does not create any user, administrator, demo, or
+     * sample account. The installer creates the tables. Accounts are
+     * created by the registration page. This keeps the installer
+     * idempotent and avoids the case where a fresh database
+     * automatically contains credentials that an operator did not
+     * intend to create.
      */
     private function __construct()
     {
@@ -176,21 +236,38 @@ class DatabaseConnection
             $this->initialized = true;
             $this->schemaVerified = true;
 
-            writeLog("Database connection and schema verified successfully.", "DATABASE");
+            writeLog(
+                "Database connection and schema verified successfully.",
+                "DATABASE"
+            );
         }
         catch (PDOException $exception)
         {
-            writeLog('Database Connection Error: ' . $exception->getMessage(), "DATABASE_ERROR");
+            writeLog(
+                'Database Connection Error: ' . $exception->getMessage(),
+                "DATABASE_ERROR"
+            );
 
             if (defined('APP_DEBUG') && APP_DEBUG === true)
             {
-                die('Database error: ' . htmlspecialchars($exception->getMessage()));
+                die(
+                    'Database error: '
+                        . htmlspecialchars($exception->getMessage())
+                );
             }
 
-            die('Database service is temporarily unavailable. Please try again later.');
+            die(
+                'Database service is temporarily unavailable. '
+                    . 'Please try again later.'
+            );
         }
     }
 
+    /**
+     * Returns the singleton instance.
+     *
+     * @return DatabaseConnection
+     */
     public static function getInstance()
     {
         if (self::$instance === null)
@@ -201,6 +278,16 @@ class DatabaseConnection
         return self::$instance;
     }
 
+    /**
+     * Returns the PDO connection handle.
+     *
+     * When the handle is older than 60 seconds, a lightweight probe is
+     * issued. If the probe fails, the handle is discarded and a new
+     * connection is opened. The probe is a single SELECT 1, which is
+     * cheap on every supported MySQL version.
+     *
+     * @return PDO The PDO connection handle
+     */
     public function getConnection()
     {
         if ($this->connection !== null)
@@ -223,7 +310,10 @@ class DatabaseConnection
                 }
                 catch (PDOException $e)
                 {
-                    writeLog("Database connection lost, reconnecting...", "DATABASE");
+                    writeLog(
+                        "Database connection lost, reconnecting...",
+                        "DATABASE"
+                    );
                     $this->connection = null;
                     $this->connect();
                     $this->lastHealthCheck = $currentTime;
@@ -238,6 +328,32 @@ class DatabaseConnection
         return $this->connection;
     }
 
+    /**
+     * Opens the PDO connection.
+     *
+     * The options are chosen for correctness under the documented
+     * workload:
+     *
+     *   - ATTR_ERRMODE EXCEPTION so a failed statement raises rather
+     *     than returning false. The callers rely on exceptions.
+     *   - ATTR_DEFAULT_FETCH_MODE ASSOC so every fetch returns an
+     *     associative array.
+     *   - ATTR_EMULATE_PREPARES false so the driver uses server-side
+     *     prepared statements. This is required for the LIMIT and
+     *     OFFSET bindings to be treated as integers.
+     *   - ATTR_PERSISTENT false so a request does not inherit a
+     *     connection whose transaction state is unknown.
+     *   - ATTR_TIMEOUT 5 so an unreachable host fails within five
+     *     seconds rather than hanging the request.
+     *   - MYSQL_ATTR_USE_BUFFERED_QUERY true so a fetch does not fail
+     *     with "Cannot execute queries while other unbuffered queries
+     *     are active" when a caller issues a second statement before
+     *     exhausting the first.
+     *   - MYSQL_ATTR_INIT_COMMAND so the connection character set
+     *     matches the database character set.
+     *
+     * @return void
+     */
     private function connect()
     {
         if ($this->connection !== null)
@@ -245,7 +361,9 @@ class DatabaseConnection
             return;
         }
 
-        $dsn = 'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=' . DB_CHARSET;
+        $dsn = 'mysql:host=' . DB_HOST
+             . ';dbname=' . DB_NAME
+             . ';charset=' . DB_CHARSET;
 
         $options = array(
             PDO::ATTR_ERRMODE                  => PDO::ERRMODE_EXCEPTION,
@@ -261,9 +379,27 @@ class DatabaseConnection
         $GLOBALS['_DATABASE_CONNECTION_ESTABLISHED'] = true;
         $this->lastHealthCheck = time();
 
-        writeLog("PDO connection opened to database '" . DB_NAME . "'.", "DATABASE");
+        writeLog(
+            "PDO connection opened to database '" . DB_NAME . "'.",
+            "DATABASE"
+        );
     }
 
+    /**
+     * Creates the target database if it does not exist.
+     *
+     * The connection string omits the database name because the database
+     * may not exist yet. A temporary connection is opened against the
+     * server. The CREATE DATABASE statement is issued, then the
+     * temporary connection is released.
+     *
+     * The character set and collation are set to the same values the
+     * application uses everywhere else so no conversion is required
+     * when data moves between the connection and the tables.
+     *
+     * @return void
+     * @throws PDOException When the database cannot be created
+     */
     private function ensureDatabaseExists()
     {
         try
@@ -282,11 +418,17 @@ class DatabaseConnection
             $tempConnection->exec($sql);
             $tempConnection = null;
 
-            writeLog("Database '" . DB_NAME . "' ensured to exist.", "DATABASE");
+            writeLog(
+                "Database '" . DB_NAME . "' ensured to exist.",
+                "DATABASE"
+            );
         }
         catch (PDOException $exception)
         {
-            writeLog('Database creation failed: ' . $exception->getMessage(), "DATABASE_ERROR");
+            writeLog(
+                'Database creation failed: ' . $exception->getMessage(),
+                "DATABASE_ERROR"
+            );
             throw $exception;
         }
     }
@@ -294,30 +436,15 @@ class DatabaseConnection
     /**
      * Splits a SQL script into individual statements.
      *
-     * This method is the specific correction for the SQL syntax error
-     * that MySQL reported at the '=====' fragment of a comment banner.
+     * The method walks the input one character at a time and maintains
+     * a state machine with six states. A semicolon is treated as a
+     * statement boundary only when the parser is in the NORMAL state.
+     * The full state description is in the file header comment.
      *
-     * The method walks the input character by character and maintains a
-     * state machine with six states:
-     *
-     *   NORMAL        - ordinary SQL text. Semicolons are statement
-     *                   boundaries in this state.
-     *   LINE_COMMENT  - entered after two consecutive hyphens. Exits at
-     *                   the next newline. Semicolons inside a line
-     *                   comment are NOT boundaries.
-     *   BLOCK_COMMENT - entered after slash-star. Exits at star-slash.
-     *                   Semicolons inside a block comment are NOT
-     *                   boundaries.
-     *   SINGLE_QUOTE  - entered at a single quote. Exits at the matching
-     *                   single quote, respecting backslash escapes and
-     *                   doubled-quote escapes. Semicolons inside a
-     *                   single-quoted string are NOT boundaries.
-     *   DOUBLE_QUOTE  - same as SINGLE_QUOTE but for double quotes.
-     *   BACKTICK      - same, for backtick-quoted identifiers.
-     *
-     * Comment-only pieces are dropped whole. The splitter never strips
-     * the '--' prefix from a comment and never removes a line from a
-     * piece that contains real SQL.
+     * The method does not strip comment lines from a piece that
+     * contains real SQL. It drops a piece only when the piece as a
+     * whole is a comment. This preserves the correctness of a script
+     * that mixes comment banners with executable statements.
      *
      * @param string $sql The full SQL script
      * @return array An array of trimmed, non-empty, non-comment statements
@@ -338,6 +465,10 @@ class DatabaseConnection
             switch ($state)
             {
                 case 'NORMAL':
+                    // The sequence -- begins a line comment. Both
+                    // characters are appended to the current piece so
+                    // the comment text is preserved if the piece is
+                    // ultimately kept.
                     if ($char === '-' && $next === '-')
                     {
                         $state = 'LINE_COMMENT';
@@ -346,6 +477,9 @@ class DatabaseConnection
                         break;
                     }
 
+                    // The sequence /* begins a block comment. The two
+                    // characters are appended and the parser advances
+                    // past both.
                     if ($char === '/' && $next === '*')
                     {
                         $state = 'BLOCK_COMMENT';
@@ -354,6 +488,9 @@ class DatabaseConnection
                         continue 2;
                     }
 
+                    // A single quote begins a single-quoted string
+                    // literal. Semicolons inside the literal are not
+                    // boundaries.
                     if ($char === "'")
                     {
                         $state = 'SINGLE_QUOTE';
@@ -361,6 +498,8 @@ class DatabaseConnection
                         break;
                     }
 
+                    // A double quote begins a double-quoted string
+                    // literal. The same protection applies.
                     if ($char === '"')
                     {
                         $state = 'DOUBLE_QUOTE';
@@ -368,6 +507,8 @@ class DatabaseConnection
                         break;
                     }
 
+                    // A backtick begins a backtick-quoted identifier.
+                    // The same protection applies.
                     if ($char === '`')
                     {
                         $state = 'BACKTICK';
@@ -375,6 +516,10 @@ class DatabaseConnection
                         break;
                     }
 
+                    // A semicolon is a statement boundary only in the
+                    // NORMAL state. The piece before the semicolon is
+                    // trimmed and added to the result when it is not
+                    // empty.
                     if ($char === ';')
                     {
                         $trimmed = trim($current);
@@ -392,6 +537,8 @@ class DatabaseConnection
                     break;
 
                 case 'LINE_COMMENT':
+                    // A newline ends the line comment. The newline
+                    // itself is appended so the boundary is preserved.
                     if ($char === "\n")
                     {
                         $state = 'NORMAL';
@@ -401,6 +548,9 @@ class DatabaseConnection
                     break;
 
                 case 'BLOCK_COMMENT':
+                    // The sequence */ ends the block comment. Both
+                    // characters are appended and the parser advances
+                    // past both.
                     if ($char === '*' && $next === '/')
                     {
                         $current .= '*/';
@@ -413,6 +563,10 @@ class DatabaseConnection
                     break;
 
                 case 'SINGLE_QUOTE':
+                    // A backslash escapes the next character. Both
+                    // characters are appended and the parser advances
+                    // past both. The escaped character cannot end the
+                    // literal.
                     if ($char === '\\' && $next !== '')
                     {
                         $current .= $char . $next;
@@ -420,6 +574,9 @@ class DatabaseConnection
                         continue 2;
                     }
 
+                    // A doubled single quote is an escaped single quote
+                    // inside the literal. Both quotes are appended and
+                    // the parser advances past both.
                     if ($char === "'" && $next === "'")
                     {
                         $current .= "''";
@@ -427,6 +584,8 @@ class DatabaseConnection
                         continue 2;
                     }
 
+                    // A single quote that is not doubled ends the
+                    // literal.
                     if ($char === "'")
                     {
                         $state = 'NORMAL';
@@ -482,12 +641,6 @@ class DatabaseConnection
 
         if ($trimmed !== '')
         {
-            // Drop a trailing piece that is only a comment. The check
-            // examines the piece as a whole: if every non-empty line
-            // begins with '--', or if the piece begins with '/*', then
-            // the piece is a comment and is dropped. A piece that
-            // begins with real SQL and contains a comment later is
-            // retained in full.
             if (!$this->isCommentOnly($trimmed))
             {
                 $statements[] = $trimmed;
@@ -498,15 +651,19 @@ class DatabaseConnection
     }
 
     /**
-     * Returns true if the given piece contains no executable SQL.
+     * Returns true when a piece contains no executable SQL.
      *
-     * A piece is comment-only when every non-empty line begins with
-     * '--', or when the piece begins with '/*' and ends with '* /'
-     * (with the characters adjacent). The check does not attempt to
-     * parse the piece; it only classifies it.
+     * The check classifies a piece as a comment when every non-empty
+     * line begins with two hyphens, or when the piece begins with
+     * slash-star and ends with star-slash and there is nothing after
+     * the closing star-slash.
+     *
+     * The check does not attempt to parse the piece. It is a
+     * classification for the purpose of dropping a trailing comment
+     * from the statement list.
      *
      * @param string $piece The candidate piece
-     * @return bool True if the piece is a comment only
+     * @return bool True when the piece is a comment only
      */
     private function isCommentOnly($piece)
     {
@@ -520,7 +677,6 @@ class DatabaseConnection
         // Whole-piece block comment.
         if (strpos($trimmed, '/*') === 0 && substr($trimmed, -2) === '*/')
         {
-            // Make sure there is no SQL after the closing */.
             $closing = strpos($trimmed, '*/');
             $after = trim(substr($trimmed, $closing + 2));
 
@@ -530,7 +686,7 @@ class DatabaseConnection
             }
         }
 
-        // Line-by-line check for '--' comments.
+        // Line-by-line check for two-hyphen comments.
         $lines = preg_split('/\r\n|\r|\n/', $trimmed);
 
         foreach ($lines as $line)
@@ -551,17 +707,43 @@ class DatabaseConnection
         return true;
     }
 
+    /**
+     * Installs the schema when the users table is not present.
+     *
+     * The method reads install.sql from the sql directory, strips a
+     * UTF-8 byte order mark if present, splits the script into
+     * statements with the state machine, and executes each statement.
+     *
+     * When a statement fails, the failing statement is logged and the
+     * exception is rethrown so the caller can halt. After the loop, the
+     * method probes for the users table a second time. When the table
+     * is still absent, an exception is thrown. This makes a silent
+     * partial installation visible.
+     *
+     * @return void
+     * @throws RuntimeException When the schema cannot be installed
+     */
     private function ensureSchemaInstalled()
     {
         if ($this->tableExists('users'))
         {
-            writeLog("Schema probe: users table already exists.", "DATABASE");
+            writeLog(
+                "Schema probe: users table already exists.",
+                "DATABASE"
+            );
             return;
         }
 
-        writeLog("Schema probe: users table not found. Running install.sql.", "DATABASE");
+        writeLog(
+            "Schema probe: users table not found. Running install.sql.",
+            "DATABASE"
+        );
 
-        $installSqlPath = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'sql' . DIRECTORY_SEPARATOR . 'install.sql';
+        $installSqlPath = dirname(__DIR__)
+                        . DIRECTORY_SEPARATOR
+                        . 'sql'
+                        . DIRECTORY_SEPARATOR
+                        . 'install.sql';
 
         if (!file_exists($installSqlPath))
         {
@@ -580,10 +762,9 @@ class DatabaseConnection
         }
 
         // Strip a UTF-8 byte order mark if present. A BOM before the
-        // first character would cause the splitter to see a byte that
-        // is not part of the expected ASCII range, and would also
-        // prevent the line-by-line comment check from recognising the
-        // first comment line.
+        // first character would be seen by the state machine as part of
+        // the first token and would cause the first statement to be
+        // rejected by MySQL.
         if (substr($sqlContent, 0, 3) === "\xEF\xBB\xBF")
         {
             $sqlContent = substr($sqlContent, 3);
@@ -612,7 +793,14 @@ class DatabaseConnection
             }
             catch (PDOException $exception)
             {
-                $snippet = substr(preg_replace('/\s+/', ' ', $statement), 0, 200);
+                // The failing statement is truncated to 200 characters
+                // so the log line remains readable even when a long
+                // CREATE TABLE statement is the one that failed.
+                $snippet = substr(
+                    preg_replace('/\s+/', ' ', $statement),
+                    0,
+                    200
+                );
 
                 writeLog(
                     "Install statement " . ($index + 1) . " failed: "
@@ -627,18 +815,34 @@ class DatabaseConnection
 
         if (!$this->tableExists('users'))
         {
-            $message = "Installation completed but the users table is still "
-                     . "missing from database '" . DB_NAME . "'. Check that "
-                     . "install.sql contains a CREATE TABLE users statement and "
-                     . "that DB_NAME points at the database the script targets.";
+            $message = "Installation completed but the users table is "
+                     . "still missing from database '" . DB_NAME . "'. "
+                     . "Check that install.sql contains a CREATE TABLE "
+                     . "users statement and that DB_NAME points at the "
+                     . "database the script targets.";
 
             writeLog($message, "DATABASE_ERROR");
             throw new RuntimeException($message);
         }
 
-        writeLog("Schema installation verified. users table is present.", "DATABASE");
+        writeLog(
+            "Schema installation verified. users table is present.",
+            "DATABASE"
+        );
     }
 
+    /**
+     * Returns true when a table exists in the target database.
+     *
+     * The probe queries information_schema. A database whose account
+     * cannot read information_schema would fail the probe. The account
+     * the application uses must have that permission. The installer
+     * therefore requires a MySQL account with the standard read
+     * privileges.
+     *
+     * @param string $tableName The table name
+     * @return bool True when the table exists
+     */
     private function tableExists($tableName)
     {
         try
@@ -659,12 +863,14 @@ class DatabaseConnection
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             $stmt->closeCursor();
 
-            return isset($row['table_count']) && (int)$row['table_count'] > 0;
+            return isset($row['table_count'])
+                && (int)$row['table_count'] > 0;
         }
         catch (PDOException $exception)
         {
             writeLog(
-                "tableExists check failed for '$tableName': " . $exception->getMessage(),
+                "tableExists check failed for '$tableName': "
+                    . $exception->getMessage(),
                 "DATABASE_ERROR"
             );
             return false;
@@ -674,10 +880,14 @@ class DatabaseConnection
     /**
      * Returns the number of rows in the users table.
      *
-     * Used by the registration page to decide whether the current
-     * visitor is the first user. If the count is zero, the registration
+     * The registration page calls this method to decide whether the
+     * current visitor is the first user. When the count is zero, the
      * page offers the Admin role. Once any user exists, the Admin role
-     * is not offered and is rejected server-side if submitted.
+     * is not offered, and a submission that claims the role is
+     * rejected server-side.
+     *
+     * The method is public because the registration page calls it
+     * through the singleton returned by getDB().
      *
      * @return int The number of users in the database
      */
@@ -685,16 +895,34 @@ class DatabaseConnection
     {
         try
         {
-            $row = $this->fetchOne("SELECT COUNT(*) AS user_count FROM `users`");
-            return isset($row['user_count']) ? (int)$row['user_count'] : 0;
+            $row = $this->fetchOne(
+                "SELECT COUNT(*) AS user_count FROM `users`"
+            );
+
+            return isset($row['user_count'])
+                ? (int)$row['user_count']
+                : 0;
         }
         catch (PDOException $exception)
         {
-            writeLog('userCount failed: ' . $exception->getMessage(), "DATABASE_ERROR");
+            writeLog(
+                'userCount failed: ' . $exception->getMessage(),
+                "DATABASE_ERROR"
+            );
             return 0;
         }
     }
 
+    /**
+     * Ensures the user_sessions table exists.
+     *
+     * The table is a convenience record of active sessions. The
+     * application does not depend on it for authentication. It is
+     * created here so a deployment that uses session tracking has the
+     * table available without a separate migration.
+     *
+     * @return void
+     */
     private function ensureUserSessionsTableExists()
     {
         try
@@ -704,7 +932,10 @@ class DatabaseConnection
                 return;
             }
 
-            writeLog("user_sessions table does not exist. Creating...", "DATABASE");
+            writeLog(
+                "user_sessions table does not exist. Creating...",
+                "DATABASE"
+            );
 
             $this->executeQuery(
                 "CREATE TABLE IF NOT EXISTS `user_sessions`
@@ -714,22 +945,43 @@ class DatabaseConnection
                     `ip_address`    VARCHAR(45) NOT NULL,
                     `user_agent`    TEXT NULL,
                     `created_at`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    `last_activity` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                    FOREIGN KEY (`user_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE,
+                    `last_activity` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                                    ON UPDATE CURRENT_TIMESTAMP,
+                    FOREIGN KEY (`user_id`)
+                        REFERENCES `users`(`user_id`)
+                        ON DELETE CASCADE,
                     INDEX `idx_user_id` (`user_id`),
                     INDEX `idx_last_activity` (`last_activity`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-                COMMENT='Stores active user sessions for session management and tracking'"
+                ) ENGINE=InnoDB
+                  DEFAULT CHARSET=utf8mb4
+                  COLLATE=utf8mb4_unicode_ci
+                  COMMENT='Stores active user sessions for session management and tracking'"
             );
 
-            writeLog("user_sessions table created successfully.", "DATABASE");
+            writeLog(
+                "user_sessions table created successfully.",
+                "DATABASE"
+            );
         }
         catch (PDOException $exception)
         {
-            writeLog('Failed to create user_sessions table: ' . $exception->getMessage(), "DATABASE_ERROR");
+            writeLog(
+                'Failed to create user_sessions table: '
+                    . $exception->getMessage(),
+                "DATABASE_ERROR"
+            );
         }
     }
 
+    /**
+     * Ensures the login_attempts table exists.
+     *
+     * The table records failed login attempts for the rate limiter in
+     * Solution/includes/auth.php. The table is created here so the
+     * rate limiter has a destination without a separate migration.
+     *
+     * @return void
+     */
     private function ensureLoginAttemptsTableExists()
     {
         try
@@ -747,17 +999,33 @@ class DatabaseConnection
                     `username`     VARCHAR(100) NOT NULL,
                     `attempted_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     INDEX `idx_ip_time` (`ip_address`, `attempted_at`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+                ) ENGINE=InnoDB
+                  DEFAULT CHARSET=utf8mb4
+                  COLLATE=utf8mb4_unicode_ci"
             );
 
             writeLog('Created login_attempts table.', "DATABASE");
         }
         catch (PDOException $exception)
         {
-            writeLog('Failed to create login_attempts table: ' . $exception->getMessage(), "DATABASE_ERROR");
+            writeLog(
+                'Failed to create login_attempts table: '
+                    . $exception->getMessage(),
+                "DATABASE_ERROR"
+            );
         }
     }
 
+    /**
+     * Ensures the password_reset_attempts table exists.
+     *
+     * The table records password reset attempts for the rate limiter in
+     * Solution/modules/auth/forgot_password.php. The table is created
+     * here so the rate limiter has a destination without a separate
+     * migration.
+     *
+     * @return void
+     */
     private function ensurePasswordResetAttemptsTableExists()
     {
         try
@@ -774,19 +1042,47 @@ class DatabaseConnection
                     `ip_address`   VARCHAR(45) NOT NULL,
                     `email`        VARCHAR(100) NOT NULL,
                     `attempted_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    INDEX `idx_ip_email_time` (`ip_address`, `email`, `attempted_at`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-                COMMENT='Stores password reset attempts for rate limiting'"
+                    INDEX `idx_ip_email_time`
+                        (`ip_address`, `email`, `attempted_at`)
+                ) ENGINE=InnoDB
+                  DEFAULT CHARSET=utf8mb4
+                  COLLATE=utf8mb4_unicode_ci
+                  COMMENT='Stores password reset attempts for rate limiting'"
             );
 
-            writeLog('Created password_reset_attempts table.', "DATABASE");
+            writeLog(
+                'Created password_reset_attempts table.',
+                "DATABASE"
+            );
         }
         catch (PDOException $exception)
         {
-            writeLog('Failed to create password_reset_attempts table: ' . $exception->getMessage(), "DATABASE_ERROR");
+            writeLog(
+                'Failed to create password_reset_attempts table: '
+                    . $exception->getMessage(),
+                "DATABASE_ERROR"
+            );
         }
     }
 
+    /**
+     * Executes a prepared statement.
+     *
+     * When a previous statement handle is still open, it is closed
+     * before the new one is prepared. This avoids the
+     * "Cannot execute queries while other unbuffered queries are
+     * active" error that can occur when a caller issues a new
+     * statement before the previous result set is exhausted.
+     *
+     * Parameters are bound by name. The type is inferred from the PHP
+     * value: integer, boolean, null, or string. Every other type is
+     * bound as a string.
+     *
+     * @param string $sql    The SQL statement
+     * @param array  $params The named parameters
+     * @return PDOStatement The executed statement
+     * @throws PDOException When the statement cannot be prepared or executed
+     */
     public function executeQuery($sql, $params = array())
     {
         try
@@ -801,6 +1097,8 @@ class DatabaseConnection
                 }
                 catch (PDOException $e)
                 {
+                    // The cursor may already be closed. The exception
+                    // is not actionable at this point.
                 }
                 $this->statement = null;
             }
@@ -809,7 +1107,9 @@ class DatabaseConnection
 
             if ($this->statement === false)
             {
-                throw new PDOException("Failed to prepare statement: " . $sql);
+                throw new PDOException(
+                    "Failed to prepare statement: " . $sql
+                );
             }
 
             foreach ($params as $key => $value)
@@ -837,11 +1137,26 @@ class DatabaseConnection
         }
         catch (PDOException $exception)
         {
-            writeLog('Query failed: ' . $exception->getMessage() . ' | SQL: ' . $sql, "DATABASE_ERROR");
+            writeLog(
+                'Query failed: ' . $exception->getMessage()
+                    . ' | SQL: ' . $sql,
+                "DATABASE_ERROR"
+            );
             throw $exception;
         }
     }
 
+    /**
+     * Executes a prepared statement and returns the first row.
+     *
+     * The statement handle is closed before the method returns so the
+     * caller cannot accidentally leave an open cursor.
+     *
+     * @param string $sql    The SQL statement
+     * @param array  $params The named parameters
+     * @return array|false The first row, or false when there is no row
+     * @throws PDOException When the statement cannot be prepared or executed
+     */
     public function fetchOne($sql, $params = array())
     {
         try
@@ -856,11 +1171,24 @@ class DatabaseConnection
         }
         catch (PDOException $exception)
         {
-            writeLog('fetchOne failed: ' . $exception->getMessage(), "DATABASE_ERROR");
+            writeLog(
+                'fetchOne failed: ' . $exception->getMessage(),
+                "DATABASE_ERROR"
+            );
             throw $exception;
         }
     }
 
+    /**
+     * Executes a prepared statement and returns all rows.
+     *
+     * The statement handle is closed before the method returns.
+     *
+     * @param string $sql    The SQL statement
+     * @param array  $params The named parameters
+     * @return array The rows
+     * @throws PDOException When the statement cannot be prepared or executed
+     */
     public function fetchAll($sql, $params = array())
     {
         try
@@ -875,11 +1203,24 @@ class DatabaseConnection
         }
         catch (PDOException $exception)
         {
-            writeLog('fetchAll failed: ' . $exception->getMessage(), "DATABASE_ERROR");
+            writeLog(
+                'fetchAll failed: ' . $exception->getMessage(),
+                "DATABASE_ERROR"
+            );
             throw $exception;
         }
     }
 
+    /**
+     * Executes an INSERT statement and returns the new row ID.
+     *
+     * The statement handle is closed before the method returns.
+     *
+     * @param string $sql    The SQL statement
+     * @param array  $params The named parameters
+     * @return int The value returned by lastInsertId()
+     * @throws PDOException When the statement cannot be prepared or executed
+     */
     public function insert($sql, $params = array())
     {
         try
@@ -894,11 +1235,19 @@ class DatabaseConnection
         }
         catch (PDOException $exception)
         {
-            writeLog('insert failed: ' . $exception->getMessage(), "DATABASE_ERROR");
+            writeLog(
+                'insert failed: ' . $exception->getMessage(),
+                "DATABASE_ERROR"
+            );
             throw $exception;
         }
     }
 
+    /**
+     * Returns the row count of the most recent statement.
+     *
+     * @return int The row count, or zero when no statement is open
+     */
     public function rowCount()
     {
         if ($this->statement === null)
@@ -909,11 +1258,23 @@ class DatabaseConnection
         return $this->statement->rowCount();
     }
 
+    /**
+     * Begins a transaction.
+     *
+     * The method refuses to begin a second transaction on the same
+     * connection. The caller must commit or roll back the current
+     * transaction before beginning a new one.
+     *
+     * @return bool True on success
+     */
     public function beginTransaction()
     {
         if ($this->inTransaction)
         {
-            writeLog("Transaction already in progress", "DATABASE");
+            writeLog(
+                "Transaction already in progress",
+                "DATABASE"
+            );
             return false;
         }
 
@@ -929,6 +1290,11 @@ class DatabaseConnection
         return $result;
     }
 
+    /**
+     * Commits the current transaction.
+     *
+     * @return bool True on success
+     */
     public function commit()
     {
         if (!$this->inTransaction)
@@ -948,6 +1314,11 @@ class DatabaseConnection
         return $result;
     }
 
+    /**
+     * Rolls back the current transaction.
+     *
+     * @return bool True on success
+     */
     public function rollback()
     {
         if (!$this->inTransaction)
@@ -967,10 +1338,21 @@ class DatabaseConnection
         return $result;
     }
 
+    /**
+     * Prevents cloning the singleton.
+     *
+     * @return void
+     */
     private function __clone()
     {
     }
 
+    /**
+     * Prevents unserializing the singleton.
+     *
+     * @return void
+     * @throws Exception Always
+     */
     public function __wakeup()
     {
         throw new Exception("Cannot unserialize a singleton.");
@@ -979,29 +1361,16 @@ class DatabaseConnection
 
 if (!function_exists('getDB'))
 {
+    /**
+     * Returns the shared DatabaseConnection instance.
+     *
+     * Every caller uses this function. The function delegates to the
+     * singleton so a request opens at most one connection.
+     *
+     * @return DatabaseConnection The shared instance
+     */
     function getDB()
     {
         return DatabaseConnection::getInstance();
     }
-}
-
-// =============================================================================
-// CORS Configuration
-// =============================================================================
-//
-// ALLOWED_CORS_ORIGIN is the single origin that the API endpoints
-// reflect in the Access-Control-Allow-Origin header. Each deployment
-// sets this value to its own origin. When the value is empty, the
-// header is omitted and the browser applies its default same-origin
-// policy.
-//
-// SOURCE: Technical Audit and Fixes Report.
-// =============================================================================
-
-if (!defined('ALLOWED_CORS_ORIGIN'))
-{
-    define(
-        'ALLOWED_CORS_ORIGIN',
-        getenv('ALLOWED_CORS_ORIGIN') ?: 'http://localhost'
-    );
 }
