@@ -1,42 +1,16 @@
--- Campus Eats Database Schema
--- Version 20.0
---
--- Creates the ten tables used by the application. The script does not
--- insert any row. Demonstration data is inserted separately by
--- Solution/sql/seed.php, so the schema and the demonstration data
--- remain independent and either can be applied without the other.
---
--- The file is written so that the schema installer in
--- Solution/config/database.php can split it into statements without
--- errors. Every comment line begins with two hyphens followed by a
--- space. No semicolon, backtick, single quote, or double quote appears
--- inside a comment. The file must be saved as UTF-8 without a byte
--- order mark.
---
--- The USE statement selects the target database before any CREATE
--- TABLE runs, so the script is correct whether it is executed by the
--- installer or imported manually in phpMyAdmin.
---
--- SOURCE: campus-eats-process-document.pdf Section 9 - Database Design
--- SOURCE: NOTES - Populate the database using real or simulated data,
---         with at least ten records per table.
---
--- @version 20.0
+-- Campus Eats database schema, version 22.0.
+-- Creates the ten tables used by the application.
+-- The script does not insert any row.
+-- Demonstration data is inserted separately by Solution/sql/seed.php.
+-- The USE statement selects the target database before any CREATE TABLE runs.
+-- The file is saved as UTF-8 without a byte order mark.
+-- Every comment line begins with two hyphens followed by a space.
+-- No semicolon, backtick, single quote, or double quote appears in a comment.
+-- SOURCE: campus-eats-process-document.pdf Section 9 - Database Design.
 
 USE campus_eats;
 
 SET FOREIGN_KEY_CHECKS = 0;
-
-DROP TABLE IF EXISTS complaints_compliments;
-DROP TABLE IF EXISTS payments;
-DROP TABLE IF EXISTS order_items;
-DROP TABLE IF EXISTS orders;
-DROP TABLE IF EXISTS menu_items;
-DROP TABLE IF EXISTS vendors;
-DROP TABLE IF EXISTS user_sessions;
-DROP TABLE IF EXISTS login_attempts;
-DROP TABLE IF EXISTS password_reset_attempts;
-DROP TABLE IF EXISTS users;
 
 CREATE TABLE IF NOT EXISTS users
 (
