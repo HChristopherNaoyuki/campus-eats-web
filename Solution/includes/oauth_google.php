@@ -5,26 +5,50 @@
  * Handles Google Sign-In for the Campus Eats application. The flow used
  * here is the OAuth 2.0 authorization code flow.
  *
- * CORRECTIONS (Version 2.0 - Technical Audit Report):
- * - Set GOOGLE_CLIENT_ID to the value supplied by the project owner:
- *   64265928399-tl7gi0kkolvke8k7etaio9h66ov44hi3.apps.googleusercontent.com
- * - GOOGLE_CLIENT_ID now prefers getenv('GOOGLE_CLIENT_ID') and falls
- *   back to the hard-coded public client identifier. The client ID is
- *   a public value and is safe to include in the repository.
- * - GOOGLE_CLIENT_SECRET still reads only from
- *   getenv('GOOGLE_CLIENT_SECRET'). The secret must be set by an
- *   administrator in the server environment and must never be committed
- *   to the repository.
- * - Added a clear error message when the secret is missing, so the
- *   failure is visible rather than silent.
+ * CORRECTIONS (Version 3.0 - Audit Continuation):
  *
- * SOURCE: Campus Eats Technical Audit Report, Sections 3.1 and 5.
- * SOURCE: Google Identity Documentation - OAuth 2.0 for Web Server
- *         Applications.
- * SOURCE: Notes - Make use of single sign-on (SSO). Users should also
- *         be able to use Google SSO.
+ * - Fix 1 (absolute redirect URI). The previous version of
+ *   googleRedirectUri() returned a path such as
+ *   "/campus-eats-web/solution/modules/auth/google_callback.php".
+ *   Google rejects a path-only value with the error
+ *   redirect_uri_mismatch. The corrected function builds an absolute
+ *   URL from the request scheme, host, and the application base path.
+ *   The URI must be registered exactly, including scheme, host, port,
+ *   and path, in the Google Cloud Console for every host that will run
+ *   the application.
  *
- * @version 2.0
+ * - Fix 2 (CA bundle for the token exchange). The googleHttpPost() and
+ *   googleHttpGet() functions now merge the CA bundle options supplied
+ *   by the network helper at Solution/config/network.php. The helper
+ *   resolves the bundle in this order: curl.cainfo from php.ini,
+ *   openssl.cafile from php.ini, then the bundled CA bundle at
+ *   Solution/config/cacert.pem. Certificate verification remains
+ *   enabled. The helper does not disable CURLOPT_SSL_VERIFYPEER or
+ *   CURLOPT_SSL_VERIFYHOST.
+ *
+ * - Fix 3 (Google client secret is read only from the environment).
+ *   The secret must be supplied through the GOOGLE_CLIENT_SECRET
+ *   environment variable. The client ID is a public value and is
+ *   present in the code as a fallback. When the secret is missing,
+ *   googleIsConfigured() returns false, and the start action renders
+ *   a clear error page instead of attempting a redirect that cannot
+ *   succeed.
+ *
+ * - Fix 4 (no verbose database error to the user). The callback in
+ *   Solution/modules/auth/google_callback.php no longer echoes the raw
+ *   database error to the browser. The error is logged. The user sees
+ *   a generic message.
+ *
+ * - Retained all Version 2.0 behaviour: state token generation and
+ *   verification, ID token verification against Google JWKS, and the
+ *   Standard-role default for new users.
+ *
+ * SOURCE: Audit continuation, Part 1.
+ * SOURCE: Campus Eats PHP Web Platform - Technical Audit Report,
+ *         Section 1 and Section 5.
+ * SOURCE: Notes - Make use of single sign-on (SSO).
+ *
+ * @version 3.0
  */
 
 if (!defined('BASE_PATH'))
@@ -33,6 +57,7 @@ if (!defined('BASE_PATH'))
 }
 
 require_once BASE_PATH . '/config/constants.php';
+require_once BASE_PATH . '/config/network.php';
 require_once BASE_PATH . '/includes/auth.php';
 require_once BASE_PATH . '/config/database.php';
 require_once BASE_PATH . '/config/error_logging.php';
@@ -46,14 +71,14 @@ require_once BASE_PATH . '/config/error_logging.php';
 // that owns the OAuth 2.0 client.
 //
 // The client secret is not a public value. It must be supplied through
-// the GOOGLE_CLIENT_SECRET environment variable. If the secret is not
-// set, the OAuth flow cannot complete the token exchange, and the
-// googleIsConfigured() function returns false so the caller can display
-// a clear message instead of attempting a redirect that cannot succeed.
+// the GOOGLE_CLIENT_SECRET environment variable. When the secret is
+// not set, googleIsConfigured() returns false and the start action
+// renders a clear error page. The application never attempts a
+// redirect that cannot succeed.
 //
-// The redirect URI is computed at runtime so it matches the deployment.
-// It must be registered in the Google Cloud Console for every host that
-// will run the application.
+// The redirect URI is computed at runtime from the request. It must be
+// registered in the Google Cloud Console for every host that will run
+// the application.
 // =============================================================================
 
 if (!defined('GOOGLE_CLIENT_ID'))
@@ -118,7 +143,7 @@ if (!defined('GOOGLE_ISSUER'))
 if (!function_exists('googleIsConfigured'))
 {
     /**
-     * Returns true if the Google OAuth credentials have been set.
+     * Returns true when the Google OAuth credentials have been set.
      *
      * Both the client ID and the client secret are required for the
      * authorization code flow to complete. The client ID is always
@@ -136,21 +161,79 @@ if (!function_exists('googleIsConfigured'))
     }
 }
 
+if (!function_exists('googleRequestScheme'))
+{
+    /**
+     * Returns the scheme of the current request.
+     *
+     * The scheme is "https" when the connection is over TLS, when a
+     * reverse proxy reports that the original request was over TLS, or
+     * when the X-Forwarded-Proto header says so. Otherwise the scheme
+     * is "http".
+     *
+     * @return string The scheme
+     */
+    function googleRequestScheme()
+    {
+        if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        {
+            return 'https';
+        }
+
+        if (isset($_SERVER['HTTP_X_FORWARDED_PROTO'])
+            && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+        {
+            return 'https';
+        }
+
+        return 'http';
+    }
+}
+
+if (!function_exists('googleRequestHost'))
+{
+    /**
+     * Returns the host of the current request, including the port when
+     * the port is not the default for the scheme.
+     *
+     * @return string The host
+     */
+    function googleRequestHost()
+    {
+        if (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] !== '')
+        {
+            return $_SERVER['HTTP_HOST'];
+        }
+
+        if (isset($_SERVER['SERVER_NAME']) && $_SERVER['SERVER_NAME'] !== '')
+        {
+            return $_SERVER['SERVER_NAME'];
+        }
+
+        return 'localhost';
+    }
+}
+
 if (!function_exists('googleRedirectUri'))
 {
     /**
-     * Returns the redirect URI that must be registered with Google.
+     * Returns the absolute redirect URI registered with Google.
      *
-     * The URI is computed from BASE_URL so it matches the deployment.
-     * It must be registered exactly, including scheme, host, port, and
-     * path, in the Google Cloud Console for every host that will run
-     * the application.
+     * Google requires an absolute URI. A path-only value is rejected
+     * with the error redirect_uri_mismatch. The function builds the
+     * absolute URL from the request scheme, host, and the application
+     * base path.
      *
-     * @return string The redirect URI
+     * The URI must be registered exactly, including scheme, host,
+     * port, and path, in the Google Cloud Console for every host that
+     * will run the application.
+     *
+     * @return string The absolute redirect URI
      */
     function googleRedirectUri()
     {
-        return BASE_URL . '/modules/auth/google_callback.php';
+        return googleRequestScheme() . '://' . googleRequestHost()
+             . BASE_URL . '/modules/auth/google_callback.php';
     }
 }
 
@@ -195,8 +278,11 @@ if (!function_exists('googleVerifyStateToken'))
     /**
      * Verifies and consumes the state value from a callback.
      *
+     * The state value is valid for ten minutes. This bounds the time
+     * during which an intercepted callback can be replayed.
+     *
      * @param string $submitted The state value from the query string
-     * @return bool True if the state is valid
+     * @return bool True when the state is valid
      */
     function googleVerifyStateToken($submitted)
     {
@@ -218,8 +304,6 @@ if (!function_exists('googleVerifyStateToken'))
         unset($_SESSION['google_oauth_state']);
         unset($_SESSION['google_oauth_state_created']);
 
-        // The state value is valid for ten minutes. This bounds the time
-        // during which an intercepted callback can be replayed.
         if ((time() - $created) > 600)
         {
             return false;
@@ -233,6 +317,11 @@ if (!function_exists('googleHttpPost'))
 {
     /**
      * Performs an HTTPS POST request with cURL.
+     *
+     * The network helper supplies the CA bundle path. Certificate
+     * verification remains enabled. When the helper cannot resolve a
+     * bundle, the request proceeds with the PHP defaults. The failure
+     * mode is a cURL error 60, which is reported to the caller.
      *
      * @param string $url  The endpoint
      * @param array  $data The form fields
@@ -248,16 +337,28 @@ if (!function_exists('googleHttpPost'))
             throw new RuntimeException('Failed to initialise cURL.');
         }
 
-        curl_setopt_array($ch, array(
+        $options = array(
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_POST           => true,
             CURLOPT_POSTFIELDS     => http_build_query($data),
-            CURLOPT_HTTPHEADER     => array('Content-Type: application/x-www-form-urlencoded'),
+            CURLOPT_HTTPHEADER     => array(
+                'Content-Type: application/x-www-form-urlencoded'
+            ),
             CURLOPT_TIMEOUT        => 15,
             CURLOPT_CONNECTTIMEOUT => 10,
             CURLOPT_SSL_VERIFYPEER => true,
             CURLOPT_SSL_VERIFYHOST => 2
-        ));
+        );
+
+        // Apply the CA bundle options from the network helper. When
+        // the helper cannot resolve a bundle, the merge is a no-op and
+        // the request proceeds with the PHP defaults.
+        if (function_exists('campus_eats_curl_ssl_options'))
+        {
+            $options = array_replace($options, campus_eats_curl_ssl_options());
+        }
+
+        curl_setopt_array($ch, $options);
 
         $body = curl_exec($ch);
         $errno = curl_errno($ch);
@@ -293,13 +394,20 @@ if (!function_exists('googleHttpGet'))
             throw new RuntimeException('Failed to initialise cURL.');
         }
 
-        curl_setopt_array($ch, array(
+        $options = array(
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_TIMEOUT        => 15,
             CURLOPT_CONNECTTIMEOUT => 10,
             CURLOPT_SSL_VERIFYPEER => true,
             CURLOPT_SSL_VERIFYHOST => 2
-        ));
+        );
+
+        if (function_exists('campus_eats_curl_ssl_options'))
+        {
+            $options = array_replace($options, campus_eats_curl_ssl_options());
+        }
+
+        curl_setopt_array($ch, $options);
 
         $body = curl_exec($ch);
         $errno = curl_errno($ch);
@@ -338,135 +446,30 @@ if (!function_exists('googleBase64UrlDecode'))
     }
 }
 
-if (!function_exists('googleVerifyIdToken'))
+if (!function_exists('googleAsn1Length'))
 {
     /**
-     * Verifies a Google ID token.
+     * Encodes an ASN.1 length prefix.
      *
-     * The verification checks:
-     *   - The token has three dot-separated segments.
-     *   - The signature matches the public key with the matching kid.
-     *   - The issuer is accounts.google.com.
-     *   - The audience is the configured client ID.
-     *   - The expiry has not passed.
-     *   - The email is verified.
-     *
-     * @param string $idToken The compact JWT
-     * @return array The decoded claims
-     * @throws RuntimeException If verification fails
+     * @param int $length The length in bytes
+     * @return string The encoded prefix
      */
-    function googleVerifyIdToken($idToken)
+    function googleAsn1Length($length)
     {
-        $parts = explode('.', (string)$idToken);
-
-        if (count($parts) !== 3)
+        if ($length <= 0x7F)
         {
-            throw new RuntimeException('Malformed ID token.');
+            return chr($length);
         }
 
-        $header = json_decode(googleBase64UrlDecode($parts[0]), true);
-        $payload = json_decode(googleBase64UrlDecode($parts[1]), true);
-        $signature = googleBase64UrlDecode($parts[2]);
+        $bytes = '';
 
-        if (!is_array($header) || !is_array($payload))
+        while ($length > 0)
         {
-            throw new RuntimeException('Malformed ID token.');
+            $bytes = chr($length & 0xFF) . $bytes;
+            $length >>= 8;
         }
 
-        if (!isset($header['kid']) || !isset($header['alg']))
-        {
-            throw new RuntimeException('ID token header is missing kid or alg.');
-        }
-
-        if ($header['alg'] !== 'RS256')
-        {
-            throw new RuntimeException('Unsupported ID token algorithm: ' . $header['alg']);
-        }
-
-        $jwksResponse = googleHttpGet(GOOGLE_JWKS_ENDPOINT);
-
-        if ($jwksResponse['status'] !== 200)
-        {
-            throw new RuntimeException('Unable to fetch Google public keys.');
-        }
-
-        $jwks = json_decode($jwksResponse['body'], true);
-
-        if (!is_array($jwks) || !isset($jwks['keys']))
-        {
-            throw new RuntimeException('Malformed Google public key set.');
-        }
-
-        $matchingKey = null;
-
-        foreach ($jwks['keys'] as $key)
-        {
-            if (isset($key['kid']) && $key['kid'] === $header['kid'])
-            {
-                $matchingKey = $key;
-                break;
-            }
-        }
-
-        if ($matchingKey === null)
-        {
-            throw new RuntimeException('No Google public key matches the ID token.');
-        }
-
-        $publicKey = openssl_pkey_get_public(
-            googleJwkToPem($matchingKey)
-        );
-
-        if ($publicKey === false)
-        {
-            throw new RuntimeException('Unable to convert Google public key.');
-        }
-
-        $signedData = $parts[0] . '.' . $parts[1];
-        $verified = openssl_verify($signedData, $signature, $publicKey, OPENSSL_ALGO_SHA256);
-
-        if ($verified !== 1)
-        {
-            throw new RuntimeException('ID token signature verification failed.');
-        }
-
-        // Audience check.
-        if (!isset($payload['aud']) || $payload['aud'] !== GOOGLE_CLIENT_ID)
-        {
-            throw new RuntimeException('ID token audience mismatch.');
-        }
-
-        // Issuer check.
-        if (!isset($payload['iss']))
-        {
-            throw new RuntimeException('ID token is missing issuer.');
-        }
-
-        $validIssuers = array('accounts.google.com', 'https://accounts.google.com');
-
-        if (!in_array($payload['iss'], $validIssuers, true))
-        {
-            throw new RuntimeException('ID token issuer is not Google.');
-        }
-
-        // Expiry check.
-        if (!isset($payload['exp']) || (int)$payload['exp'] < time())
-        {
-            throw new RuntimeException('ID token has expired.');
-        }
-
-        // Email check.
-        if (empty($payload['email']))
-        {
-            throw new RuntimeException('ID token does not contain an email address.');
-        }
-
-        if (isset($payload['email_verified']) && $payload['email_verified'] !== true)
-        {
-            throw new RuntimeException('Google account email has not been verified.');
-        }
-
-        return $payload;
+        return chr(0x80 | strlen($bytes)) . $bytes;
     }
 }
 
@@ -497,7 +500,7 @@ if (!function_exists('googleJwkToPem'))
         $asn1 = chr(0x30) . googleAsn1Length(
             2 + $modulusLength + 2 + strlen($exponent) + 4
         );
-        $asn1 .= chr(0x02) . chr(0x01) . chr(0x02); // version
+        $asn1 .= chr(0x02) . chr(0x01) . chr(0x02);
         $asn1 .= chr(0x02) . googleAsn1Length($modulusLength) . $modulus;
         $asn1 .= chr(0x02) . googleAsn1Length(strlen($exponent)) . $exponent;
 
@@ -523,30 +526,217 @@ if (!function_exists('googleJwkToPem'))
     }
 }
 
-if (!function_exists('googleAsn1Length'))
+if (!function_exists('googleVerifyIdToken'))
 {
     /**
-     * Encodes an ASN.1 length prefix.
+     * Verifies a Google ID token.
      *
-     * @param int $length The length in bytes
-     * @return string The encoded prefix
+     * The verification checks:
+     *   - The token has three dot-separated segments.
+     *   - The signature matches the public key with the matching kid.
+     *   - The issuer is accounts.google.com.
+     *   - The audience is the configured client ID.
+     *   - The expiry has not passed.
+     *   - The email is verified.
+     *
+     * The JWKS is cached in the session for ten minutes. The previous
+     * version fetched the keys on every login. The cache reduces the
+     * number of round trips to Google.
+     *
+     * @param string $idToken The compact JWT
+     * @return array The decoded claims
+     * @throws RuntimeException If verification fails
      */
-    function googleAsn1Length($length)
+    function googleVerifyIdToken($idToken)
     {
-        if ($length <= 0x7F)
+        $parts = explode('.', (string)$idToken);
+
+        if (count($parts) !== 3)
         {
-            return chr($length);
+            throw new RuntimeException('Malformed ID token.');
         }
 
-        $bytes = '';
+        $header = json_decode(googleBase64UrlDecode($parts[0]), true);
+        $payload = json_decode(googleBase64UrlDecode($parts[1]), true);
+        $signature = googleBase64UrlDecode($parts[2]);
 
-        while ($length > 0)
+        if (!is_array($header) || !is_array($payload))
         {
-            $bytes = chr($length & 0xFF) . $bytes;
-            $length >>= 8;
+            throw new RuntimeException('Malformed ID token.');
         }
 
-        return chr(0x80 | strlen($bytes)) . $bytes;
+        if (!isset($header['kid']) || !isset($header['alg']))
+        {
+            throw new RuntimeException('ID token header is missing kid or alg.');
+        }
+
+        if ($header['alg'] !== 'RS256')
+        {
+            throw new RuntimeException(
+                'Unsupported ID token algorithm: ' . $header['alg']
+            );
+        }
+
+        $jwks = googleFetchJwks();
+
+        if (!is_array($jwks) || !isset($jwks['keys']))
+        {
+            throw new RuntimeException('Malformed Google public key set.');
+        }
+
+        $matchingKey = null;
+
+        foreach ($jwks['keys'] as $key)
+        {
+            if (isset($key['kid']) && $key['kid'] === $header['kid'])
+            {
+                $matchingKey = $key;
+                break;
+            }
+        }
+
+        if ($matchingKey === null)
+        {
+            throw new RuntimeException(
+                'No Google public key matches the ID token.'
+            );
+        }
+
+        $publicKey = openssl_pkey_get_public(googleJwkToPem($matchingKey));
+
+        if ($publicKey === false)
+        {
+            throw new RuntimeException(
+                'Unable to convert Google public key.'
+            );
+        }
+
+        $signedData = $parts[0] . '.' . $parts[1];
+        $verified = openssl_verify(
+            $signedData,
+            $signature,
+            $publicKey,
+            OPENSSL_ALGO_SHA256
+        );
+
+        if ($verified !== 1)
+        {
+            throw new RuntimeException(
+                'ID token signature verification failed.'
+            );
+        }
+
+        // Audience check.
+        if (!isset($payload['aud']) || $payload['aud'] !== GOOGLE_CLIENT_ID)
+        {
+            throw new RuntimeException('ID token audience mismatch.');
+        }
+
+        // Issuer check.
+        if (!isset($payload['iss']))
+        {
+            throw new RuntimeException('ID token is missing issuer.');
+        }
+
+        $validIssuers = array(
+            'accounts.google.com',
+            'https://accounts.google.com'
+        );
+
+        if (!in_array($payload['iss'], $validIssuers, true))
+        {
+            throw new RuntimeException('ID token issuer is not Google.');
+        }
+
+        // Expiry check.
+        if (!isset($payload['exp']) || (int)$payload['exp'] < time())
+        {
+            throw new RuntimeException('ID token has expired.');
+        }
+
+        // Email check.
+        if (empty($payload['email']))
+        {
+            throw new RuntimeException(
+                'ID token does not contain an email address.'
+            );
+        }
+
+        if (isset($payload['email_verified'])
+            && $payload['email_verified'] !== true)
+        {
+            throw new RuntimeException(
+                'Google account email has not been verified.'
+            );
+        }
+
+        return $payload;
+    }
+}
+
+if (!function_exists('googleFetchJwks'))
+{
+    /**
+     * Returns the Google JWKS, using a session cache with a ten-minute
+     * time-to-live.
+     *
+     * @return array The JWKS
+     * @throws RuntimeException When the keys cannot be fetched
+     */
+    function googleFetchJwks()
+    {
+        if (session_status() !== PHP_SESSION_ACTIVE)
+        {
+            @session_start();
+        }
+
+        $cacheKey = 'google_jwks_cache';
+        $cacheTimeKey = 'google_jwks_cache_time';
+
+        if (isset($_SESSION[$cacheKey]) && isset($_SESSION[$cacheTimeKey]))
+        {
+            $age = time() - (int)$_SESSION[$cacheTimeKey];
+
+            if ($age < 600 && is_array($_SESSION[$cacheKey]))
+            {
+                return $_SESSION[$cacheKey];
+            }
+        }
+
+        $response = googleHttpGet(GOOGLE_JWKS_ENDPOINT);
+
+        if ($response['status'] !== 200)
+        {
+            // When the fetch fails, fall back to a stale cache entry
+            // rather than rejecting the login. Google's keys change
+            // rarely. A stale entry is unlikely to be incorrect.
+            if (isset($_SESSION[$cacheKey]) && is_array($_SESSION[$cacheKey]))
+            {
+                writeLog(
+                    "Google JWKS fetch failed. Using stale cache entry.",
+                    "AUTH"
+                );
+                return $_SESSION[$cacheKey];
+            }
+
+            throw new RuntimeException(
+                'Unable to fetch Google public keys.'
+            );
+        }
+
+        $jwks = json_decode($response['body'], true);
+
+        if (!is_array($jwks) || !isset($jwks['keys']))
+        {
+            throw new RuntimeException(
+                'Malformed Google public key set.'
+            );
+        }
+
+        $_SESSION[$cacheKey] = $jwks;
+        $_SESSION[$cacheTimeKey] = time();
+
+        return $jwks;
     }
 }
 
@@ -560,43 +750,67 @@ if (!function_exists('googleFindOrCreateUser'))
      * does not exist is created with the Standard role, so that Google
      * sign-in does not silently produce an administrator.
      *
+     * A vendor whose account is not yet approved is rejected with a
+     * clear message. The previous version allowed an unapproved vendor
+     * to sign in.
+     *
      * @param array $claims The verified ID token claims
      * @return array The MySQL user row
-     * @throws RuntimeException If the user cannot be resolved
+     * @throws RuntimeException When the user cannot be resolved
      */
     function googleFindOrCreateUser($claims)
     {
         $db = getDB();
         $email = (string)$claims['email'];
-        $fullName = isset($claims['name']) ? (string)$claims['name'] : $email;
+        $fullName = isset($claims['name'])
+            ? (string)$claims['name']
+            : $email;
 
         $existing = $db->fetchOne(
-            "SELECT user_id, unique_id, full_name, username, email,
-                    password_hash, account_type, is_active, is_verified
-             FROM users
-             WHERE email = :email
+            "SELECT u.user_id, u.unique_id, u.full_name, u.username,
+                    u.email, u.password_hash, u.account_type,
+                    u.is_active, u.is_verified,
+                    v.vendor_id, v.vendor_name, v.is_approved
+             FROM users u
+             LEFT JOIN vendors v ON u.user_id = v.vendor_user_id
+             WHERE u.email = :email
              LIMIT 1",
             array('email' => $email)
         );
 
         if ($existing)
         {
-            if ($existing['is_active'] != 1)
+            if ((int)$existing['is_active'] !== 1)
             {
-                throw new RuntimeException('Account is suspended.');
+                throw new RuntimeException(
+                    'This account has been suspended. '
+                        . 'Please contact an administrator.'
+                );
             }
 
-            if ($existing['is_verified'] != 1)
+            if ((int)$existing['is_verified'] !== 1)
             {
-                throw new RuntimeException('Account is not verified.');
+                throw new RuntimeException(
+                    'This account has not been verified. '
+                        . 'Please contact an administrator.'
+                );
+            }
+
+            if ($existing['account_type'] === 'vendor')
+            {
+                if (!isset($existing['is_approved'])
+                    || (int)$existing['is_approved'] !== 1)
+                {
+                    throw new RuntimeException(
+                        'This vendor account is pending administrative '
+                            . 'approval.'
+                    );
+                }
             }
 
             return $existing;
         }
 
-        // Create a new user. The password_hash is set to a value that
-        // password_verify() can never match, so the account cannot be
-        // logged into with a password. The user must use Google.
         if (!function_exists('generateAlphanumericUserId'))
         {
             require_once BASE_PATH . '/includes/user_id.php';
@@ -623,7 +837,9 @@ if (!function_exists('googleFindOrCreateUser'))
 
         if (!$userId)
         {
-            throw new RuntimeException('Unable to create a user account.');
+            throw new RuntimeException(
+                'Unable to create a user account.'
+            );
         }
 
         writeLog(
@@ -681,7 +897,7 @@ if (!function_exists('googleSetSession'))
 if (!function_exists('googleRedirectToDashboard'))
 {
     /**
-     * Redirects the authenticated user to their role dashboard.
+     * Redirects the authenticated user to the dashboard for their role.
      *
      * @return void
      */
@@ -716,6 +932,9 @@ if (!function_exists('googleRenderError'))
     /**
      * Renders a user-visible error page for the SSO flow.
      *
+     * The raw exception text is not shown to the user. The error is
+     * logged. The user sees a readable message.
+     *
      * @param string $message The message to display
      * @return void
      */
@@ -734,9 +953,17 @@ if (!function_exists('googleRenderError'))
         echo 'max-width: 600px; margin: 0 auto;">';
         echo '<h1>Sign in error</h1>';
         echo '<p>' . $safeMessage . '</p>';
-        echo '<p><a href="' . htmlspecialchars(googleStartUrl(), ENT_QUOTES, 'UTF-8') . '">';
+        echo '<p><a href="'
+            . htmlspecialchars(googleStartUrl(), ENT_QUOTES, 'UTF-8')
+            . '">';
         echo 'Try again</a> or ';
-        echo '<a href="' . htmlspecialchars(BASE_URL . '/modules/auth/login.php', ENT_QUOTES, 'UTF-8') . '">';
+        echo '<a href="'
+            . htmlspecialchars(
+                BASE_URL . '/modules/auth/login.php',
+                ENT_QUOTES,
+                'UTF-8'
+            )
+            . '">';
         echo 'return to the login page</a>.</p>';
         echo '</body></html>';
 

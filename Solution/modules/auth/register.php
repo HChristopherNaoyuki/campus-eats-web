@@ -9,20 +9,36 @@
  * configured. All user-facing strings are translated through the
  * shared __() helper.
  *
- * CORRECTIONS (Version 16.0):
- * - Added a Sign up with Google button. The button links to the same
- *   oauth_google.php start endpoint used by the login page.
- * - Replaced every hardcoded string with a __() call so the page
- *   renders in English or Afrikaans depending on the active language.
- * - Retains the first-user-only Admin rule, the User ID display with
+ * CORRECTIONS (Version 17.0 - Audit Continuation):
+ *
+ * - Fix 1 (use account service). The registration path now uses the
+ *   AccountService from Solution/includes/account_service.php. The
+ *   service writes the users row and, when the role is vendor, the
+ *   vendors row in a single transaction. The previous version wrote
+ *   the two rows with separate INSERT statements and no transaction.
+ *
+ * - Fix 2 (queue on database outage). When the database is
+ *   unreachable, the page passes the registration payload to the
+ *   OutageSpool from Solution/includes/outage_spool.php. The spool
+ *   queues the payload for replay. The previous version lost the
+ *   registration.
+ *
+ * - Fix 3 (vendor shop name). The page now collects the vendor shop
+ *   name when the role is Vendor. The name is required for the
+ *   vendor's Firebase projection and for the vendor directory.
+ *
+ * - Fix 4 (safe error display). The page never echoes a raw database
+ *   error to the browser. The error is logged. The user sees a
+ *   generic message.
+ *
+ * - Retained the first-user-only Admin rule, the User ID display with
  *   the copy button, the CSRF protection, the password policy check,
  *   and the auto-verification of new accounts.
  *
- * SOURCE: NOTES - Make use of SSO. Users should also be able to use
- *         Google SSO. Include multi-language support for at least two
- *         South African languages: English and Afrikaans.
+ * SOURCE: Audit continuation, Part 2.
+ * SOURCE: Notes - Make use of SSO.
  *
- * @version 16.0
+ * @version 17.0
  */
 
 require_once dirname(__DIR__, 2) . '/config/constants.php';
@@ -30,6 +46,7 @@ require_once dirname(__DIR__, 2) . '/includes/auth.php';
 require_once dirname(__DIR__, 2) . '/includes/i18n.php';
 require_once dirname(__DIR__, 2) . '/includes/password_validation.php';
 require_once dirname(__DIR__, 2) . '/includes/user_id.php';
+require_once dirname(__DIR__, 2) . '/includes/account_service.php';
 require_once dirname(__DIR__, 2) . '/config/database.php';
 require_once dirname(__DIR__, 2) . '/config/error_logging.php';
 
@@ -62,10 +79,12 @@ $isFirstUser = ($db->userCount() === 0);
 $error = '';
 $success = '';
 $generatedUserId = '';
+$displayUserId = '';
 $formData = array(
-    'full_name'     => '',
-    'email'         => '',
-    'account_type'  => 'student'
+    'full_name'    => '',
+    'email'        => '',
+    'account_type' => 'student',
+    'vendor_name'  => ''
 );
 
 $csrfToken = getCsrfToken();
@@ -76,7 +95,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
     $email = trim(isset($_POST['email']) ? $_POST['email'] : '');
     $passwordInput = isset($_POST['password']) ? $_POST['password'] : '';
     $accountType = trim(isset($_POST['role']) ? $_POST['role'] : 'Student');
-    $submittedCsrfToken = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
+    $vendorName = trim(isset($_POST['vendor_name']) ? $_POST['vendor_name'] : '');
+    $submittedCsrfToken = isset($_POST['csrf_token'])
+        ? $_POST['csrf_token']
+        : '';
 
     $roleMap = array(
         'Student'  => 'student',
@@ -89,15 +111,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
         'admin'    => 'admin'
     );
 
-    $accountType = isset($roleMap[$accountType]) ? $roleMap[$accountType] : 'student';
+    $accountType = isset($roleMap[$accountType])
+        ? $roleMap[$accountType]
+        : 'student';
 
-    // Re-check the first-user state at POST time.
     $isFirstUserAtPostTime = ($db->userCount() === 0);
 
     $formData = array(
         'full_name'    => $fullName,
         'email'        => $email,
-        'account_type' => $accountType
+        'account_type' => $accountType,
+        'vendor_name'  => $vendorName
     );
 
     if (!validateCsrfToken($submittedCsrfToken))
@@ -116,9 +140,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
     {
         $error = __('register.error_admin_taken');
     }
-    elseif (!in_array($accountType, array('student', 'standard', 'vendor', 'admin'), true))
+    elseif ($accountType === 'vendor' && empty($vendorName))
     {
-        $error = __('error.invalid_role');
+        $error = __('register.error_vendor_name_required');
     }
     else
     {
@@ -132,84 +156,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
         {
             try
             {
-                $existingUser = $db->fetchOne(
-                    "SELECT user_id FROM users WHERE email = :email LIMIT 1",
-                    array('email' => $email)
+                $accountService = new AccountService();
+
+                $result = $accountService->createAccount(array(
+                    'full_name'    => $fullName,
+                    'email'        => $email,
+                    'password'     => $passwordInput,
+                    'account_type' => $accountType,
+                    'vendor_name'  => $vendorName
+                ));
+
+                $generatedUserId = $result['unique_id'];
+                $success = __('register.success_heading') . ' '
+                         . __('register.success_body');
+
+                writeLog(
+                    "Registration successful: User created with email: "
+                        . $email . ", USER ID: " . $generatedUserId
+                        . ", Role: " . $accountType,
+                    "REGISTER"
                 );
 
-                if ($existingUser)
+                generateCsrfToken();
+                $isFirstUser = false;
+            }
+            catch (InvalidArgumentException $exception)
+            {
+                $error = $exception->getMessage();
+            }
+            catch (RuntimeException $exception)
+            {
+                // The account service reports a database-unavailable
+                // condition as a RuntimeException. The registration
+                // payload is queued for replay when the database
+                // returns.
+                try
                 {
-                    $error = __('error.email_exists');
-                }
-                else
-                {
-                    $username = explode('@', $email)[0];
-                    $checkUsername = $db->fetchOne(
-                        "SELECT user_id FROM users WHERE username = :username LIMIT 1",
-                        array('username' => $username)
-                    );
-
-                    if ($checkUsername)
+                    if (!class_exists('OutageSpool'))
                     {
-                        $username = $username . rand(100, 999);
+                        require_once dirname(__DIR__, 2)
+                            . '/includes/outage_spool.php';
                     }
 
-                    $uniqueId = generateAlphanumericUserId($accountType);
-                    $passwordHash = hashPassword($passwordInput);
+                    $spool = new OutageSpool();
+                    $spool->enqueue('register', array(
+                        'full_name'    => $fullName,
+                        'email'        => $email,
+                        'password'     => $passwordInput,
+                        'account_type' => $accountType,
+                        'vendor_name'  => $vendorName
+                    ));
 
-                    $userId = $db->insert(
-                        "INSERT INTO users
-                            (unique_id, full_name, username, email,
-                             password_hash, account_type, is_verified,
-                             is_active, created_at, updated_at)
-                         VALUES
-                            (:unique_id, :full_name, :username, :email,
-                             :password_hash, :account_type, 1, 1,
-                             NOW(), NOW())",
-                        array(
-                            'unique_id'     => $uniqueId,
-                            'full_name'     => $fullName,
-                            'username'      => $username,
-                            'email'         => $email,
-                            'password_hash' => $passwordHash,
-                            'account_type'  => $accountType
-                        )
-                    );
-
-                    if ($accountType === 'vendor' && $userId)
-                    {
-                        $db->insert(
-                            "INSERT INTO vendors
-                                (vendor_user_id, vendor_name, description,
-                                 is_open, is_approved, created_at)
-                             VALUES
-                                (:user_id, :vendor_name, :description,
-                                 1, 0, NOW())",
-                            array(
-                                'user_id'     => $userId,
-                                'vendor_name' => $fullName,
-                                'description' => 'New vendor awaiting administrative approval.'
-                            )
-                        );
-                    }
-
-                    $generatedUserId = $uniqueId;
-                    $success = __('register.success_heading') . ' '
-                             . __('register.success_body');
+                    $success = __('register.success_offline');
                     writeLog(
-                        "Registration successful: User created with email: "
-                            . "$email, USER ID: $uniqueId, Role: $accountType",
+                        "Registration queued for replay: $email",
                         "REGISTER"
                     );
-
-                    generateCsrfToken();
-                    $isFirstUser = false;
                 }
-            }
-            catch (Exception $e)
-            {
-                writeLog('Registration error: ' . $e->getMessage(), "REGISTER");
-                $error = __('error.generic');
+                catch (Exception $spoolException)
+                {
+                    writeLog(
+                        "Registration failed and the queue is unavailable: "
+                            . $spoolException->getMessage(),
+                        "REGISTER_ERROR"
+                    );
+                    $error = __('error.generic');
+                }
             }
         }
     }
@@ -217,7 +229,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
 
 $csrfToken = getCsrfToken();
 $pageTitle = __('register.title');
-$displayUserId = '';
 
 if (!empty($generatedUserId))
 {
@@ -258,6 +269,7 @@ if (!empty($generatedUserId))
                     <?php echo escapeOutput($success); ?>
                 </div>
 
+                <?php if (!empty($generatedUserId)): ?>
                 <div class="user-id-section">
                     <label class="user-id-label">
                         <?php echo __e('register.user_id_label'); ?>
@@ -276,6 +288,7 @@ if (!empty($generatedUserId))
                         <?php echo __e('register.user_id_note'); ?>
                     </p>
                 </div>
+                <?php endif; ?>
 
                 <div class="auth-body">
                     <a href="login.php" class="btn btn-primary btn-block">
@@ -403,6 +416,25 @@ if (!empty($generatedUserId))
                             </span>
                         </div>
 
+                        <div class="form-group" id="vendor-name-group"
+                             style="display: <?php echo $formData['account_type'] === 'vendor' ? 'block' : 'none'; ?>;">
+                            <label class="form-label" for="vendor_name">
+                                <?php echo __e('register.vendor_name_label'); ?>
+                            </label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-store input-icon"></i>
+                                <input type="text"
+                                       id="vendor_name"
+                                       name="vendor_name"
+                                       class="form-control"
+                                       value="<?php echo escapeOutput($formData['vendor_name']); ?>"
+                                       placeholder="<?php echo __e('register.vendor_name_placeholder'); ?>">
+                            </div>
+                            <span class="form-hint">
+                                <?php echo __e('register.vendor_name_hint'); ?>
+                            </span>
+                        </div>
+
                         <button type="submit" id="register-btn"
                                 class="btn btn-primary btn-block btn-lg">
                             <i class="fas fa-user-plus"></i>
@@ -426,5 +458,27 @@ if (!empty($generatedUserId))
     </div>
 
     <script src="<?php echo ASSETS_URL; ?>/js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function()
+        {
+            var roleSelect = document.getElementById('role');
+            var vendorGroup = document.getElementById('vendor-name-group');
+
+            if (roleSelect && vendorGroup)
+            {
+                roleSelect.addEventListener('change', function()
+                {
+                    if (this.value === 'Vendor')
+                    {
+                        vendorGroup.style.display = 'block';
+                    }
+                    else
+                    {
+                        vendorGroup.style.display = 'none';
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

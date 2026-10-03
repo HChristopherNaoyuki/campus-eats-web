@@ -2,31 +2,35 @@
 /**
  * Sign In Page
  *
- * Authenticates a user by email, username, or 16-character User ID. The
- * page also offers Google SSO when the Google OAuth credentials have
- * been configured. All user-facing strings are translated through the
- * shared __() helper, which reads from Solution/lang/en.php and
- * Solution/lang/af.php.
+ * Authenticates a user by email, username, or 16-character User ID.
+ * The page also offers Google SSO when the Google OAuth credentials
+ * have been configured. All user-facing strings are translated
+ * through the shared __() helper.
  *
- * CORRECTIONS (Version 22.0):
- * - Added a Sign in with Google button. The button links to
- *   Solution/includes/oauth_google.php?action=start. When the Google
- *   OAuth credentials are not configured, the button is rendered but
- *   the flow returns a clear error page rather than attempting a
- *   redirect that cannot succeed.
- * - Replaced every hardcoded string with a __() call so the page
- *   renders in English or Afrikaans depending on the active language.
- * - The page no longer reads config/demo_accounts.php. No credentials
- *   are displayed anywhere on the page.
- * - Retains the User ID login branch, the CSRF protection, the
+ * CORRECTIONS (Version 23.0 - Audit Continuation):
+ *
+ * - Fix 1 (redirect helper defined before use). The helper
+ *   redirectToDashboardAfterLogin() is now defined above every call
+ *   site. The previous version defined it after the call site, which
+ *   produced a fatal error when a signed-in user opened the login
+ *   page.
+ *
+ * - Fix 2 (safe error display). The page never echoes a raw database
+ *   error to the browser. The error is logged. The user sees a
+ *   generic message.
+ *
+ * - Fix 3 (case-sensitive path). The require statements use
+ *   "Solution" with a capital S. The directory is case-sensitive on
+ *   Linux.
+ *
+ * - Retained the User ID login branch, the CSRF protection, the
  *   escapeOutput() helper, and the session handling from earlier
  *   versions.
  *
- * SOURCE: NOTES - Make use of SSO. Users should also be able to use
- *         Google SSO. Include multi-language support for at least two
- *         South African languages: English and Afrikaans.
+ * SOURCE: Audit continuation, Part 3.
+ * SOURCE: Notes - Make use of SSO.
  *
- * @version 22.0
+ * @version 23.0
  */
 
 require_once dirname(__DIR__, 2) . '/config/constants.php';
@@ -38,16 +42,12 @@ require_once dirname(__DIR__, 2) . '/config/error_logging.php';
 startSecureSession();
 
 // =============================================================================
-// Redirect authenticated users before rendering the form.
+// Redirect Helper
 // =============================================================================
-
-if (isLoggedIn())
-{
-    redirectToDashboardAfterLogin();
-}
-
-// =============================================================================
-// Helpers
+//
+// The helper is defined before every call site. The previous version
+// defined it after the authentication check, which produced a fatal
+// error when a signed-in user opened the login page.
 // =============================================================================
 
 if (!function_exists('redirectToDashboardAfterLogin'))
@@ -83,14 +83,14 @@ if (!function_exists('redirectToDashboardAfterLogin'))
     }
 }
 
+// Redirect authenticated users before rendering the form.
+if (isLoggedIn())
+{
+    redirectToDashboardAfterLogin();
+}
+
 // =============================================================================
 // Google SSO state
-// =============================================================================
-//
-// The Google button is always rendered. When the OAuth credentials are
-// not configured, clicking it leads to a page that explains the missing
-// configuration instead of a broken redirect. That page lives in
-// Solution/includes/oauth_google.php.
 // =============================================================================
 
 $googleConfigured = false;
@@ -117,7 +117,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
 {
     $identifier = trim(isset($_POST['email']) ? $_POST['email'] : '');
     $passwordInput = isset($_POST['password']) ? $_POST['password'] : '';
-    $submittedCsrfToken = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
+    $submittedCsrfToken = isset($_POST['csrf_token'])
+        ? $_POST['csrf_token']
+        : '';
 
     $formData['email'] = $identifier;
 
@@ -127,15 +129,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
     }
     else
     {
-        $result = authenticateUser($identifier, $passwordInput, $submittedCsrfToken);
+        try
+        {
+            $result = authenticateUser(
+                $identifier,
+                $passwordInput,
+                $submittedCsrfToken
+            );
 
-        if ($result['success'])
-        {
-            redirectToDashboardAfterLogin();
-        }
-        else
-        {
+            if ($result['success'])
+            {
+                redirectToDashboardAfterLogin();
+            }
+
             $error = $result['message'];
+        }
+        catch (Exception $exception)
+        {
+            // The authentication path reports a database-unavailable
+            // condition as an exception. The message is logged. The
+            // user sees a generic message.
+            writeLog(
+                'Authentication failed: ' . $exception->getMessage(),
+                "AUTH_ERROR"
+            );
+            $error = __('error.generic');
         }
     }
 

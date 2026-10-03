@@ -13,50 +13,49 @@
  * Firebase server rejects it, and this file surfaces that rejection as
  * an exception so the calling code can handle it.
  *
- * CORRECTIONS (Version 1.1 - Technical Audit Report):
- * - The normaliseRoleForFirebase() helper is the single source of truth
- *   for the mapping from the lowercase MySQL account_type values to the
- *   uppercase Firebase role values. The rule
- *   users/$campus_user_id/role accepts only STUDENT, VENDOR, STANDARD,
- *   and ADMIN. Every caller that writes a user record passes the
- *   lowercase MySQL value to writeUser(), and writeUser() calls this
- *   helper. This keeps the mapping in one place and prevents the
- *   mapping from drifting between files.
+ * CORRECTIONS (Version 1.2 - Audit Continuation):
  *
- * - The file header comment now names the audit finding the helper
- *   addresses. No functional change was required in this file. The
- *   defect identified by the audit was in firebase_sync_helper.php,
- *   which performed its own role mapping in addition to the mapping
- *   performed here.
+ * - Fix 1 (CA bundle for cURL). The request() method now merges the CA
+ *   bundle options supplied by the network helper at
+ *   Solution/config/network.php. The helper resolves the bundle in
+ *   this order: curl.cainfo from php.ini, openssl.cafile from php.ini,
+ *   then the bundled CA bundle at Solution/config/cacert.pem.
+ *   Certificate verification remains enabled. The helper does not
+ *   disable CURLOPT_SSL_VERIFYPEER or CURLOPT_SSL_VERIFYHOST.
+ *
+ * - Retained all Version 1.1 behaviour: normaliseRoleForFirebase()
+ *   and normaliseUserIdForFirebase() as the single source of truth for
+ *   the role and user-ID mappings, writeUser(), writeFeedback(),
+ *   writeOrder(), writeCoupon(), and deleteNode().
  *
  * COMPLIANCE NOTES
  *
  * 1. Users node. The rules require:
  *    - userId must equal the node key and be 16 or 19 characters.
- *    - role must be one of STUDENT, VENDOR, STANDARD, ADMIN in uppercase.
+ *    - role must be one of STUDENT, VENDOR, STANDARD, ADMIN in
+ *      uppercase.
  *    - passwordHash must equal the literal string [FIREBASE_SSO].
  *    - email is immutable after creation.
  *    - status may change only from initial state or by an admin token.
- *    - Several optional fields must be string, number, or null if present.
+ *    - walletBalance must not be increased by a non-administrator.
+ *    - Several optional fields must be string, number, or null if
+ *      present.
  *
- * 2. Feedback node. The rules require:
- *    - All nine fields must be present: userId, type, subject, message,
- *      userName, userEmail, status, createdAt, updatedAt.
- *    - type must be the lowercase string complaint or compliment.
- *    - status must be the lowercase string pending or resolved.
- *    - createdAt and updatedAt must be non-empty strings.
+ * 2. Feedback node. The rules require all nine fields:
+ *    userId, type, subject, message, userName, userEmail, status,
+ *    createdAt, updatedAt. The type must be the lowercase string
+ *    complaint or compliment. The status must be the lowercase string
+ *    pending or resolved. The createdAt and updatedAt must be non-empty
+ *    strings.
  *
- * 3. Orders node. The rules require:
- *    - orderId must equal the node key.
- *    - customerId and vendorId must be strings.
- *    - totalAmount must be a number greater than or equal to zero.
- *    - status must be a string.
- *    - timestamp, if present, must be a number.
+ * 3. Orders node. The rules require orderId, customerId, vendorId,
+ *    totalAmount, and status. The orderId must equal the node key.
+ *    customerId and vendorId must be strings. totalAmount must be a
+ *    number greater than or equal to zero. status must be a string.
  *
- * 4. Coupons node. The rules require:
- *    - code must equal the node key.
- *    - discountPercent must be a number greater than or equal to zero.
- *    - isActive must be a boolean.
+ * 4. Coupons node. The rules require code, discountPercent, and
+ *    isActive. The code must equal the node key. discountPercent must
+ *    be a number from 0 to 100. isActive must be a boolean.
  *
  * 5. Admin claims. The rules permit read and write only when the token
  *    carries the admin custom claim. This file does not write to the
@@ -70,11 +69,10 @@
  * the client obtains from the Firebase Authentication SDK. The token is
  * passed to this file through the calling context.
  *
- * SOURCE: Existing Firebase Realtime Database rules, firebase.rules.json.
- * SOURCE: Campus Eats PHP Web Platform - Technical Audit Report,
- *         Sections 1, 2, 3, and 9.
+ * SOURCE: Audit continuation, Part 1.
+ * SOURCE: Existing Firebase Realtime Database rules.
  *
- * @version 1.1
+ * @version 1.2
  */
 
 if (!defined('BASE_PATH'))
@@ -83,6 +81,7 @@ if (!defined('BASE_PATH'))
 }
 
 require_once BASE_PATH . '/config/constants.php';
+require_once BASE_PATH . '/config/network.php';
 require_once BASE_PATH . '/includes/firebase_config.php';
 require_once BASE_PATH . '/config/error_logging.php';
 
@@ -145,8 +144,8 @@ class FirebaseWriter
     /**
      * Performs an HTTP request against the Firebase REST API.
      *
-     * The method is private because callers should use the typed
-     * methods below, which enforce the rule constraints.
+     * The method is private because callers use the typed methods
+     * below, which enforce the rule constraints.
      *
      * @param string $method The HTTP method (PUT, PATCH, POST, DELETE)
      * @param string $path   The database path
@@ -160,9 +159,6 @@ class FirebaseWriter
 
         if ($this->idToken !== null && $this->idToken !== '')
         {
-            // The auth query parameter is the standard Firebase REST API
-            // mechanism for supplying an ID token. The rules evaluate
-            // auth against the decoded token.
             $url .= '?auth=' . urlencode($this->idToken);
         }
 
@@ -184,6 +180,14 @@ class FirebaseWriter
             CURLOPT_SSL_VERIFYPEER => true,
             CURLOPT_SSL_VERIFYHOST => 2
         );
+
+        // Apply the CA bundle options from the network helper. When
+        // the helper cannot resolve a bundle, the merge is a no-op and
+        // the request proceeds with the PHP defaults.
+        if (function_exists('campus_eats_curl_ssl_options'))
+        {
+            $options = array_replace($options, campus_eats_curl_ssl_options());
+        }
 
         if ($data !== null)
         {
@@ -208,7 +212,9 @@ class FirebaseWriter
                 "Firebase request failed: cURL error $errno - $error",
                 "FIREBASE_ERROR"
             );
-            throw new RuntimeException('cURL error ' . $errno . ': ' . $error);
+            throw new RuntimeException(
+                'cURL error ' . $errno . ': ' . $error
+            );
         }
 
         if ($status < 200 || $status >= 300)
@@ -261,9 +267,9 @@ class FirebaseWriter
      *
      * The users/$uid/userId rule requires the value to equal the node
      * key and to be 16 or 19 characters. This method strips hyphens
-     * when the input is the 19-character hyphenated form, producing the
-     * canonical 16-character form used as the node key. When the input
-     * is already 16 characters, it is returned unchanged.
+     * when the input is the 19-character hyphenated form, producing
+     * the canonical 16-character form used as the node key. When the
+     * input is already 16 characters, it is returned unchanged.
      *
      * @param string $userId The user ID in either form
      * @return string The 16-character form
@@ -289,22 +295,29 @@ class FirebaseWriter
     /**
      * Writes a user record to the users node.
      *
-     * The payload is constructed to satisfy every validation expression
-     * in the users/$campus_user_id rule. Optional fields are omitted
-     * rather than written as null, because the rule permits null for
-     * some fields but not all, and omitting a field is always safe.
+     * The payload is constructed to satisfy every validation
+     * expression in the users/$campus_user_id rule. Optional fields
+     * are omitted rather than written as null, because the rule
+     * permits null for some fields but not all, and omitting a field
+     * is always safe.
      *
-     * The email field is immutable. On update, the caller must pass the
-     * email that already exists in the node. If the caller passes a
-     * different email, the rule rejects the write.
+     * The email field is immutable. On update, the caller must pass
+     * the email that already exists in the node. If the caller passes
+     * a different email, the rule rejects the write.
      *
      * The status field is preserved on non-admin updates. The caller
      * must pass the existing status when the write is not performed by
      * an administrator.
      *
-     * @param string $userId     The 16-character user ID
-     * @param array  $userData   The user data to write
-     * @param bool   $isNewUser  True when creating a new node
+     * The walletBalance field is written only when the caller supplies
+     * a value. On update, the rule permits a non-administrator to
+     * decrease the value but not to increase it. The caller must pass
+     * the current value when the write is not performed by an
+     * administrator.
+     *
+     * @param string $userId    The 16-character user ID
+     * @param array  $userData  The user data to write
+     * @param bool   $isNewUser True when creating a new node
      * @return void
      * @throws RuntimeException When the write fails
      * @throws InvalidArgumentException When the payload cannot satisfy the rules
@@ -313,14 +326,10 @@ class FirebaseWriter
     {
         $canonicalId = self::normaliseUserIdForFirebase($userId);
 
-        // The role is converted from the lowercase MySQL value to the
-        // uppercase value the rule requires. The helper is the single
-        // source of truth for the mapping.
         $role = self::normaliseRoleForFirebase(
             isset($userData['role']) ? $userData['role'] : 'student'
         );
 
-        // The userId field must equal the node key.
         $payload = array(
             'userId'       => $canonicalId,
             'fullName'     => isset($userData['fullName'])
@@ -333,26 +342,16 @@ class FirebaseWriter
             'passwordHash' => '[FIREBASE_SSO]'
         );
 
-        // The username field is optional in the rules but is commonly
-        // present. It must be a string when written.
         if (isset($userData['username']))
         {
             $payload['username'] = (string)$userData['username'];
         }
 
-        // The status field. On a new node, any string is accepted. On
-        // update, the rule permits the value to remain the same, or to
-        // change when the token carries the admin claim. The caller is
-        // responsible for supplying the correct value. This method
-        // validates that the value is a string.
         if (isset($userData['status']))
         {
             $payload['status'] = (string)$userData['status'];
         }
 
-        // Optional fields. Each must be a string, a number, or null
-        // depending on the field. This method casts to the type the rule
-        // expects and includes the field only when a value is supplied.
         if (array_key_exists('walletBalance', $userData)
             && $userData['walletBalance'] !== null)
         {
@@ -404,10 +403,6 @@ class FirebaseWriter
 
         $path = 'users/' . $canonicalId;
 
-        // PUT replaces the entire node. On update, the email rule
-        // requires the value to be unchanged. The caller is responsible
-        // for passing the existing email. On create, the rule does not
-        // constrain the email value beyond being a string.
         $this->request('PUT', $path, $payload);
 
         writeLog(
@@ -421,9 +416,9 @@ class FirebaseWriter
     /**
      * Writes a feedback record to the feedback node.
      *
-     * The payload is constructed to satisfy every validation expression
-     * in the feedback/$feedback_id rule. All nine required fields are
-     * present. The type and status values are lowercase.
+     * The payload is constructed to satisfy every validation
+     * expression in the feedback/$feedback_id rule. All nine required
+     * fields are present. The type and status values are lowercase.
      *
      * @param string $feedbackId The feedback node key
      * @param array  $data       The feedback data
@@ -500,11 +495,11 @@ class FirebaseWriter
     /**
      * Writes an order record to the orders node.
      *
-     * The payload is constructed to satisfy every validation expression
-     * in the orders/$order_id rule. The orderId field equals the node
-     * key. The customerId and vendorId are strings. The totalAmount is
-     * a number greater than or equal to zero. The timestamp, when
-     * present, is a number.
+     * The payload is constructed to satisfy every validation
+     * expression in the orders/$order_id rule. The orderId field
+     * equals the node key. The customerId and vendorId are strings.
+     * The totalAmount is a number greater than or equal to zero. The
+     * timestamp, when present, is a number.
      *
      * @param string $orderId The order node key
      * @param array  $data    The order data
@@ -516,7 +511,9 @@ class FirebaseWriter
     {
         if (empty($orderId))
         {
-            throw new InvalidArgumentException('Order ID must not be empty.');
+            throw new InvalidArgumentException(
+                'Order ID must not be empty.'
+            );
         }
 
         $totalAmount = isset($data['totalAmount'])
@@ -541,8 +538,6 @@ class FirebaseWriter
                 ? (string)$data['status'] : 'pending'
         );
 
-        // Optional fields. Each is written only when a value is supplied
-        // and the value satisfies the corresponding rule.
         if (array_key_exists('itemsJson', $data)
             && $data['itemsJson'] !== null
             && $data['itemsJson'] !== '')
@@ -561,8 +556,6 @@ class FirebaseWriter
             && $data['pickupTime'] !== null
             && $data['pickupTime'] !== '')
         {
-            // The rule permits a string or a number for pickupTime.
-            // The application supplies a string in the format HH:MM.
             $payload['pickupTime'] = (string)$data['pickupTime'];
         }
 
@@ -596,9 +589,9 @@ class FirebaseWriter
     /**
      * Writes a coupon record to the coupons node.
      *
-     * The payload is constructed to satisfy every validation expression
-     * in the coupons/$code rule. The code field equals the node key.
-     * The discountPercent is a number greater than or equal to zero. The
+     * The payload is constructed to satisfy every validation
+     * expression in the coupons/$code rule. The code field equals the
+     * node key. The discountPercent is a number from 0 to 100. The
      * isActive field is a boolean.
      *
      * @param string $code The coupon code node key
@@ -611,17 +604,19 @@ class FirebaseWriter
     {
         if (empty($code))
         {
-            throw new InvalidArgumentException('Coupon code must not be empty.');
+            throw new InvalidArgumentException(
+                'Coupon code must not be empty.'
+            );
         }
 
         $discountPercent = isset($data['discountPercent'])
             ? (float)$data['discountPercent']
             : 0.0;
 
-        if ($discountPercent < 0)
+        if ($discountPercent < 0 || $discountPercent > 100)
         {
             throw new InvalidArgumentException(
-                'Coupon discountPercent must not be negative.'
+                'Coupon discountPercent must be from 0 to 100.'
             );
         }
 
@@ -637,7 +632,6 @@ class FirebaseWriter
             && $data['expiryDate'] !== null
             && $data['expiryDate'] !== '')
         {
-            // The rule permits a number or a string for expiryDate.
             $payload['expiryDate'] = $data['expiryDate'];
         }
 
@@ -663,9 +657,9 @@ class FirebaseWriter
      *
      * The rules for the users, orders, feedback, and coupons nodes
      * permit a write when auth != null. A DELETE request sets the node
-     * to null, which the rules treat as a write. The caller must ensure
-     * that the authenticated user is permitted to delete the node under
-     * the specific node rule.
+     * to null, which the rules treat as a write. The caller must
+     * ensure that the authenticated user is permitted to delete the
+     * node under the specific node rule.
      *
      * @param string $path The database path
      * @return void
