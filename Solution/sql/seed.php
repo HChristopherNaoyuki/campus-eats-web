@@ -2,54 +2,36 @@
 /**
  * Database Seeding Script
  *
- * Inserts the demonstration accounts and their associated vendor
+ * Inserts the ten demonstration accounts and their associated vendor
  * profiles into the MySQL database.
  *
  * IMPORTANT: DEMONSTRATION DATA
  *
- * The accounts inserted by this script are the ten accounts defined in
- * Solution/config/demo_accounts.php. Every name, email, and password in
- * that file is fabricated for local testing. The passwords are public
- * and must never be used in a deployed environment. See the header of
- * demo_accounts.php for the full notice.
+ * The accounts inserted by this script are the ten accounts supplied
+ * in REPORT.txt. Every name, email, and password is fabricated for
+ * local testing. The passwords are public and must never be used in a
+ * deployed environment.
  *
  * USAGE
  *
- * From a command prompt, with the working directory set to the project
- * root:
+ * From a command prompt, with the working directory set to the
+ * project root:
  *
  *   php Solution/sql/seed.php
  *
- * The script is idempotent. Running it multiple times does not produce
- * duplicate rows. An account that already exists with the same email is
- * updated in place, and its password hash is checked and refreshed if it
- * does not match the value in demo_accounts.php.
+ * The script is idempotent. A second run does not duplicate a row. An
+ * account that already exists is left in place. The password hash is
+ * refreshed only when the stored hash does not verify against the
+ * plain-text password in the definitions below.
  *
- * ROLE DISTRIBUTION
+ * The script is intended to be run from the command line. It prints a
+ * report to standard output and exits with a non-zero status when any
+ * account fails to be created or verified.
  *
- *   admins     2
- *   vendors    3
- *   standard   4
- *   students   1
- *
- * Total       10
- *
- * SOURCE: NOTES - Populate the database using real or simulated data,
- *         with at least ten records per table. Make use of demo
- *         accounts.
+ * SOURCE: REPORT.txt, Demo Account Seeding.
  *
  * @version 1.0
  */
-
-// =============================================================================
-// Bootstrap
-// =============================================================================
-//
-// The script runs from the command line. It does not run inside a web
-// request, so the session and HTTP helpers are not used. Only the
-// database layer, the logging layer, and the two helper functions
-// hashPassword() and generateAlphanumericUserId() are required.
-// =============================================================================
 
 if (PHP_SAPI !== 'cli')
 {
@@ -59,7 +41,7 @@ if (PHP_SAPI !== 'cli')
     exit(1);
 }
 
-define('BASE_PATH', dirname(__DIR__, 2));
+define('BASE_PATH', dirname(__DIR__));
 
 require_once BASE_PATH . '/config/constants.php';
 require_once BASE_PATH . '/config/database.php';
@@ -68,258 +50,93 @@ require_once BASE_PATH . '/includes/password_validation.php';
 require_once BASE_PATH . '/includes/user_id.php';
 
 // =============================================================================
-// Output Helpers
+// Account definitions
+// =============================================================================
+//
+// The list is taken from REPORT.txt. The userId and uniqueId values
+// are generated on insert. The plain-text passwords are present only
+// in this file. They are hashed before they reach the database.
 // =============================================================================
 
-if (!function_exists('seedLine'))
-{
-    /**
-     * Writes a single line of output to the console.
-     *
-     * @param string $text The text to print
-     * @return void
-     */
-    function seedLine($text)
-    {
-        echo $text . PHP_EOL;
-    }
-}
-
-if (!function_exists('seedHeading'))
-{
-    /**
-     * Writes a heading to the console.
-     *
-     * @param string $text The heading
-     * @return void
-     */
-    function seedHeading($text)
-    {
-        echo PHP_EOL;
-        echo $text . PHP_EOL;
-        echo str_repeat('=', strlen($text)) . PHP_EOL;
-        echo PHP_EOL;
-    }
-}
-
-// =============================================================================
-// Account Insertion
-// =============================================================================
-
-if (!function_exists('seedUserAccount'))
-{
-    /**
-     * Inserts or repairs a single demonstration account.
-     *
-     * If a user with the same email already exists, the row is updated
-     * so that the full name, role, and verification flags match the
-     * definition in demo_accounts.php. The password hash is refreshed
-     * only if the stored hash does not verify against the plain-text
-     * password in demo_accounts.php. That check avoids unnecessary
-     * writes on repeated runs.
-     *
-     * @param array             $account The account definition
-     * @param DatabaseConnection $db      The database connection
-     * @return string One of: "created", "updated", "verified"
-     */
-    function seedUserAccount($account, $db)
-    {
-        $email = $account['email'];
-        $plain = $account['password'];
-
-        $existing = $db->fetchOne(
-            "SELECT user_id, password_hash, account_type,
-                    is_verified, is_active
-             FROM users
-             WHERE email = :email OR unique_id = :unique_id
-             LIMIT 1",
-            array(
-                'email'     => $email,
-                'unique_id' => $account['unique_id']
-            )
-        );
-
-        $hashMatches = false;
-
-        if ($existing)
-        {
-            $hashMatches = password_verify($plain, $existing['password_hash']);
-        }
-
-        if ($existing && $hashMatches
-            && $existing['account_type'] === $account['account_type']
-            && (int)$existing['is_verified'] === (int)$account['is_verified']
-            && (int)$existing['is_active'] === (int)$account['is_active'])
-        {
-            return 'verified';
-        }
-
-        $passwordHash = hashPassword($plain);
-
-        if ($existing)
-        {
-            $db->executeQuery(
-                "UPDATE users
-                 SET full_name   = :full_name,
-                     username    = :username,
-                     password_hash = :password_hash,
-                     account_type  = :account_type,
-                     is_verified   = :is_verified,
-                     is_active     = :is_active,
-                     updated_at    = NOW()
-                 WHERE user_id = :user_id",
-                array(
-                    'full_name'     => $account['full_name'],
-                    'username'      => $account['username'],
-                    'password_hash' => $passwordHash,
-                    'account_type'  => $account['account_type'],
-                    'is_verified'   => $account['is_verified'],
-                    'is_active'     => $account['is_active'],
-                    'user_id'       => $existing['user_id']
-                )
-            );
-
-            return 'updated';
-        }
-
-        $userId = $db->insert(
-            "INSERT INTO users
-                (user_id, unique_id, full_name, username, email,
-                 password_hash, account_type, is_verified, is_active,
-                 created_at, updated_at)
-             VALUES
-                (:user_id, :unique_id, :full_name, :username, :email,
-                 :password_hash, :account_type, :is_verified, :is_active,
-                 NOW(), NOW())",
-            array(
-                'user_id'       => $account['user_id'],
-                'unique_id'     => $account['unique_id'],
-                'full_name'     => $account['full_name'],
-                'username'      => $account['username'],
-                'email'         => $account['email'],
-                'password_hash' => $passwordHash,
-                'account_type'  => $account['account_type'],
-                'is_verified'   => $account['is_verified'],
-                'is_active'     => $account['is_active']
-            )
-        );
-
-        if (!$userId)
-        {
-            throw new RuntimeException(
-                'Unable to insert user: ' . $account['email']
-            );
-        }
-
-        return 'created';
-    }
-}
-
-if (!function_exists('seedVendorProfile'))
-{
-    /**
-     * Inserts or repairs the vendor profile for a vendor account.
-     *
-     * @param array             $account The account definition
-     * @param DatabaseConnection $db      The database connection
-     * @return string One of: "created", "updated", "skipped"
-     */
-    function seedVendorProfile($account, $db)
-    {
-        if ($account['account_type'] !== 'vendor')
-        {
-            return 'skipped';
-        }
-
-        if (empty($account['vendor_name']))
-        {
-            return 'skipped';
-        }
-
-        $user = $db->fetchOne(
-            "SELECT user_id FROM users WHERE email = :email LIMIT 1",
-            array('email' => $account['email'])
-        );
-
-        if (!$user)
-        {
-            throw new RuntimeException(
-                'Vendor profile without user account: ' . $account['email']
-            );
-        }
-
-        $existing = $db->fetchOne(
-            "SELECT vendor_id FROM vendors WHERE vendor_user_id = :user_id",
-            array('user_id' => $user['user_id'])
-        );
-
-        if ($existing)
-        {
-            $db->executeQuery(
-                "UPDATE vendors
-                 SET vendor_name = :vendor_name,
-                     description = :description,
-                     is_open     = 1,
-                     is_approved = 1,
-                     updated_at  = NOW()
-                 WHERE vendor_id = :vendor_id",
-                array(
-                    'vendor_name' => $account['vendor_name'],
-                    'description' => $account['description'],
-                    'vendor_id'   => $existing['vendor_id']
-                )
-            );
-
-            return 'updated';
-        }
-
-        $db->insert(
-            "INSERT INTO vendors
-                (vendor_user_id, vendor_name, description,
-                 is_open, is_approved, created_at)
-             VALUES
-                (:user_id, :vendor_name, :description, 1, 1, NOW())",
-            array(
-                'user_id'     => $user['user_id'],
-                'vendor_name' => $account['vendor_name'],
-                'description' => $account['description']
-            )
-        );
-
-        return 'created';
-    }
-}
+$demoAccounts = array(
+    array(
+        'full_name'     => 'Amara Nkosi',
+        'email'         => 'amara.nkosi@campuseats.test',
+        'password'      => 'Adm1n#Amara',
+        'account_type'  => 'admin',
+        'vendor_name'   => null
+    ),
+    array(
+        'full_name'     => 'Pieter van Wyk',
+        'email'         => 'pieter.vanwyk@campuseats.test',
+        'password'      => 'Adm1n#Pieter',
+        'account_type'  => 'admin',
+        'vendor_name'   => null
+    ),
+    array(
+        'full_name'     => 'Thandiwe Mokoena',
+        'email'         => 'thandiwe.mokoena@campuseats.test',
+        'password'      => 'Vend0r#Thandi',
+        'account_type'  => 'vendor',
+        'vendor_name'   => 'Campus Corner Kitchen'
+    ),
+    array(
+        'full_name'     => 'Sipho Dlamini',
+        'email'         => 'sipho.dlamini@campuseats.test',
+        'password'      => 'Vend0r#Sipho',
+        'account_type'  => 'vendor',
+        'vendor_name'   => 'Braai Brothers'
+    ),
+    array(
+        'full_name'     => 'Annelie Botha',
+        'email'         => 'annelie.botha@campuseats.test',
+        'password'      => 'Vend0r#Annelie',
+        'account_type'  => 'vendor',
+        'vendor_name'   => 'Coffee and Koeksisters'
+    ),
+    array(
+        'full_name'     => 'Lerato Khumalo',
+        'email'         => 'lerato.khumalo@campuseats.test',
+        'password'      => 'Stand@rd#Lerato',
+        'account_type'  => 'standard',
+        'vendor_name'   => null
+    ),
+    array(
+        'full_name'     => 'Johan Pretorius',
+        'email'         => 'johan.pretorius@campuseats.test',
+        'password'      => 'Stand@rd#Johan',
+        'account_type'  => 'standard',
+        'vendor_name'   => null
+    ),
+    array(
+        'full_name'     => 'Zanele Ndlovu',
+        'email'         => 'zanele.ndlovu@campuseats.test',
+        'password'      => 'Stand@rd#Zanele',
+        'account_type'  => 'standard',
+        'vendor_name'   => null
+    ),
+    array(
+        'full_name'     => 'Marius Steyn',
+        'email'         => 'marius.steyn@campuseats.test',
+        'password'      => 'Stand@rd#Marius',
+        'account_type'  => 'standard',
+        'vendor_name'   => null
+    ),
+    array(
+        'full_name'     => 'Naledi Mahlangu',
+        'email'         => 'naledi.mahlangu@campuseats.test',
+        'password'      => 'Stud3nt#Naledi',
+        'account_type'  => 'student',
+        'vendor_name'   => null
+    )
+);
 
 // =============================================================================
-// Main Execution
+// Seed execution
 // =============================================================================
 
-seedHeading('Campus Eats - Demonstration Data Seeding');
-
-seedLine('This script inserts the ten demonstration accounts and their');
-seedLine('vendor profiles. The accounts are fabricated for local testing.');
-seedLine('Do not run this script against a production database.');
-seedLine('');
-
-$demoAccountsPath = BASE_PATH . '/config/demo_accounts.php';
-
-if (!file_exists($demoAccountsPath))
-{
-    seedLine('ERROR: demo_accounts.php was not found at:');
-    seedLine('       ' . $demoAccountsPath);
-    exit(1);
-}
-
-$demoAccounts = require $demoAccountsPath;
-
-if (!is_array($demoAccounts) || empty($demoAccounts))
-{
-    seedLine('ERROR: demo_accounts.php did not return a non-empty array.');
-    exit(1);
-}
-
-seedLine('Loaded ' . count($demoAccounts) . ' account definitions.');
-seedLine('');
+echo "Campus Eats demonstration data seeding.\n";
+echo "Accounts: " . count($demoAccounts) . "\n\n";
 
 try
 {
@@ -327,120 +144,132 @@ try
 }
 catch (Throwable $t)
 {
-    seedLine('ERROR: Unable to connect to the database.');
-    seedLine('       ' . $t->getMessage());
+    echo "Unable to connect to the database: " . $t->getMessage() . "\n";
     exit(1);
 }
 
-$counts = array(
-    'created'   => 0,
-    'updated'   => 0,
-    'verified'  => 0,
-    'vendor_created' => 0,
-    'vendor_updated' => 0
-);
+if (!$db->isAvailable())
+{
+    echo "Database is not available: " . $db->getLastError() . "\n";
+    exit(1);
+}
 
-$roleSummary = array(
-    'admin'    => 0,
-    'vendor'   => 0,
-    'standard' => 0,
-    'student'  => 0
-);
-
-seedHeading('Accounts');
+$created = 0;
+$verified = 0;
+$failed = 0;
 
 foreach ($demoAccounts as $account)
 {
+    $email = $account['email'];
+
     try
     {
-        $result = seedUserAccount($account, $db);
-        $counts[$result]++;
+        $existing = $db->fetchOne(
+            "SELECT user_id, password_hash
+             FROM users
+             WHERE email = :email
+             LIMIT 1",
+            array('email' => $email)
+        );
 
-        if (isset($roleSummary[$account['account_type']]))
+        if ($existing)
         {
-            $roleSummary[$account['account_type']]++;
+            $hashMatches = password_verify(
+                $account['password'],
+                $existing['password_hash']
+            );
+
+            if (!$hashMatches)
+            {
+                // The stored hash does not verify against the plain
+                // text value in the definition. This case is reached
+                // only when the definition was edited after a previous
+                // seed run. The hash is refreshed.
+                $newHash = hashPassword($account['password']);
+
+                $db->executeQuery(
+                    "UPDATE users
+                     SET password_hash = :hash, updated_at = NOW()
+                     WHERE user_id = :user_id",
+                    array(
+                        'hash' => $newHash,
+                        'user_id' => $existing['user_id']
+                    )
+                );
+            }
+
+            echo "  verified  $email\n";
+            $verified++;
+            continue;
         }
 
-        seedLine(
-            sprintf(
-                '  [%-8s] %-32s %s',
-                $result,
-                $account['email'],
-                $account['account_type']
+        $uniqueId = generateAlphanumericUserId($account['account_type']);
+        $username = explode('@', $email)[0];
+        $passwordHash = hashPassword($account['password']);
+
+        $db->beginTransaction();
+
+        $userId = $db->insert(
+            "INSERT INTO users
+                (unique_id, full_name, username, email,
+                 password_hash, account_type, is_verified,
+                 is_active, created_at, updated_at)
+             VALUES
+                (:unique_id, :full_name, :username, :email,
+                 :password_hash, :account_type, 1, 1, NOW(), NOW())",
+            array(
+                'unique_id'     => $uniqueId,
+                'full_name'     => $account['full_name'],
+                'username'      => $username,
+                'email'         => $email,
+                'password_hash' => $passwordHash,
+                'account_type'  => $account['account_type']
             )
         );
 
-        if ($account['account_type'] === 'vendor')
+        if ($account['account_type'] === 'vendor'
+            && !empty($account['vendor_name']))
         {
-            $vendorResult = seedVendorProfile($account, $db);
-
-            if ($vendorResult === 'created')
-            {
-                $counts['vendor_created']++;
-            }
-            elseif ($vendorResult === 'updated')
-            {
-                $counts['vendor_updated']++;
-            }
-
-            seedLine(
-                sprintf(
-                    '  [%-8s] %-32s %s',
-                    'vendor',
-                    $account['vendor_name'],
-                    $vendorResult
+            $db->insert(
+                "INSERT INTO vendors
+                    (vendor_user_id, vendor_name, description,
+                     is_open, is_approved, created_at)
+                 VALUES
+                    (:user_id, :vendor_name, :description, 1, 1, NOW())",
+                array(
+                    'user_id'     => $userId,
+                    'vendor_name' => $account['vendor_name'],
+                    'description' => 'Demonstration vendor.'
                 )
             );
         }
+
+        $db->commit();
+
+        echo "  created   $email\n";
+        $created++;
     }
     catch (Throwable $t)
     {
-        seedLine('  [FAILED] ' . $account['email']);
-        seedLine('           ' . $t->getMessage());
+        if ($db->inTransaction())
+        {
+            $db->rollback();
+        }
+
+        echo "  FAILED    $email: " . $t->getMessage() . "\n";
+        $failed++;
     }
 }
 
-// =============================================================================
-// Summary
-// =============================================================================
+echo "\n";
+echo "Created:  $created\n";
+echo "Verified: $verified\n";
+echo "Failed:   $failed\n";
+echo "\n";
 
-seedHeading('Summary');
-
-seedLine('  Users created  : ' . $counts['created']);
-seedLine('  Users updated  : ' . $counts['updated']);
-seedLine('  Users verified : ' . $counts['verified']);
-seedLine('  Vendor profiles created : ' . $counts['vendor_created']);
-seedLine('  Vendor profiles updated : ' . $counts['vendor_updated']);
-
-seedLine('');
-seedLine('  Role distribution:');
-seedLine('    admins   : ' . $roleSummary['admin']);
-seedLine('    vendors  : ' . $roleSummary['vendor']);
-seedLine('    standard : ' . $roleSummary['standard']);
-seedLine('    students : ' . $roleSummary['student']);
-
-seedLine('');
-
-$total = $roleSummary['admin']
-       + $roleSummary['vendor']
-       + $roleSummary['standard']
-       + $roleSummary['student'];
-
-seedLine('  Total accounts: ' . $total);
-seedLine('');
-
-if ($total !== 10)
+if ($failed > 0)
 {
-    seedLine('WARNING: Expected exactly 10 accounts. Found ' . $total . '.');
-    seedLine('         Check the demo_accounts.php file.');
-    seedLine('');
+    exit(1);
 }
-
-seedLine('Seeding complete.');
-seedLine('');
-seedLine('The demonstration passwords are listed in');
-seedLine('Solution/config/demo_accounts.php. They are public and must');
-seedLine('be replaced before any deployment to a reachable host.');
-seedLine('');
 
 exit(0);

@@ -8,26 +8,23 @@
  *   echo __('nav.home');            // Home
  *   echo __e('auth.sign_in');       // Sign in (HTML escaped)
  *
- * Keys are grouped by area with a dot separator. The prefix is not
- * enforced; it is a naming convention. A key that is not present here
- * falls back to the key itself, or to the default argument passed to
- * __(). See Solution/includes/i18n.php for the resolver.
+ * Keys are grouped by area with a dot separator. A key that is not
+ * present here falls back to the key itself, or to the default
+ * argument passed to __().
  *
- * The table below contains every user-facing string that appears in the
- * application's public pages and authentication flow. Strings that are
- * only used in one page may be added here as well; duplication is
- * avoided by giving each string one key.
+ * CORRECTIONS (Version 2.0 - REPORT.txt Alignment):
+ * - Added the registration keys for the username field, the
+ *   confirm-password field, the vendor shop name field, and the
+ *   offline registration message.
+ * - Added common.or for the separator between the Google button and
+ *   the email form.
+ * - Added error.password_mismatch for the mismatch validation message.
+ * - Added the registration validation message for the vendor shop name.
+ * - Added the first-user-admin message for the Admin role taken case.
  *
- * CORRECTIONS (Version 1.0):
- * - Initial English translation table for the multi-language feature.
- * - This file is the source of truth for the Afrikaans table. Every key
- *   present here should also be present in af.php, so that a missing
- *   translation is not silently hidden by the English fallback.
+ * SOURCE: REPORT.txt, Registration Form Fields and i18n.
  *
- * SOURCE: NOTES - Include multi-language support for at least two
- *         South African languages: English and Afrikaans.
- *
- * @version 1.0
+ * @version 2.0
  */
 
 return array(
@@ -93,22 +90,31 @@ return array(
     // Registration
     // -------------------------------------------------------------------------
 
-    'register.title'                => 'Create account',
-    'register.subtitle'             => 'Join the campus pickup network',
-    'register.name_placeholder'     => 'Your full name',
-    'register.email_placeholder'    => 'you@campus.edu',
-    'register.password_placeholder' => 'Create a password',
-    'register.hint_password'        => 'Minimum 8 characters, includes uppercase, number, and special character.',
-    'register.hint_student'         => 'Students receive a 2.5 percent discount on orders.',
-    'register.hint_admin_first'     => 'The Admin role is available only for this first registration.',
-    'register.first_user_title'     => 'You are the first user.',
-    'register.first_user_body'      => 'No accounts exist yet. You may register this first account as an administrator. Once any account exists, the Admin role will no longer be offered.',
-    'register.success_heading'      => 'Account created successfully.',
-    'register.success_body'         => 'Your 16-character USER ID has been generated. You can now log in.',
-    'register.user_id_label'        => 'Your 16-character USER ID',
-    'register.user_id_note'         => 'Save this ID. You will need it to reset your password.',
-    'register.copy_id'              => 'Copy',
-    'register.go_to_login'          => 'Go to Login',
+    'register.title'                        => 'Create account',
+    'register.subtitle'                     => 'Join the campus pickup network',
+    'register.name_placeholder'             => 'Your full name',
+    'register.username_placeholder'         => 'Choose a username',
+    'register.username_hint'                => 'Optional. If left empty, the username is derived from your email.',
+    'register.email_placeholder'            => 'you@campus.edu',
+    'register.password_placeholder'         => 'Create a password',
+    'register.confirm_password_placeholder' => 'Re-enter your password',
+    'register.hint_password'                => 'Minimum 8 characters, includes uppercase, number, and special character.',
+    'register.hint_student'                 => 'Students receive a 2.5 percent discount on orders.',
+    'register.hint_admin_first'             => 'The Admin role is available only for this first registration.',
+    'register.first_user_title'             => 'You are the first user.',
+    'register.first_user_body'              => 'No accounts exist yet. You may register this first account as an administrator. Once any account exists, the Admin role will no longer be offered.',
+    'register.success_heading'              => 'Account created successfully.',
+    'register.success_body'                 => 'Your 16-character USER ID has been generated. You can now log in.',
+    'register.success_offline'              => 'Your registration has been queued. We will complete it as soon as the service returns.',
+    'register.user_id_label'                => 'Your 16-character USER ID',
+    'register.user_id_note'                 => 'Save this ID. You will need it to reset your password.',
+    'register.copy_id'                      => 'Copy',
+    'register.go_to_login'                  => 'Go to Login',
+    'register.vendor_name_label'            => 'Shop name',
+    'register.vendor_name_placeholder'      => 'Your shop name',
+    'register.vendor_name_hint'             => 'This name is shown to customers.',
+    'register.error_vendor_name_required'   => 'A shop name is required for a vendor account.',
+    'register.error_admin_taken'            => 'The Admin role is available only for the first registration.',
 
     // -------------------------------------------------------------------------
     // Login
@@ -213,6 +219,7 @@ return array(
     'common.next'                   => 'Next',
     'common.search'                 => 'Search',
     'common.submit'                 => 'Submit',
+    'common.or'                     => 'or',
 
     // -------------------------------------------------------------------------
     // Errors

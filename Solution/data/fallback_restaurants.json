@@ -1,0 +1,23 @@
+[
+    {
+        "restaurantID": 1,
+        "restaurantName": "Campus Corner Kitchen",
+        "address": "Student Union Building, Ground Floor",
+        "type": "South African",
+        "parkingLot": true
+    },
+    {
+        "restaurantID": 2,
+        "restaurantName": "Braai Brothers",
+        "address": "Engineering Quad, Stall 4",
+        "type": "Grill",
+        "parkingLot": false
+    },
+    {
+        "restaurantID": 3,
+        "restaurantName": "Coffee and Koeksisters",
+        "address": "Library Walkway, Stall 2",
+        "type": "Cafe",
+        "parkingLot": false
+    }
+]

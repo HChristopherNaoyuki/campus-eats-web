@@ -9,36 +9,35 @@
  * configured. All user-facing strings are translated through the
  * shared __() helper.
  *
- * CORRECTIONS (Version 17.0 - Audit Continuation):
+ * CORRECTIONS (Version 18.0 - REPORT.txt Alignment):
  *
- * - Fix 1 (use account service). The registration path now uses the
- *   AccountService from Solution/includes/account_service.php. The
- *   service writes the users row and, when the role is vendor, the
- *   vendors row in a single transaction. The previous version wrote
- *   the two rows with separate INSERT statements and no transaction.
+ * - Fix 1 (username field). The form collects an optional username.
+ *   When the field is empty, the account service derives the username
+ *   from the email local part.
  *
- * - Fix 2 (queue on database outage). When the database is
- *   unreachable, the page passes the registration payload to the
- *   OutageSpool from Solution/includes/outage_spool.php. The spool
- *   queues the payload for replay. The previous version lost the
- *   registration.
+ * - Fix 2 (confirm password). The form collects a confirm-password
+ *   value. The mismatch check runs before the account service is
+ *   called.
  *
- * - Fix 3 (vendor shop name). The page now collects the vendor shop
- *   name when the role is Vendor. The name is required for the
- *   vendor's Firebase projection and for the vendor directory.
+ * - Fix 3 (vendor shop name). The form collects the shop name when the
+ *   role is Vendor. The shop name is required for the vendor account.
  *
- * - Fix 4 (safe error display). The page never echoes a raw database
+ * - Fix 4 (account service and spool). The form uses the
+ *   AccountService for transactional account creation and the
+ *   OutageSpool when the database is unreachable.
+ *
+ * - Fix 5 (safe error display). The page never echoes a raw database
  *   error to the browser. The error is logged. The user sees a
- *   generic message.
+ *   generic message or a validation message.
  *
  * - Retained the first-user-only Admin rule, the User ID display with
  *   the copy button, the CSRF protection, the password policy check,
  *   and the auto-verification of new accounts.
  *
+ * SOURCE: REPORT.txt, Registration Form Fields.
  * SOURCE: Audit continuation, Part 2.
- * SOURCE: Notes - Make use of SSO.
  *
- * @version 17.0
+ * @version 18.0
  */
 
 require_once dirname(__DIR__, 2) . '/config/constants.php';
@@ -74,7 +73,12 @@ if (file_exists(dirname(__DIR__, 2) . '/includes/oauth_google.php'))
 // Determine whether this visitor is the first user.
 // =============================================================================
 
-$isFirstUser = ($db->userCount() === 0);
+$isFirstUser = false;
+
+if ($db->isAvailable())
+{
+    $isFirstUser = ($db->userCount() === 0);
+}
 
 $error = '';
 $success = '';
@@ -82,6 +86,7 @@ $generatedUserId = '';
 $displayUserId = '';
 $formData = array(
     'full_name'    => '',
+    'username'     => '',
     'email'        => '',
     'account_type' => 'student',
     'vendor_name'  => ''
@@ -92,8 +97,12 @@ $csrfToken = getCsrfToken();
 if ($_SERVER['REQUEST_METHOD'] === 'POST')
 {
     $fullName = trim(isset($_POST['full_name']) ? $_POST['full_name'] : '');
+    $username = trim(isset($_POST['username']) ? $_POST['username'] : '');
     $email = trim(isset($_POST['email']) ? $_POST['email'] : '');
     $passwordInput = isset($_POST['password']) ? $_POST['password'] : '';
+    $confirmPassword = isset($_POST['confirm_password'])
+        ? $_POST['confirm_password']
+        : '';
     $accountType = trim(isset($_POST['role']) ? $_POST['role'] : 'Student');
     $vendorName = trim(isset($_POST['vendor_name']) ? $_POST['vendor_name'] : '');
     $submittedCsrfToken = isset($_POST['csrf_token'])
@@ -115,10 +124,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
         ? $roleMap[$accountType]
         : 'student';
 
-    $isFirstUserAtPostTime = ($db->userCount() === 0);
+    $isFirstUserAtPostTime = $db->isAvailable()
+        ? ($db->userCount() === 0)
+        : false;
 
     $formData = array(
         'full_name'    => $fullName,
+        'username'     => $username,
         'email'        => $email,
         'account_type' => $accountType,
         'vendor_name'  => $vendorName
@@ -131,6 +143,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
     elseif (empty($fullName) || empty($email) || empty($passwordInput))
     {
         $error = __('error.required_fields');
+    }
+    elseif ($passwordInput !== $confirmPassword)
+    {
+        $error = __('error.password_mismatch');
     }
     elseif (!filter_var($email, FILTER_VALIDATE_EMAIL))
     {
@@ -160,6 +176,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
 
                 $result = $accountService->createAccount(array(
                     'full_name'    => $fullName,
+                    'username'     => $username,
                     'email'        => $email,
                     'password'     => $passwordInput,
                     'account_type' => $accountType,
@@ -186,10 +203,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
             }
             catch (RuntimeException $exception)
             {
-                // The account service reports a database-unavailable
-                // condition as a RuntimeException. The registration
-                // payload is queued for replay when the database
-                // returns.
                 try
                 {
                     if (!class_exists('OutageSpool'))
@@ -201,6 +214,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                     $spool = new OutageSpool();
                     $spool->enqueue('register', array(
                         'full_name'    => $fullName,
+                        'username'     => $username,
                         'email'        => $email,
                         'password'     => $passwordInput,
                         'account_type' => $accountType,
@@ -244,6 +258,7 @@ if (!empty($generatedUserId))
     <title><?php echo escapeOutput($pageTitle); ?> - <?php echo __e('app.name'); ?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="<?php echo ASSETS_URL; ?>/css/public.css">
+    <script src="<?php echo ASSETS_URL; ?>/js/toast.js" defer></script>
 </head>
 <body class="auth-page">
     <div class="auth-container">
@@ -345,6 +360,24 @@ if (!empty($generatedUserId))
                         </div>
 
                         <div class="form-group">
+                            <label class="form-label" for="username">
+                                <?php echo __e('auth.username'); ?>
+                            </label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-at input-icon"></i>
+                                <input type="text"
+                                       id="username"
+                                       name="username"
+                                       class="form-control"
+                                       value="<?php echo escapeOutput($formData['username']); ?>"
+                                       placeholder="<?php echo __e('register.username_placeholder'); ?>">
+                            </div>
+                            <span class="form-hint">
+                                <?php echo __e('register.username_hint'); ?>
+                            </span>
+                        </div>
+
+                        <div class="form-group">
                             <label class="form-label" for="email">
                                 <?php echo __e('auth.email'); ?>
                             </label>
@@ -379,6 +412,21 @@ if (!empty($generatedUserId))
                             <span class="form-hint">
                                 <?php echo __e('register.hint_password'); ?>
                             </span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="confirm_password">
+                                <?php echo __e('auth.confirm_password'); ?>
+                            </label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-lock input-icon"></i>
+                                <input type="password"
+                                       id="confirm_password"
+                                       name="confirm_password"
+                                       class="form-control"
+                                       required
+                                       placeholder="<?php echo __e('register.confirm_password_placeholder'); ?>">
+                            </div>
                         </div>
 
                         <div class="form-group">

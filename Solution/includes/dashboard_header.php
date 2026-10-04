@@ -1,20 +1,22 @@
 <?php
 /**
- * Dashboard Top Header Component (Refactored)
+ * Dashboard Top Header Component
  *
- * This file contains the top navigation bar for all dashboard pages.
- * Used by Admin, Vendor, and Student dashboards.
+ * This file contains the top navigation bar for the dashboard pages.
+ * It is used by the admin, vendor, and student dashboards.
  *
- * CORRECTIONS (Version 6.0):
- * - Standardized header across all roles
- * - Added consistent styling for all admin views
- * - Added user menu with logout option
- * - Added responsive mobile menu toggle
- * - Improved accessibility with ARIA attributes
+ * CORRECTIONS (Version 7.0 - REPORT.txt Alignment):
+ * - Added the toast module script tag. The module presents transient
+ *   messages to the user without blocking the page. It is loaded here
+ *   so that the degraded-mode message and the database-unavailable
+ *   message can be shown on the dashboard pages.
+ * - Retained the standardized header across all roles, the user menu
+ *   with the logout option, the responsive mobile menu toggle, and
+ *   the ARIA attributes.
  *
- * Source: campus-eats-process-document.pdf (Section 10 - User Interface Design)
+ * SOURCE: REPORT.txt, Robust Error Handling and Database Fault Tolerance.
  *
- * @version 6.0
+ * @version 7.0
  */
 
 // This file expects the following variables to be set:
@@ -32,15 +34,14 @@ if (!isset($userName))
     $userName = $_SESSION['full_name'] ?? $_SESSION['username'] ?? 'User';
 }
 
-// Default nav items if not provided.
 if (!isset($navItems))
 {
     $navItems = array();
 }
 ?>
-<header class="<?php echo $role; ?>-top-header" role="banner">
+<header class="<?php echo htmlspecialchars($role, ENT_QUOTES, 'UTF-8'); ?>-top-header" role="banner">
     <div class="container">
-        <div class="<?php echo $role; ?>-top-nav" role="navigation" aria-label="Top Navigation">
+        <div class="<?php echo htmlspecialchars($role, ENT_QUOTES, 'UTF-8'); ?>-top-nav" role="navigation" aria-label="Top Navigation">
             <?php foreach ($navItems as $item): ?>
                 <a href="<?php echo htmlspecialchars($item['url'], ENT_QUOTES, 'UTF-8'); ?>"
                    class="<?php echo (isset($item['active']) && $item['active']) ? 'active' : ''; ?>">
@@ -48,8 +49,8 @@ if (!isset($navItems))
                 </a>
             <?php endforeach; ?>
         </div>
-        <div class="<?php echo $role; ?>-user-menu">
-            <span class="<?php echo $role; ?>-user-name">
+        <div class="<?php echo htmlspecialchars($role, ENT_QUOTES, 'UTF-8'); ?>-user-menu">
+            <span class="<?php echo htmlspecialchars($role, ENT_QUOTES, 'UTF-8'); ?>-user-name">
                 <i class="fas <?php echo $role === 'admin' ? 'fa-user-shield' : ($role === 'vendor' ? 'fa-store' : 'fa-user-circle'); ?>"></i>
                 <?php echo htmlspecialchars($userName, ENT_QUOTES, 'UTF-8'); ?>
             </span>
@@ -61,8 +62,10 @@ if (!isset($navItems))
     </div>
 </header>
 
+<script src="<?php echo ASSETS_URL; ?>/js/toast.js" defer></script>
+
 <style>
-    /* Standardized header styling for all admin views */
+    /* Standardized header styling for all dashboard views */
     .admin-top-header
     {
         background: white;

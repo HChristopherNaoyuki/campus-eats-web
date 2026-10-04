@@ -4,34 +4,54 @@
  *
  * Provides a unified HTTP client for the Fake Restaurant API.
  *
- * CORRECTIONS (Version 6.0 - Audit Continuation):
+ * CORRECTIONS (Version 7.0 - REPORT.txt Alignment):
  *
  * - Fix 1 (stale-if-error). When a request fails and a previously
  *   successful response is available on disk, the stored response is
- *   returned. This lets the site render the last known restaurant
- *   list during a transient outage instead of an error page.
+ *   returned. The site renders the last known data during an outage
+ *   instead of an error page.
  *
- * - Fix 2 (failure pause). When a request fails, the failure
- *   timestamp is recorded. Subsequent requests within 30 seconds
- *   return the stale response immediately, without contacting the
- *   remote host. This reduces the load on the remote host during an
+ * - Fix 2 (bundled fallback). When a request fails and no stale
+ *   response exists, the bundled fallback dataset is returned. The
+ *   fallback is loaded from Solution/config/fallback_data.php. The
+ *   fallback is only consulted for GET requests to the restaurant
+ *   catalogue endpoints. It is never consulted for POST, PUT, or
+ *   DELETE. It is never consulted for order endpoints or user
+ *   endpoints.
+ *
+ * - Fix 3 (failure pause). When a request fails, the failure time is
+ *   recorded. Subsequent requests within 30 seconds return the stale
+ *   response or the fallback immediately without contacting the
+ *   remote host. This reduces load on the remote host during an
  *   outage and returns control to the user quickly.
  *
- * - Fix 3 (shorter timeout and fewer retries). The per-request
- *   timeout is 10 seconds. The number of retry attempts is 2. The
- *   total worst-case wait is 20 seconds plus the inter-attempt
- *   delay. This is shorter than the 93 seconds of the previous
- *   version.
+ * - Fix 4 (shorter timeout and fewer retries). The per-request timeout
+ *   is 10 seconds. The number of retry attempts is 2. The total
+ *   worst-case wait is 20 seconds plus the inter-attempt delay. This
+ *   is shorter than the 93 seconds of the previous version.
  *
- * - Fix 4 (CA bundle). The network helper supplies the CA bundle
- *   path. Certificate verification remains enabled.
+ * - Fix 5 (CA bundle). The network helper at
+ *   Solution/config/network.php supplies the CA bundle path. The
+ *   helper resolves the path in this order: curl.cainfo from
+ *   php.ini, openssl.cafile from php.ini, common XAMPP and Linux
+ *   locations, the bundled CA bundle, and the operating system
+ *   certificate store. Certificate verification remains enabled.
  *
- * - Retained the permanent-failure classification, the exponential
- *   backoff, and the single log line per failure.
+ * - Fix 6 (permanent-failure classification). A TLS or DNS failure is
+ *   classified as permanent and is not retried. A timeout or a
+ *   connection reset is classified as transient and is retried.
  *
+ * - Fix 7 (single log line per failure). Each failure produces one
+ *   log line that names the numeric cURL error code, the symbolic
+ *   label, the URL, and the HTTP status when a response was received.
+ *
+ * - Retained all public method signatures from Version 1.0. No
+ *   caller changes are required.
+ *
+ * SOURCE: REPORT.txt, Known Issue to Resolve.
  * SOURCE: Audit continuation, Part 1.
  *
- * @version 6.0
+ * @version 7.0
  */
 
 if (!defined('BASE_PATH'))
@@ -171,12 +191,23 @@ class ApiService
      * Returns true when the cURL error code indicates a permanent
      * failure that should not be retried.
      *
+     * The values are the cURL error codes documented at
+     * https://curl.se/libcurl/c/libcurl-errors.html.
+     *
      * @param int $curlErrno The value returned by curl_errno()
      * @return bool True when the failure is permanent
      */
     private function isPermanentCurlFailure($curlErrno)
     {
-        $permanent = array(1, 3, 6, 51, 58, 59, 60);
+        $permanent = array(
+            1,  // CURLE_UNSUPPORTED_PROTOCOL
+            3,  // CURLE_URL_MALFORMAT
+            6,  // CURLE_COULDNT_RESOLVE_HOST
+            51, // CURLE_PEER_FAILED_VERIFICATION / legacy CURLE_SSL_CACERT
+            58, // CURLE_SSL_CERTPROBLEM
+            59, // CURLE_SSL_CIPHER
+            60  // CURLE_SSL_CACERT
+        );
 
         return in_array((int)$curlErrno, $permanent, true);
     }
@@ -185,7 +216,7 @@ class ApiService
      * Returns a human-readable label for a cURL error code.
      *
      * @param int $curlErrno The value returned by curl_errno()
-     * @return string The label
+     * @return string The label, or UNKNOWN_CURL_ERROR
      */
     private function describeCurlError($curlErrno)
     {
@@ -284,8 +315,7 @@ class ApiService
     }
 
     /**
-     * Returns true when a failure was recorded within the pause
-     * window.
+     * Returns true when a failure was recorded within the pause window.
      *
      * @return bool
      */
@@ -302,15 +332,61 @@ class ApiService
     }
 
     /**
+     * Returns the fallback response for a GET request, or null.
+     *
+     * The fallback is consulted only when the request has failed, no
+     * stale response exists, and the endpoint is one of the endpoints
+     * that has a bundled fallback. The fallback for the restaurant
+     * catalogue is the bundled JSON file at
+     * Solution/data/fallback_restaurants.json. The endpoint
+     * /api/Restaurant/items returns an empty array.
+     *
+     * @param string $endpoint The endpoint
+     * @param string $method   The HTTP method
+     * @return mixed The fallback response, or null
+     */
+    private function fallbackFor($endpoint, $method)
+    {
+        if ($method !== 'GET')
+        {
+            return null;
+        }
+
+        if (!function_exists('campus_eats_load_fallback_restaurants'))
+        {
+            require_once BASE_PATH . '/config/fallback_data.php';
+        }
+
+        $path = parse_url($endpoint, PHP_URL_PATH);
+
+        if ($path === '/api/Restaurant')
+        {
+            return campus_eats_load_fallback_restaurants();
+        }
+
+        if (strpos($path, '/api/Restaurant/items') === 0)
+        {
+            return array();
+        }
+
+        return null;
+    }
+
+    /**
      * Performs an HTTP request with cURL.
+     *
+     * The method applies the CA bundle from the network helper,
+     * classifies permanent and transient failures, applies exponential
+     * backoff to transient failures, and returns the stale response or
+     * the bundled fallback when the live request fails.
      *
      * @param string     $endpoint          API path
      * @param string     $method            HTTP method
-     * @param mixed|null $data              Request body
+     * @param mixed|null $data              Request body for POST and PUT
      * @param array      $additionalHeaders Extra headers
      * @param bool       $useCache          Whether to read and write the cache
      * @return mixed Decoded JSON response
-     * @throws Exception When the request ultimately fails
+     * @throws Exception When the request ultimately fails and no fallback exists
      */
     public function request($endpoint, $method = 'GET', $data = null, $additionalHeaders = array(), $useCache = true)
     {
@@ -331,8 +407,8 @@ class ApiService
         }
 
         // Failure pause. When a failure was recorded within the pause
-        // window, the stale response is returned immediately. When no
-        // stale response is available, an exception is thrown.
+        // window, the stale response or the fallback is returned
+        // immediately. The live host is not contacted.
         if ($this->isWithinFailurePause())
         {
             $stale = $this->readStale($endpoint);
@@ -346,8 +422,19 @@ class ApiService
                 return $stale;
             }
 
+            $fallback = $this->fallbackFor($endpoint, $method);
+
+            if ($fallback !== null)
+            {
+                writeLog(
+                    "API in failure pause. Serving bundled fallback for $endpoint",
+                    "API"
+                );
+                return $fallback;
+            }
+
             throw new Exception(
-                "API is in failure pause and no stale response is available."
+                "API is in failure pause and no fallback is available."
             );
         }
 
@@ -550,8 +637,9 @@ class ApiService
             return $result;
         }
 
-        // All attempts failed. When a stale response exists, it is
-        // returned. Otherwise the exception propagates.
+        // All attempts failed. The stale response is returned when one
+        // exists. The bundled fallback is returned when one exists.
+        // Otherwise the exception propagates.
         $stale = $this->readStale($endpoint);
 
         if ($stale !== null)
@@ -563,6 +651,17 @@ class ApiService
             return $stale;
         }
 
+        $fallback = $this->fallbackFor($endpoint, $method);
+
+        if ($fallback !== null)
+        {
+            writeLog(
+                "API request failed. Serving bundled fallback for $endpoint",
+                "API"
+            );
+            return $fallback;
+        }
+
         writeLog(
             "API request failed after {$attempt} attempt(s): "
                 . ($lastException ? $lastException->getMessage() : 'unknown error'),
@@ -570,6 +669,53 @@ class ApiService
         );
 
         throw $lastException ?: new Exception("API request failed");
+    }
+
+    /**
+     * Returns a diagnostic report on the cURL CA bundle configuration.
+     *
+     * @return array The diagnostic report
+     */
+    public function getCurlSslDiagnostics()
+    {
+        $curlCainfo = ini_get('curl.cainfo');
+        $opensslCafile = ini_get('openssl.cafile');
+        $resolvedBundle = campus_eats_resolve_ca_bundle();
+
+        $curlCainfoReadable = false;
+        $opensslCafileReadable = false;
+        $resolvedReadable = false;
+
+        if (!empty($curlCainfo))
+        {
+            $curlCainfoReadable = is_readable($curlCainfo);
+        }
+
+        if (!empty($opensslCafile))
+        {
+            $opensslCafileReadable = is_readable($opensslCafile);
+        }
+
+        if (!empty($resolvedBundle))
+        {
+            $resolvedReadable = is_readable($resolvedBundle);
+        }
+
+        $curlVersion = curl_version();
+
+        return array(
+            'curl_version'             => isset($curlVersion['version'])
+                ? $curlVersion['version'] : 'unknown',
+            'ssl_version'              => isset($curlVersion['ssl_version'])
+                ? $curlVersion['ssl_version'] : 'unknown',
+            'curl_cainfo'              => $curlCainfo ?: '(not set)',
+            'curl_cainfo_readable'     => $curlCainfoReadable,
+            'openssl_cafile'           => $opensslCafile ?: '(not set)',
+            'openssl_cafile_readable'  => $opensslCafileReadable,
+            'resolved_bundle'          => $resolvedBundle ?: '(not resolved)',
+            'resolved_bundle_readable' => $resolvedReadable,
+            'php_ini_path'             => php_ini_loaded_file() ?: '(none)'
+        );
     }
 
     // =========================================================================

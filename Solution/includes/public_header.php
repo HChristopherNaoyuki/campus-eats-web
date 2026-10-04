@@ -4,30 +4,20 @@
  *
  * Provides consistent navigation across all public-facing pages.
  *
- * CORRECTIONS (Version 11.0):
- * - Added the missing helper function isActivePublicPage() at the point
- *   of definition, before any call site. The previous on-disk version
- *   called isActivePublicPage() at line 83 without defining it, which
- *   produced:
- *
- *     Uncaught Exception: Call to undefined function isActivePublicPage()
- *     in Solution/includes/public_header.php on line 83
- *
- *   The helper is used to compute the active CSS class for a navigation
- *   link so the current page is highlighted. The function is now defined
- *   in this file, guarded by function_exists(), and placed above every
- *   call site.
- * - The isPublicPageActive() helper from an earlier version is retained
- *   as an alias to isActivePublicPage(), so existing call sites in other
- *   files that use either name continue to work.
- * - Added the shared escapeOutput() fallback so this file works on pages
- *   that do not load auth.php.
+ * CORRECTIONS (Version 12.0 - REPORT.txt Alignment):
+ * - Added the toast module script tag. The module presents transient
+ *   messages to the user without blocking the page.
+ * - Retained the isActivePublicPage() helper defined before every call
+ *   site. The helper was missing in an earlier version and produced a
+ *   fatal error.
+ * - Retained the shared escapeOutput() fallback so this file works on
+ *   pages that do not load auth.php.
  * - All output uses htmlspecialchars() with ENT_QUOTES and UTF-8.
  *
- * SOURCE: Issues/audit_log.txt 2026-09-12 19:10:58
- * SOURCE: code review report, Finding 3.1 dependency
+ * SOURCE: REPORT.txt, Robust Error Handling.
+ * SOURCE: Issues/audit_log.txt 2026-09-12 19:10:58.
  *
- * @version 11.0
+ * @version 12.0
  */
 
 require_once dirname(__DIR__) . '/config/constants.php';
@@ -37,11 +27,6 @@ setSecurityHeaders();
 
 // =============================================================================
 // Local escaping helper
-// =============================================================================
-// The canonical helper is escapeOutput() in includes/auth.php, but this file
-// may be included by pages that do not load auth.php. Defining a local
-// fallback with the same name inside function_exists() is safe because the
-// first definition wins.
 // =============================================================================
 
 if (!function_exists('publicHeaderEscape'))
@@ -66,29 +51,14 @@ if (!function_exists('publicHeaderEscape'))
 // =============================================================================
 // Navigation helpers
 // =============================================================================
-// CORRECTION:
-// The on-disk version of this file called isActivePublicPage() at line 83
-// without defining it, which produced a fatal error and a blank page. Both
-// helpers are now defined here, above every call site.
-//
-// isActivePublicPage() returns 'active' when the given page basename matches
-// the current script's basename, and an empty string otherwise. It is used
-// to set the CSS class on navigation links.
-//
-// isPublicPageActive() is retained as an alias for backward compatibility
-// with call sites in other files that use the older name.
-// =============================================================================
 
 if (!function_exists('isActivePublicPage'))
 {
     /**
      * Returns 'active' when the given page is the current page.
      *
-     * @param string $page        The page basename to test, for example
-     *                            'about.php'
-     * @param string $currentPage The current page basename. When omitted,
-     *                            the value is derived from
-     *                            $_SERVER['PHP_SELF'].
+     * @param string $page        The page basename to test
+     * @param string $currentPage The current page basename
      * @return string 'active' or an empty string
      */
     function isActivePublicPage($page, $currentPage = null)
@@ -159,6 +129,7 @@ if (session_status() === PHP_SESSION_ACTIVE && function_exists('getCsrfToken'))
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="<?php echo ASSETS_URL; ?>/css/style.css">
     <link rel="stylesheet" href="<?php echo ASSETS_URL; ?>/css/public.css">
+    <script src="<?php echo ASSETS_URL; ?>/js/toast.js" defer></script>
 </head>
 <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>

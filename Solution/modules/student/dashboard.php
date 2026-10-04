@@ -1,22 +1,32 @@
 <?php
 /**
- * Student/Standard Dashboard Page - Matching Mockups 21-23.png
+ * Student and Standard Dashboard Page
  *
- * This page displays available vendors for students and standard users.
- * Now fetches real data from the Fake Restaurant API.
+ * This page displays available vendors for students and standard
+ * users. The vendor list is fetched from the Fake Restaurant API. When
+ * the API is unreachable, the bundled fallback dataset is used so the
+ * page remains functional.
  *
- * CORRECTIONS (Version 18.0 - Visual Parity):
- * - Updated layout to match mockups 21.png, 23.png
- * - Added welcome header with user greeting
- * - Added search functionality
- * - Added vendor cards with menu items
- * - Improved responsive behavior
- * - Removed inline styles and moved to student.css
+ * CORRECTIONS (Version 19.0 - REPORT.txt Alignment):
  *
- * SOURCE: API Documentation - Fake Restaurant API
- * SOURCE: Mockups - 21.png, 22.png, 23.png, 24.png
+ * - Fix 1 (degraded mode). When the database is unreachable, the page
+ *   renders in degraded mode. The API fallback supplies the vendor
+ *   list. The page shows a toast that the database is temporarily
+ *   unavailable.
  *
- * @version 18.0
+ * - Fix 2 (fallback data). The vendor list is loaded through the API *   service. The service returns the bundled fallback dataset when the
+ *   live API is unreachable and no stale response exists.
+ *
+ * - Fix 3 (toast module). The dashboard header loads the toast module
+ *   so the degraded-mode message can be shown.
+ *
+ * - Retained the vendor card layout, the search bar, the cart badge
+ *   update, and the menu preview.
+ *
+ * SOURCE: REPORT.txt, Database Fault Tolerance.
+ * SOURCE: API Documentation - Fake Restaurant API.
+ *
+ * @version 19.0
  */
 
 // Load required dependencies
@@ -34,7 +44,18 @@ $db = getDB();
 $currentUser = getCurrentUser();
 $csrfToken = getCsrfToken();
 
-writeLog("Student/Standard dashboard accessed by user ID: " . getCurrentUserId() . " (Role: " . getCurrentUserRole() . ")", "DASHBOARD");
+// The database may be unreachable. The page renders in degraded mode
+// in that case. The vendor list comes from the API fallback. The
+// database-only features are disabled.
+$databaseAvailable = $db->isAvailable();
+
+if (!$databaseAvailable)
+{
+    writeLog(
+        "Dashboard rendered in degraded mode: " . $db->getLastError(),
+        "RESILIENCE"
+    );
+}
 
 // =============================================================================
 // Fetch Data from API
@@ -47,43 +68,40 @@ $error = '';
 
 try
 {
-    // Fetch all restaurants from the API
     $restaurants = $apiService->getAllRestaurants();
-    writeLog("Found " . count($restaurants) . " restaurants from API", "DASHBOARD");
-    
-    // For each restaurant, fetch its menu
+
     foreach ($restaurants as $restaurant)
     {
         try
         {
-            $menu = $apiService->getRestaurantMenu($restaurant['restaurantID']);
-            
-            // Only include restaurants that have menu items
+            $menu = $apiService->getRestaurantMenu(
+                $restaurant['restaurantID']
+            );
+
             if (!empty($menu))
             {
                 $restaurantsWithMenus[] = array(
                     'restaurant' => $restaurant,
-                    'menu' => array_slice($menu, 0, 4) // Show first 4 items
+                    'menu' => array_slice($menu, 0, 4)
                 );
             }
         }
         catch (Exception $e)
         {
-            // Skip restaurants that don't have a menu
             continue;
         }
     }
-    
-    writeLog("Found " . count($restaurantsWithMenus) . " restaurants with menus", "DASHBOARD");
 }
 catch (Exception $e)
 {
-    writeLog("Error fetching restaurants from API: " . $e->getMessage(), "API_ERROR");
+    writeLog(
+        "Error fetching restaurants from API: " . $e->getMessage(),
+        "API_ERROR"
+    );
     $error = "Unable to load restaurants. Please try again later.";
 }
 
 $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
-writeLog("Cart count for user ID " . getCurrentUserId() . ": $cartCount items", "DASHBOARD");
 
 function getBaseUrlForJs()
 {
@@ -102,7 +120,10 @@ function getCartCountForJs()
 
 function escapeDashboardOutput($string)
 {
-    if ($string === null) return '';
+    if ($string === null)
+    {
+        return '';
+    }
     return htmlspecialchars($string, ENT_QUOTES, 'UTF-8');
 }
 ?>
@@ -116,6 +137,7 @@ function escapeDashboardOutput($string)
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="<?php echo ASSETS_URL; ?>/css/apple.css">
     <link rel="stylesheet" href="<?php echo ASSETS_URL; ?>/css/student.css">
+    <script src="<?php echo ASSETS_URL; ?>/js/toast.js" defer></script>
 </head>
 <body>
     <div class="app-layout">
@@ -124,7 +146,6 @@ function escapeDashboardOutput($string)
         <main class="main-content" id="main-content">
             <div class="student-content">
                 <div class="container">
-                    <!-- Welcome Header - Matching Mockup 21.png -->
                     <div class="welcome-header">
                         <h1>Hey <?php echo htmlspecialchars($currentUser['full_name'], ENT_QUOTES, 'UTF-8'); ?> <i class="fas fa-hand-peace"></i></h1>
                         <p>What are you eating today? Browse our campus vendors and order ahead.</p>
@@ -135,7 +156,33 @@ function escapeDashboardOutput($string)
                         <?php endif; ?>
                     </div>
 
-                    <!-- Search Bar - Matching Mockup 21.png -->
+                    <?php if (!$databaseAvailable): ?>
+                        <div class="alert alert-warning" role="status">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <div class="alert-content">
+                                <div class="alert-title">Limited Mode</div>
+                                <div class="alert-message">
+                                    The application database is temporarily
+                                    unavailable. You can browse vendors, but
+                                    ordering and order history are not
+                                    available right now.
+                                </div>
+                            </div>
+                        </div>
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function()
+                            {
+                                if (typeof window.showToast === 'function')
+                                {
+                                    window.showToast(
+                                        'Database is temporarily unavailable. Browsing only.',
+                                        'warning'
+                                    );
+                                }
+                            });
+                        </script>
+                    <?php endif; ?>
+
                     <div class="search-wrapper">
                         <div class="input-wrapper">
                             <i class="fas fa-search input-icon"></i>
@@ -162,7 +209,7 @@ function escapeDashboardOutput($string)
                             <?php
                             $vendor = $vendorData['restaurant'];
                             $menuItems = $vendorData['menu'];
-                            $isOpen = true; // API doesn't provide open status, assume open
+                            $isOpen = true;
                             ?>
                             <div class="vendor-section" data-vendor-name="<?php echo strtolower($vendor['restaurantName']); ?>">
                                 <div class="vendor-section-header">
@@ -187,7 +234,7 @@ function escapeDashboardOutput($string)
                                                 <p class="menu-item-description"><?php echo escapeDashboardOutput(substr($item['itemDescription'] ?? '', 0, 60)); ?></p>
                                                 <p class="menu-item-price">R <?php echo number_format($item['itemPrice'], 2); ?></p>
                                             </div>
-                                            <?php if ($isOpen): ?>
+                                            <?php if ($databaseAvailable && $isOpen): ?>
                                                 <button class="btn btn-primary btn-sm add-to-cart-btn"
                                                         data-item-id="<?php echo $item['itemID']; ?>"
                                                         data-item-name="<?php echo escapeDashboardOutput($item['itemName']); ?>"
@@ -199,7 +246,8 @@ function escapeDashboardOutput($string)
                                                 </button>
                                             <?php else: ?>
                                                 <button class="btn btn-secondary btn-sm" disabled>
-                                                    <i class="fas fa-ban"></i> Unavailable
+                                                    <i class="fas fa-ban"></i>
+                                                    <?php echo $databaseAvailable ? 'Unavailable' : 'Limited Mode'; ?>
                                                 </button>
                                             <?php endif; ?>
                                         </div>

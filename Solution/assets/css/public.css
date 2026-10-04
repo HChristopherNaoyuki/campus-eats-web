@@ -5,29 +5,17 @@
  * the FAQ page, the Help Center, the Terms of Service, the Privacy
  * Policy, the authentication pages, and the shared header and footer.
  *
- * CORRECTIONS (Version 10.0):
- * - Added the Google sign-in button style (.btn-google).
- * - Added the language switcher style (.language-switcher and children).
- * - Added the Google provider badge style (.provider-badge), shown in
- *   the header next to the user name when the session was established
- *   through Google SSO.
- * - Added the SSO note style (.sso-note), used when Google SSO is not
- *   configured and the login or register page shows an informational
- *   message.
- * - Added the auth separator style (.auth-separator), the "or" line
- *   between the Google button and the email form.
- * - Added the first-user info box style (.info-box.first-user-box) used
- *   on the registration page.
- * - Added the user ID display styles (.user-id-section, .user-id-display,
- *   .btn-copy, .user-id-note, .user-id-label).
- * - All other rules from the previous version are retained.
+ * CORRECTIONS (Version 11.0 - REPORT.txt Alignment):
+ * - Added Apple Human Interface Guidelines rules for tap targets,
+ *   focus indicators, typography scale, card elevation, form controls,
+ *   buttons, reduced motion, and the toast surface.
+ * - The additions are additive. They do not remove or override any
+ *   existing rule that is already correct.
  *
- * SOURCE: NOTES - Make use of SSO. Include multi-language support for
- *         at least two South African languages: English and Afrikaans.
- *         The app must have a user-friendly and appropriate user
- *         interface.
+ * SOURCE: REPORT.txt, UI/UX Polish.
+ * SOURCE: Notes - Make use of SSO. Include multi-language support.
  *
- * @version 10.0
+ * @version 11.0
  */
 
 /* Import the canonical design system. */
@@ -1106,5 +1094,264 @@
     .logo a i
     {
         font-size: 1.5rem;
+    }
+}
+
+/* =============================================================================
+   Apple Human Interface Guidelines Additions
+   =============================================================================
+   The rules below tighten the visual design to conform more closely to the
+   Apple Human Interface Guidelines. The three principles are:
+
+   1. Clarity. Text is legible at every size. Icons are precise and lucid.
+      Negative space, color, and typography are used to convey meaning.
+
+   2. Deference. The interface helps users understand and interact with the
+      content, but never competes with it.
+
+   3. Depth. Distinct visual layers and realistic motion convey hierarchy
+      and facilitate understanding.
+
+   The rules are additive. They do not remove or override any existing rule
+   that is already correct.
+
+   SOURCE: REPORT.txt, UI/UX Polish.
+   ============================================================================= */
+
+/* ----- Tap target minimum -------------------------------------------------
+   Apple recommends a minimum tap target of 44 by 44 points on iOS and a
+   minimum of 24 by 24 on macOS. The web application targets both. The
+   rules below set the minimum to 44 pixels for interactive controls. */
+
+button,
+a.btn,
+input[type="submit"],
+input[type="button"],
+select,
+.form-control,
+.nav-link
+{
+    min-height: 44px;
+}
+
+/* ----- Focus indicator ----------------------------------------------------
+   A visible focus indicator is required for keyboard navigation. The
+   Apple design language uses a soft blue halo. The rule below uses the
+   accent color defined in apple.css. */
+
+:focus-visible
+{
+    outline: 3px solid var(--orange, #FF9500);
+    outline-offset: 2px;
+    border-radius: 8px;
+}
+
+/* ----- Typography scale ---------------------------------------------------
+   The Apple design language uses a defined type scale. The scale is used
+   for all text on the public pages. The values below are consistent with
+   the values already defined in apple.css. The rules reinforce the
+   hierarchy on the public pages. */
+
+.public-header .logo a
+{
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.hero h1
+{
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+}
+
+.section-title h2
+{
+    font-weight: 600;
+    letter-spacing: -0.015em;
+}
+
+.about-section h2.section-heading
+{
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 16px;
+}
+
+/* ----- Card elevation -----------------------------------------------------
+   The Apple design language uses a soft elevation. The rules below
+   reinforce the elevation on the public pages. */
+
+.feature-card,
+.about-card,
+.help-card,
+.step
+{
+    border-radius: 16px;
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.04),
+        0 1px 2px rgba(0, 0, 0, 0.02);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.feature-card:hover,
+.about-card:hover,
+.help-card:hover,
+.step:hover
+{
+    transform: translateY(-2px);
+    box-shadow:
+        0 10px 15px -3px rgba(0, 0, 0, 0.05),
+        0 4px 6px -2px rgba(0, 0, 0, 0.025);
+}
+
+/* ----- Form controls ------------------------------------------------------
+   The Apple design language uses large, softly rounded form controls with
+   a subtle border and a soft focus ring. The rules below align the
+   public form controls with that pattern. */
+
+.form-control
+{
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 12px 16px;
+    font-size: 16px;
+}
+
+.form-control:focus
+{
+    outline: none;
+    border-color: var(--orange, #FF9500);
+    box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.15);
+}
+
+.form-label
+{
+    font-weight: 500;
+    font-size: 15px;
+    color: var(--gray-700, #48484A);
+}
+
+.form-hint
+{
+    font-size: 13px;
+    color: var(--gray-500, #AEAEB2);
+    margin-top: 6px;
+}
+
+/* ----- Buttons ------------------------------------------------------------
+   The Apple design language uses a solid fill for the primary button, a
+   tinted fill for the secondary button, and a text-only style for the
+   tertiary action. The rules below align the public buttons. */
+
+.btn-primary
+{
+    background: var(--orange, #FF9500);
+    color: white;
+    border-radius: 12px;
+    font-weight: 500;
+    transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.btn-primary:hover,
+.btn-primary:focus-visible
+{
+    background: #E68200;
+    transform: translateY(-1px);
+}
+
+.btn-outline
+{
+    background: transparent;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    color: var(--gray-800, #48484A);
+    border-radius: 12px;
+    font-weight: 500;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-outline:hover,
+.btn-outline:focus-visible
+{
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.25);
+}
+
+/* ----- Reduced motion -----------------------------------------------------
+   The Apple design language respects the operating system setting for
+   reduced motion. The rule below disables the hover transforms and the
+   smooth scroll behavior when the setting is on. */
+
+@media (prefers-reduced-motion: reduce)
+{
+    *,
+    *::before,
+    *::after
+    {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ----- Toast --------------------------------------------------------------
+   The Apple design language presents transient messages in a small,
+   rounded surface that appears at the bottom of the screen. The rule
+   below defines the surface. The JavaScript that shows the surface is
+   in assets/js/toast.js. */
+
+.toast-container
+{
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    pointer-events: none;
+}
+
+.toast
+{
+    background: rgba(28, 28, 30, 0.95);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+    pointer-events: auto;
+    opacity: 0;
+    transform: translateY(12px);
+    animation: toastIn 0.2s ease forwards;
+    max-width: 90vw;
+}
+
+.toast.toast-success
+{
+    background: rgba(52, 199, 89, 0.95);
+}
+
+.toast.toast-error
+{
+    background: rgba(255, 59, 48, 0.95);
+}
+
+.toast.toast-warning
+{
+    background: rgba(255, 149, 0, 0.95);
+    color: #1C1C1E;
+}
+
+@keyframes toastIn
+{
+    to
+    {
+        opacity: 1;
+        transform: translateY(0);
     }
 }

@@ -5,31 +5,30 @@
  * Returns the Afrikaans translation table for the application.
  *
  * REVIEW NOTICE:
- * The Afrikaans translations in this file were produced by the author of
- * this repository and have not been reviewed by a first-language
+ * The Afrikaans translations in this file were produced by the author
+ * of this repository and have not been reviewed by a first-language
  * Afrikaans speaker. They are provided so that the multi-language
  * feature is functional. Before publication or assessment submission,
  * have an Afrikaans speaker read the file and correct any string that
- * does not sound natural. The keys are stable; only the values should
+ * does not sound natural. The keys are stable. Only the values should
  * be edited.
  *
- * Every key present in Solution/lang/en.php is present here. Keys are
- * kept in the same order so the two files can be compared side by side.
- * A key that is missing here falls back to the English value, which is
- * why completeness matters: an incomplete file is silent.
+ * Every key present in Solution/lang/en.php is present here. A key
+ * that is missing here falls back to the English value.
  *
- * Usage:
- *   echo __('nav.home');            // Tuis
- *   echo __e('auth.sign_in');       // Meld aan (HTML escaped)
+ * CORRECTIONS (Version 2.0 - REPORT.txt Alignment):
+ * - Added the registration keys for the username field, the
+ *   confirm-password field, the vendor shop name field, and the
+ *   offline registration message.
+ * - Added common.or for the separator between the Google button and
+ *   the email form.
+ * - Added error.password_mismatch for the mismatch validation message.
+ * - Added the registration validation message for the vendor shop name.
+ * - Added the first-user-admin message for the Admin role taken case.
  *
- * CORRECTIONS (Version 1.0):
- * - Initial Afrikaans translation table for the multi-language feature.
- * - Mirrors every key in the English table.
+ * SOURCE: REPORT.txt, Registration Form Fields and i18n.
  *
- * SOURCE: NOTES - Include multi-language support for at least two
- *         South African languages: English and Afrikaans.
- *
- * @version 1.0
+ * @version 2.0
  */
 
 return array(
@@ -95,22 +94,31 @@ return array(
     // Registration
     // -------------------------------------------------------------------------
 
-    'register.title'                => 'Skep rekening',
-    'register.subtitle'             => 'Sluit aan by die kampus-afhaalnetwerk',
-    'register.name_placeholder'     => 'U volle naam',
-    'register.email_placeholder'    => 'u@kampus.edu',
-    'register.password_placeholder' => 'Skep n wagwoord',
-    'register.hint_password'        => 'Minstens 8 karakters, sluit hoofletter, syfer en spesiale simbool in.',
-    'register.hint_student'         => 'Studente ontvang n afslag van 2,5 persent op bestellings.',
-    'register.hint_admin_first'     => 'Die Admin-rol is slegs vir hierdie eerste registrasie beskikbaar.',
-    'register.first_user_title'     => 'U is die eerste gebruiker.',
-    'register.first_user_body'      => 'Daar bestaan nog geen rekeninge nie. U kan hierdie eerste rekening as n administrateur registreer. Sodra enige rekening bestaan, sal die Admin-rol nie meer aangebied word nie.',
-    'register.success_heading'      => 'Rekening suksesvol geskep.',
-    'register.success_body'         => 'U 16-karakter GEBRUIKERS-ID is geskep. U kan nou aanmeld.',
-    'register.user_id_label'        => 'U 16-karakter GEBRUIKERS-ID',
-    'register.user_id_note'         => 'Bewaar hierdie ID. U sal dit nodig hê om u wagwoord te herstel.',
-    'register.copy_id'              => 'Kopieer',
-    'register.go_to_login'          => 'Gaan na aanmelding',
+    'register.title'                        => 'Skep rekening',
+    'register.subtitle'                     => 'Sluit aan by die kampus-afhaalnetwerk',
+    'register.name_placeholder'             => 'U volle naam',
+    'register.username_placeholder'         => 'Kies n gebruikersnaam',
+    'register.username_hint'                => 'Opsioneel. As dit leeg gelaat word, word die gebruikersnaam van u e-pos afgelei.',
+    'register.email_placeholder'            => 'u@kampus.edu',
+    'register.password_placeholder'         => 'Skep n wagwoord',
+    'register.confirm_password_placeholder' => 'Voer u wagwoord weer in',
+    'register.hint_password'                => 'Minstens 8 karakters, sluit hoofletter, syfer en spesiale simbool in.',
+    'register.hint_student'                 => 'Studente ontvang n afslag van 2,5 persent op bestellings.',
+    'register.hint_admin_first'             => 'Die Admin-rol is slegs vir hierdie eerste registrasie beskikbaar.',
+    'register.first_user_title'             => 'U is die eerste gebruiker.',
+    'register.first_user_body'              => 'Daar bestaan nog geen rekeninge nie. U kan hierdie eerste rekening as n administrateur registreer. Sodra enige rekening bestaan, sal die Admin-rol nie meer aangebied word nie.',
+    'register.success_heading'              => 'Rekening suksesvol geskep.',
+    'register.success_body'                 => 'U 16-karakter GEBRUIKERS-ID is geskep. U kan nou aanmeld.',
+    'register.success_offline'              => 'U registrasie is in die tou geplaas. Ons sal dit voltooi sodra die diens terugkeer.',
+    'register.user_id_label'                => 'U 16-karakter GEBRUIKERS-ID',
+    'register.user_id_note'                 => 'Bewaar hierdie ID. U sal dit nodig hê om u wagwoord te herstel.',
+    'register.copy_id'                      => 'Kopieer',
+    'register.go_to_login'                  => 'Gaan na aanmelding',
+    'register.vendor_name_label'            => 'Winkelnaam',
+    'register.vendor_name_placeholder'      => 'U winkelnaam',
+    'register.vendor_name_hint'             => 'Hierdie naam word aan klante gewys.',
+    'register.error_vendor_name_required'   => 'n Winkelnaam is verpligtend vir n verkopersrekening.',
+    'register.error_admin_taken'            => 'Die Admin-rol is slegs vir die eerste registrasie beskikbaar.',
 
     // -------------------------------------------------------------------------
     // Login
@@ -215,6 +223,7 @@ return array(
     'common.next'                   => 'Volgende',
     'common.search'                 => 'Soek',
     'common.submit'                 => 'Dien in',
+    'common.or'                     => 'of',
 
     // -------------------------------------------------------------------------
     // Errors
