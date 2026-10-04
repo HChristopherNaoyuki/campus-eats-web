@@ -1,4 +1,4 @@
--- Campus Eats database schema, version 22.0.
+-- Campus Eats database schema, version 23.0.
 -- Creates the ten tables used by the application.
 -- The script does not insert any row.
 -- Demonstration data is inserted separately by Solution/sql/seed.php.
@@ -220,6 +220,23 @@ CREATE TABLE IF NOT EXISTS user_sessions
         ON DELETE CASCADE,
     INDEX idx_sessions_user_id (user_id),
     INDEX idx_last_activity (last_activity)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS firebase_sync_state
+(
+    sync_id      INT AUTO_INCREMENT PRIMARY KEY,
+    user_id      INT NOT NULL,
+    node         VARCHAR(64) NOT NULL,
+    record_key   VARCHAR(64) NOT NULL,
+    payload_hash VARCHAR(64) NOT NULL,
+    synced_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_user_node_record (user_id, node, record_key),
+    INDEX idx_user_id (user_id),
+    INDEX idx_synced_at (synced_at),
+    CONSTRAINT fk_sync_state_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(user_id)
+        ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;
