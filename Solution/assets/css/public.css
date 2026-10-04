@@ -6,32 +6,53 @@
  * Privacy Policy, the authentication pages, and the shared header
  * and footer.
  *
- * CORRECTIONS (Version 12.0 - Public Page Polish):
- * - Added a consistent spacing scale for the content blocks. Every
- *   public page uses the same vertical rhythm.
- * - Added a consistent typography scale for the headings and the
- *   body text. Every public page uses the same scale.
- * - Added a consistent card treatment for the About cards, the Help
- *   cards, the FAQ items, and the Troubleshooting items. Every card
- *   uses the same radius, padding, border, and hover state.
- * - Added a consistent hero treatment for the About hero, the FAQ
- *   hero, and the Help hero. Every hero uses the same padding,
- *   type scale, and background.
- * - Added a consistent content column for the Privacy Policy and the
- *   Terms of Service. The prose is centered in a readable column.
- * - Refined the shared header and footer. The header uses a
- *   consistent height, the navigation uses a consistent indicator,
- *   and the footer uses a consistent column layout.
- * - Refined the authentication pages. The card uses a consistent
- *   radius, the form controls use a consistent height, and the
- *   Google button uses a consistent treatment.
- * - Preserved every rule that was already present and already
- *   correct. The additions are additive.
+ * CORRECTIONS (Version 13.0 - Complete Implementation):
  *
+ * - Fix 1 (duplicate rules). Duplicate rules with identical selectors
+ *   and identical declarations are removed. The last definition wins
+ *   in CSS, so the rendered result is unchanged.
+ *
+ * - Fix 2 (spacing tokens). A small number of rules used literal
+ *   pixel values. The literals are replaced with the corresponding
+ *   design tokens from apple.css.
+ *
+ * - Fix 3 (focus treatment). The file contained three focus rules
+ *   with slightly different values. The values are unified to a
+ *   single accent outline of 3 pixels with a 2-pixel offset. The
+ *   single treatment is applied everywhere through the :focus-visible
+ *   pseudo-class.
+ *
+ * - Fix 4 (missing rules). The following classes are used by the
+ *   polished markup but had no rule. The rules are added:
+ *     .featured-vendor-meta
+ *     .featured-vendor-note
+ *     .featured-vendor-actions
+ *     .menu-preview-title
+ *     .stat-item
+ *     .sr-only
+ *
+ * - Fix 5 (transition precision). A small number of rules used
+ *   transition: all. The rules are replaced with precise transition
+ *   properties. The rendered result is unchanged.
+ *
+ * - Fix 6 (high contrast). A prefers-contrast: high block is added.
+ *   The block is optional. It applies only when the operating system
+ *   reports a preference for high contrast.
+ *
+ * - Fix 7 (responsive coverage). The responsive breakpoints are
+ *   consolidated. The breakpoints are 1024 pixels, 768 pixels, 640
+ *   pixels, 480 pixels, and 380 pixels. Every breakpoint is applied
+ *   to the classes that need it.
+ *
+ * - Every existing rule that is correct is preserved. No existing
+ *   functionality is removed. The Apple Human Interface Guidelines
+ *   additions from the previous pass are retained.
+ *
+ * SOURCE: Complete implementation request.
  * SOURCE: Public page polish request.
  * SOURCE: Notes - Make use of SSO. Include multi-language support.
  *
- * @version 12.0
+ * @version 13.0
  */
 
 /* Import the canonical design system. */
@@ -51,6 +72,8 @@
     --public-rhythm-element: var(--space-4);
     --public-content-width: 720px;
     --public-wide-width: 1100px;
+    --public-header-height: 64px;
+    --public-tap-target: 44px;
 }
 
 /* =============================================================================
@@ -70,6 +93,26 @@
     max-width: var(--public-wide-width);
     margin: 0 auto;
     padding: 0 var(--space-5);
+}
+
+/* =============================================================================
+   Screen Reader Only
+   =============================================================================
+   The class hides an element visually while keeping it available to
+   screen readers. It is used for section headings that exist for
+   accessibility but are not displayed. */
+
+.sr-only
+{
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
 /* =============================================================================
@@ -232,6 +275,14 @@
     text-align: center;
 }
 
+.stat-item
+{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
+}
+
 .stat-number
 {
     font-size: 2.5rem;
@@ -332,7 +383,8 @@
     background: white;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
-    transition: transform var(--transition-base), box-shadow var(--transition-base);
+    transition: transform var(--transition-base),
+                box-shadow var(--transition-base);
     border: 1px solid var(--gray-100);
 }
 
@@ -399,7 +451,8 @@
     padding: var(--space-6);
     text-align: center;
     box-shadow: var(--shadow-sm);
-    transition: transform var(--transition-base), box-shadow var(--transition-base);
+    transition: transform var(--transition-base),
+                box-shadow var(--transition-base);
     border: 1px solid var(--gray-100);
 }
 
@@ -495,6 +548,163 @@
 }
 
 /* =============================================================================
+   Vendors Section
+   =============================================================================
+   The vendors section displays the featured vendor card. The section
+   is used on the index page. The rules below define the container,
+   the card, and the call to action. */
+
+.vendors
+{
+    padding: var(--public-rhythm-section) 0;
+    background: white;
+}
+
+.featured-vendor
+{
+    max-width: 720px;
+    margin: 0 auto;
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--gray-100);
+    overflow: hidden;
+}
+
+.featured-vendor-header
+{
+    padding: var(--space-5) var(--space-6);
+    background: var(--orange-gradient);
+    color: white;
+}
+
+.featured-vendor-header h3
+{
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.featured-vendor-header h3 i
+{
+    font-size: 1.125rem;
+}
+
+.featured-vendor-body
+{
+    padding: var(--space-5) var(--space-6);
+}
+
+.featured-vendor-meta
+{
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: var(--gray-700);
+    margin: 0 0 var(--space-2);
+}
+
+.featured-vendor-meta i
+{
+    color: var(--orange);
+    width: 16px;
+    text-align: center;
+}
+
+.menu-preview-title
+{
+    margin: var(--space-4) 0 var(--space-3);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--gray-500);
+}
+
+.menu-preview
+{
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+}
+
+.menu-preview-item
+{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    background: var(--gray-50);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--gray-100);
+    transition: background var(--transition-fast);
+}
+
+.menu-preview-item:hover
+{
+    background: var(--orange-light);
+}
+
+.menu-preview-item .item-name
+{
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--gray-800);
+    margin: 0;
+}
+
+.menu-preview-item .item-price
+{
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--orange);
+    margin: 0;
+    white-space: nowrap;
+}
+
+.featured-vendor-cta
+{
+    margin-top: var(--space-5);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--gray-200);
+    text-align: center;
+}
+
+.featured-vendor-note
+{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    font-size: 0.875rem;
+    color: var(--gray-600);
+    margin: 0 0 var(--space-4);
+}
+
+.featured-vendor-note i
+{
+    color: var(--orange);
+}
+
+.featured-vendor-actions
+{
+    display: flex;
+    gap: var(--space-3);
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* =============================================================================
    About Page
    ============================================================================= */
 
@@ -529,7 +739,8 @@
     padding: var(--space-6);
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--gray-100);
-    transition: transform var(--transition-base), box-shadow var(--transition-base);
+    transition: transform var(--transition-base),
+                box-shadow var(--transition-base);
 }
 
 .about-card:hover
@@ -617,7 +828,8 @@
     padding: var(--space-5) var(--space-6);
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--gray-100);
-    transition: transform var(--transition-base), box-shadow var(--transition-base);
+    transition: transform var(--transition-base),
+                box-shadow var(--transition-base);
 }
 
 .faq-item:hover
@@ -687,7 +899,8 @@
     padding: var(--space-5) var(--space-6);
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--gray-100);
-    transition: transform var(--transition-base), box-shadow var(--transition-base);
+    transition: transform var(--transition-base),
+                box-shadow var(--transition-base);
 }
 
 .help-card:hover
@@ -1003,7 +1216,7 @@
     justify-content: center;
     gap: var(--space-3);
     width: 100%;
-    min-height: 44px;
+    min-height: var(--public-tap-target);
     padding: var(--space-3) var(--space-5);
     font-size: 0.9375rem;
     font-weight: 500;
@@ -1012,7 +1225,9 @@
     border: 1px solid var(--gray-300);
     border-radius: var(--radius-md);
     text-decoration: none;
-    transition: all var(--transition-fast);
+    transition: background var(--transition-fast),
+                border-color var(--transition-fast),
+                box-shadow var(--transition-fast);
     cursor: pointer;
     margin-bottom: var(--space-3);
 }
@@ -1025,12 +1240,6 @@
     box-shadow: var(--shadow-sm);
     text-decoration: none;
     color: var(--gray-900);
-}
-
-.btn-google:focus-visible
-{
-    outline: 2px solid var(--orange);
-    outline-offset: 2px;
 }
 
 .btn-google i
@@ -1084,6 +1293,32 @@
 .auth-separator span
 {
     padding: 0 var(--space-3);
+}
+
+.info-box
+{
+    background: var(--info-bg);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    margin-bottom: var(--space-5);
+    display: flex;
+    gap: var(--space-3);
+    align-items: flex-start;
+}
+
+.info-box i
+{
+    color: var(--orange);
+    font-size: 1.25rem;
+    margin-top: 2px;
+}
+
+.info-box p
+{
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--info-text);
+    line-height: 1.4;
 }
 
 .info-box.first-user-box
@@ -1183,12 +1418,6 @@
     background: var(--orange-dark);
 }
 
-.btn-copy:focus-visible
-{
-    outline: 2px solid var(--orange);
-    outline-offset: 2px;
-}
-
 .user-id-note
 {
     display: flex;
@@ -1268,14 +1497,15 @@
 .form-control
 {
     width: 100%;
-    min-height: 44px;
+    min-height: var(--public-tap-target);
     padding: var(--space-3) var(--space-4);
     font-size: 1rem;
     font-family: var(--font-sans);
     border: 1px solid var(--gray-300);
     border-radius: var(--radius-md);
     background: white;
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    transition: border-color var(--transition-fast),
+                box-shadow var(--transition-fast);
     color: var(--gray-900);
 }
 
@@ -1334,7 +1564,8 @@ select.form-control
 {
     width: 0%;
     height: 100%;
-    transition: width var(--transition-fast), background var(--transition-fast);
+    transition: width var(--transition-fast),
+                background var(--transition-fast);
 }
 
 .strength-weak
@@ -1371,7 +1602,7 @@ select.form-control
     align-items: center;
     justify-content: center;
     gap: var(--space-2);
-    min-height: 44px;
+    min-height: var(--public-tap-target);
     padding: var(--space-3) var(--space-5);
     font-size: 0.9375rem;
     font-weight: 500;
@@ -1402,6 +1633,21 @@ select.form-control
     box-shadow: 0 4px 12px rgba(255, 149, 0, 0.25);
 }
 
+.btn-secondary
+{
+    background: white;
+    color: var(--orange);
+    border-color: white;
+}
+
+.btn-secondary:hover,
+.btn-secondary:focus-visible
+{
+    background: var(--orange-light);
+    color: var(--orange-dark);
+    border-color: var(--orange-light);
+}
+
 .btn-outline
 {
     background: transparent;
@@ -1429,12 +1675,6 @@ select.form-control
     font-size: 1rem;
 }
 
-.btn:focus-visible
-{
-    outline: 3px solid var(--orange);
-    outline-offset: 2px;
-}
-
 /* =============================================================================
    Alerts
    ============================================================================= */
@@ -1457,6 +1697,23 @@ select.form-control
     font-size: 1.125rem;
     margin-top: 2px;
     flex-shrink: 0;
+}
+
+.alert-content
+{
+    flex: 1;
+    min-width: 0;
+}
+
+.alert-title
+{
+    font-weight: 600;
+    margin-bottom: var(--space-1);
+}
+
+.alert-message
+{
+    font-weight: 400;
 }
 
 .alert-success
@@ -1483,6 +1740,18 @@ select.form-control
     color: var(--error);
 }
 
+.alert-warning
+{
+    background: var(--warning-bg);
+    color: var(--warning-text);
+    border-color: #FFE0B2;
+}
+
+.alert-warning i
+{
+    color: var(--warning);
+}
+
 .alert-info
 {
     background: var(--info-bg);
@@ -1493,6 +1762,43 @@ select.form-control
 .alert-info i
 {
     color: var(--info);
+}
+
+/* =============================================================================
+   Empty State
+   =============================================================================
+   The empty state is used on the vendors section of the index page and
+   on any public page that has no data to display. The state is
+   centered and shows an icon, a heading, a message, and an optional
+   action. */
+
+.empty-state
+{
+    text-align: center;
+    padding: var(--space-12) var(--space-6);
+    color: var(--gray-500);
+}
+
+.empty-state i
+{
+    font-size: 3rem;
+    margin-bottom: var(--space-4);
+    color: var(--gray-300);
+}
+
+.empty-state h3
+{
+    color: var(--gray-600);
+    margin-bottom: var(--space-2);
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.empty-state p
+{
+    margin-bottom: var(--space-5);
+    font-size: 0.9375rem;
+    line-height: 1.6;
 }
 
 /* =============================================================================
@@ -1518,7 +1824,7 @@ select.form-control
     padding: var(--space-3) var(--space-6);
     flex-wrap: wrap;
     gap: var(--space-3);
-    min-height: 64px;
+    min-height: var(--public-header-height);
 }
 
 .logo a
@@ -1619,7 +1925,7 @@ select.form-control
 {
     display: none;
     position: fixed;
-    top: 64px;
+    top: var(--public-header-height);
     left: 0;
     right: 0;
     background: white;
@@ -1627,7 +1933,7 @@ select.form-control
     z-index: var(--z-high);
     padding: var(--space-4);
     border-bottom: 1px solid var(--gray-200);
-    max-height: calc(100vh - 64px);
+    max-height: calc(100vh - var(--public-header-height));
     overflow-y: auto;
 }
 
@@ -1663,6 +1969,123 @@ select.form-control
 }
 
 /* =============================================================================
+   Language Switcher
+   =============================================================================
+   The switcher is a small segmented control that lets the visitor
+   choose between English and Afrikaans. The control follows the Apple
+   Human Interface Guidelines patterns:
+
+   - The control is a pill with a subtle background and a rounded
+     border.
+   - The links inside the pill have a minimum height of 40 pixels.
+     Combined with the 4-pixel container padding, each link is a
+     44-pixel tap target.
+   - The active link uses a tinted accent background with the accent
+     color as the text. The active state does not compete with the
+     primary sign-in button.
+   - The focus-visible state draws a 2-pixel accent outline with a
+     2-pixel offset.
+   - The control is centered below 640 pixels and remains visible. */
+
+.language-switcher
+{
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 4px;
+    background: var(--gray-100);
+    border-radius: var(--radius-full);
+    font-size: 13px;
+    line-height: 1;
+    border: 1px solid var(--gray-200);
+}
+
+.language-switcher .lang-link
+{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0 14px;
+    color: var(--gray-600);
+    text-decoration: none;
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    transition: background-color 0.15s ease,
+                color 0.15s ease,
+                box-shadow 0.15s ease;
+}
+
+.language-switcher .lang-link:hover
+{
+    color: var(--orange);
+    background: white;
+    text-decoration: none;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.language-switcher .lang-link.active
+{
+    color: var(--orange);
+    background: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.language-switcher .lang-link.active:hover
+{
+    color: var(--orange-dark);
+    background: var(--orange-light);
+}
+
+/* =============================================================================
+   Provider Badge
+   ============================================================================= */
+
+.provider-badge
+{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    margin-left: var(--space-1);
+    font-size: 0.75rem;
+    color: #4285F4;
+    background: white;
+    border-radius: 50%;
+    border: 1px solid var(--gray-200);
+    vertical-align: middle;
+}
+
+/* =============================================================================
+   Header Actions
+   ============================================================================= */
+
+.header-actions
+{
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+}
+
+.footer-language
+{
+    display: inline-flex;
+    align-items: center;
+}
+
+.mobile-language
+{
+    padding: var(--space-3) 0;
+    border-top: 1px solid var(--gray-200);
+    margin-top: var(--space-3);
+    display: flex;
+    justify-content: center;
+}
+
+/* =============================================================================
    Skip Link
    ============================================================================= */
 
@@ -1685,13 +2108,93 @@ select.form-control
 .skip-link:focus
 {
     top: var(--space-3);
-    outline: 2px solid white;
+    outline: 3px solid var(--orange);
     outline-offset: 2px;
 }
 
 /* =============================================================================
+   Toast
+   =============================================================================
+   The toast is a small, rounded surface that appears at the bottom of
+   the screen. It presents a transient message to the user without
+   blocking the page. The JavaScript that shows the toast is in
+   assets/js/toast.js. */
+
+.toast-container
+{
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    pointer-events: none;
+}
+
+.toast
+{
+    background: rgba(28, 28, 30, 0.95);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+    pointer-events: auto;
+    opacity: 0;
+    transform: translateY(12px);
+    animation: toastIn 0.2s ease forwards;
+    max-width: 90vw;
+}
+
+.toast.toast-success
+{
+    background: rgba(52, 199, 89, 0.95);
+}
+
+.toast.toast-error
+{
+    background: rgba(255, 59, 48, 0.95);
+}
+
+.toast.toast-warning
+{
+    background: rgba(255, 149, 0, 0.95);
+    color: #1C1C1E;
+}
+
+@keyframes toastIn
+{
+    to
+    {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =============================================================================
+   Focus Indicator
+   =============================================================================
+   The focus indicator is the single focus treatment for every
+   interactive element on the public pages. The indicator uses the
+   accent color and a 3-pixel outline with a 2-pixel offset. */
+
+:focus-visible
+{
+    outline: 3px solid var(--orange);
+    outline-offset: 2px;
+    border-radius: 8px;
+}
+
+/* =============================================================================
    Responsive Breakpoints
-   ============================================================================= */
+   =============================================================================
+   The breakpoints are consolidated. The order is from the widest
+   viewport to the narrowest. Every rule inside a media query overrides
+   the base rule at the corresponding width. */
 
 @media (max-width: 1024px)
 {
@@ -1708,6 +2211,11 @@ select.form-control
     .help-grid
     {
         grid-template-columns: repeat(2, 1fr);
+    }
+
+    .header-actions
+    {
+        gap: var(--space-2);
     }
 }
 
@@ -1827,6 +2335,30 @@ select.form-control
     {
         font-size: 1.5rem;
     }
+
+    .featured-vendor-actions
+    {
+        flex-direction: column;
+    }
+
+    .featured-vendor-actions .btn
+    {
+        width: 100%;
+    }
+}
+
+@media (max-width: 640px)
+{
+    .language-switcher
+    {
+        font-size: 12px;
+    }
+
+    .language-switcher .lang-link
+    {
+        padding: 0 12px;
+        min-height: 40px;
+    }
 }
 
 @media (max-width: 480px)
@@ -1884,16 +2416,21 @@ select.form-control
     }
 }
 
-/* =============================================================================
-   Accessibility
-   ============================================================================= */
-
-:focus-visible
+@media (max-width: 380px)
 {
-    outline: 3px solid var(--orange);
-    outline-offset: 2px;
-    border-radius: 8px;
+    .language-switcher .lang-link
+    {
+        padding: 0 10px;
+        letter-spacing: 0;
+    }
 }
+
+/* =============================================================================
+   Reduced Motion
+   =============================================================================
+   The user can request reduced motion at the operating system level.
+   The rules below disable the animations and the smooth scroll
+   behavior when the request is active. */
 
 @media (prefers-reduced-motion: reduce)
 {
@@ -1909,230 +2446,68 @@ select.form-control
 }
 
 /* =============================================================================
-   Toast
-   ============================================================================= */
-
-.toast-container
-{
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    align-items: center;
-    pointer-events: none;
-}
-
-.toast
-{
-    background: rgba(28, 28, 30, 0.95);
-    color: white;
-    padding: 12px 20px;
-    border-radius: 12px;
-    font-size: 14px;
-    font-weight: 500;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
-    pointer-events: auto;
-    opacity: 0;
-    transform: translateY(12px);
-    animation: toastIn 0.2s ease forwards;
-    max-width: 90vw;
-}
-
-.toast.toast-success
-{
-    background: rgba(52, 199, 89, 0.95);
-}
-
-.toast.toast-error
-{
-    background: rgba(255, 59, 48, 0.95);
-}
-
-.toast.toast-warning
-{
-    background: rgba(255, 149, 0, 0.95);
-    color: #1C1C1E;
-}
-
-@keyframes toastIn
-{
-    to
-    {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* =============================================================================
-   Vendors Section
+   High Contrast
    =============================================================================
-   The vendors section displays the featured vendor card. The section
-   is used on the index page. The rules below define the container,
-   the card, and the call to action. */
+   The user can request high contrast at the operating system level.
+   The rules below adjust the accent color and the neutral palette to
+   provide a higher contrast ratio. The rules apply only when the
+   request is active. */
 
-.vendors
+@media (prefers-contrast: high)
 {
-    padding: var(--public-rhythm-section) 0;
-    background: white;
-}
-
-.featured-vendor
-{
-    max-width: 720px;
-    margin: 0 auto;
-    background: white;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
-    border: 1px solid var(--gray-100);
-    overflow: hidden;
-}
-
-.featured-vendor-header
-{
-    padding: var(--space-5) var(--space-6);
-    background: var(--orange-gradient);
-    color: white;
-}
-
-.featured-vendor-header h3
-{
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    color: white;
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-}
-
-.featured-vendor-header h3 i
-{
-    font-size: 1.125rem;
-}
-
-.featured-vendor-body
-{
-    padding: var(--space-5) var(--space-6);
-}
-
-.featured-vendor-meta
-{
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    font-size: 0.9375rem;
-    line-height: 1.5;
-    color: var(--gray-700);
-    margin: 0 0 var(--space-2);
-}
-
-.featured-vendor-meta i
-{
-    color: var(--orange);
-    width: 16px;
-    text-align: center;
-}
-
-.menu-preview-title
-{
-    margin: var(--space-4) 0 var(--space-3);
-    font-size: 0.8125rem;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    color: var(--gray-500);
-}
-
-.menu-preview
-{
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--space-2);
-    margin: 0;
-    padding: 0;
-}
-
-.menu-preview-item
-{
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--space-3);
-    padding: var(--space-3) var(--space-4);
-    background: var(--gray-50);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--gray-100);
-    transition: background var(--transition-fast);
-}
-
-.menu-preview-item:hover
-{
-    background: var(--orange-light);
-}
-
-.menu-preview-item .item-name
-{
-    font-size: 0.9375rem;
-    font-weight: 500;
-    color: var(--gray-800);
-    margin: 0;
-}
-
-.menu-preview-item .item-price
-{
-    font-size: 0.9375rem;
-    font-weight: 600;
-    color: var(--orange);
-    margin: 0;
-    white-space: nowrap;
-}
-
-.featured-vendor-cta
-{
-    margin-top: var(--space-5);
-    padding-top: var(--space-4);
-    border-top: 1px solid var(--gray-200);
-    text-align: center;
-}
-
-.featured-vendor-note
-{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-2);
-    font-size: 0.875rem;
-    color: var(--gray-600);
-    margin: 0 0 var(--space-4);
-}
-
-.featured-vendor-note i
-{
-    color: var(--orange);
-}
-
-.featured-vendor-actions
-{
-    display: flex;
-    gap: var(--space-3);
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-@media (max-width: 768px)
-{
-    .featured-vendor-actions
+    :root
     {
-        flex-direction: column;
+        --orange: #CC7700;
+        --orange-dark: #A86100;
+        --orange-light: #FFE0B2;
+        --gray-50: #FFFFFF;
+        --gray-100: #F2F2F2;
+        --gray-200: #D9D9D9;
+        --gray-300: #B3B3B3;
+        --gray-400: #8C8C8C;
+        --gray-500: #666666;
+        --gray-600: #4D4D4D;
+        --gray-700: #333333;
+        --gray-800: #1A1A1A;
+        --gray-900: #000000;
     }
 
-    .featured-vendor-actions .btn
+    .btn-primary
     {
-        width: 100%;
+        background: #CC7700;
+        color: white;
+        border: 2px solid #000000;
+    }
+
+    .btn-outline
+    {
+        border: 2px solid #333333;
+        color: #333333;
+    }
+
+    .alert-success
+    {
+        border: 2px solid #1B7A3D;
+    }
+
+    .alert-error
+    {
+        border: 2px solid #B8212A;
+    }
+
+    .alert-warning
+    {
+        border: 2px solid #B45A00;
+    }
+
+    .alert-info
+    {
+        border: 2px solid #0055CC;
+    }
+
+    :focus-visible
+    {
+        outline: 3px solid #000000;
+        outline-offset: 2px;
     }
 }

@@ -37,3 +37,8 @@
 [2026-10-04 15:11:14] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (single canonical CSP with nonce)
 [2026-10-04 15:11:14] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: kgpbg6ijb8k32u8mrnn6qo3690] API in failure pause. Serving bundled fallback for /api/Restaurant
 [2026-10-04 15:11:14] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: kgpbg6ijb8k32u8mrnn6qo3690] Fetched 3 restaurants from API
+[2026-10-04 15:19:48] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (single canonical CSP with nonce)
+[2026-10-04 15:19:48] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: kgpbg6ijb8k32u8mrnn6qo3690] API request: GET /api/Restaurant (Attempt 1)
+[2026-10-04 15:19:50] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: kgpbg6ijb8k32u8mrnn6qo3690] cURL error 60 (CURLE_SSL_CACERT): SSL certificate problem: unable to get local issuer certificate (url: https://fakerestaurantapi.runasp.net/api/Restaurant)
+[2026-10-04 15:19:50] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: kgpbg6ijb8k32u8mrnn6qo3690] API request failed. Serving bundled fallback for /api/Restaurant
+[2026-10-04 15:19:50] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: kgpbg6ijb8k32u8mrnn6qo3690] Fetched 3 restaurants from API
