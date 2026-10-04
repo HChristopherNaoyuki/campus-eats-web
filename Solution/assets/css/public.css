@@ -1966,3 +1966,173 @@ select.form-control
         transform: translateY(0);
     }
 }
+
+/* =============================================================================
+   Vendors Section
+   =============================================================================
+   The vendors section displays the featured vendor card. The section
+   is used on the index page. The rules below define the container,
+   the card, and the call to action. */
+
+.vendors
+{
+    padding: var(--public-rhythm-section) 0;
+    background: white;
+}
+
+.featured-vendor
+{
+    max-width: 720px;
+    margin: 0 auto;
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--gray-100);
+    overflow: hidden;
+}
+
+.featured-vendor-header
+{
+    padding: var(--space-5) var(--space-6);
+    background: var(--orange-gradient);
+    color: white;
+}
+
+.featured-vendor-header h3
+{
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.featured-vendor-header h3 i
+{
+    font-size: 1.125rem;
+}
+
+.featured-vendor-body
+{
+    padding: var(--space-5) var(--space-6);
+}
+
+.featured-vendor-meta
+{
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: var(--gray-700);
+    margin: 0 0 var(--space-2);
+}
+
+.featured-vendor-meta i
+{
+    color: var(--orange);
+    width: 16px;
+    text-align: center;
+}
+
+.menu-preview-title
+{
+    margin: var(--space-4) 0 var(--space-3);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--gray-500);
+}
+
+.menu-preview
+{
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+}
+
+.menu-preview-item
+{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    background: var(--gray-50);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--gray-100);
+    transition: background var(--transition-fast);
+}
+
+.menu-preview-item:hover
+{
+    background: var(--orange-light);
+}
+
+.menu-preview-item .item-name
+{
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--gray-800);
+    margin: 0;
+}
+
+.menu-preview-item .item-price
+{
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--orange);
+    margin: 0;
+    white-space: nowrap;
+}
+
+.featured-vendor-cta
+{
+    margin-top: var(--space-5);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--gray-200);
+    text-align: center;
+}
+
+.featured-vendor-note
+{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    font-size: 0.875rem;
+    color: var(--gray-600);
+    margin: 0 0 var(--space-4);
+}
+
+.featured-vendor-note i
+{
+    color: var(--orange);
+}
+
+.featured-vendor-actions
+{
+    display: flex;
+    gap: var(--space-3);
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px)
+{
+    .featured-vendor-actions
+    {
+        flex-direction: column;
+    }
+
+    .featured-vendor-actions .btn
+    {
+        width: 100%;
+    }
+}
