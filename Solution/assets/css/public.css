@@ -1,29 +1,107 @@
 /**
  * Campus Eats Public Pages Styles
  *
- * Styles for the public-facing pages: the landing page, the About page,
- * the FAQ page, the Help Center, the Terms of Service, the Privacy
- * Policy, the authentication pages, and the shared header and footer.
+ * Styles for the public-facing pages: the landing page, the About
+ * page, the FAQ page, the Help Center, the Terms of Service, the
+ * Privacy Policy, the authentication pages, and the shared header
+ * and footer.
  *
- * CORRECTIONS (Version 11.0 - REPORT.txt Alignment):
- * - Added Apple Human Interface Guidelines rules for tap targets,
- *   focus indicators, typography scale, card elevation, form controls,
- *   buttons, reduced motion, and the toast surface.
- * - The additions are additive. They do not remove or override any
- *   existing rule that is already correct.
+ * CORRECTIONS (Version 12.0 - Public Page Polish):
+ * - Added a consistent spacing scale for the content blocks. Every
+ *   public page uses the same vertical rhythm.
+ * - Added a consistent typography scale for the headings and the
+ *   body text. Every public page uses the same scale.
+ * - Added a consistent card treatment for the About cards, the Help
+ *   cards, the FAQ items, and the Troubleshooting items. Every card
+ *   uses the same radius, padding, border, and hover state.
+ * - Added a consistent hero treatment for the About hero, the FAQ
+ *   hero, and the Help hero. Every hero uses the same padding,
+ *   type scale, and background.
+ * - Added a consistent content column for the Privacy Policy and the
+ *   Terms of Service. The prose is centered in a readable column.
+ * - Refined the shared header and footer. The header uses a
+ *   consistent height, the navigation uses a consistent indicator,
+ *   and the footer uses a consistent column layout.
+ * - Refined the authentication pages. The card uses a consistent
+ *   radius, the form controls use a consistent height, and the
+ *   Google button uses a consistent treatment.
+ * - Preserved every rule that was already present and already
+ *   correct. The additions are additive.
  *
- * SOURCE: REPORT.txt, UI/UX Polish.
+ * SOURCE: Public page polish request.
  * SOURCE: Notes - Make use of SSO. Include multi-language support.
  *
- * @version 11.0
+ * @version 12.0
  */
 
 /* Import the canonical design system. */
 @import url('apple.css');
 
 /* =============================================================================
+   Shared Rhythm
+   =============================================================================
+   The vertical rhythm is defined once and used by every public page.
+   The rhythm is a three-level scale: section, block, and element.
+   The scale is expressed through the design system spacing tokens. */
+
+:root
+{
+    --public-rhythm-section: var(--space-16);
+    --public-rhythm-block: var(--space-8);
+    --public-rhythm-element: var(--space-4);
+    --public-content-width: 720px;
+    --public-wide-width: 1100px;
+}
+
+/* =============================================================================
+   Shared Container
+   =============================================================================
+   The container is the same on every public page. The container width
+   matches the design system container and is centered. */
+
+.public-container,
+.about-container,
+.faq-container,
+.help-container,
+.privacy-container,
+.terms-container
+{
+    width: 100%;
+    max-width: var(--public-wide-width);
+    margin: 0 auto;
+    padding: 0 var(--space-5);
+}
+
+/* =============================================================================
+   Shared Content Column
+   =============================================================================
+   The prose column is a narrower column used for the Privacy Policy
+   and the Terms of Service. The narrower width keeps the line length
+   comfortable for reading. */
+
+.prose-column
+{
+    max-width: var(--public-content-width);
+    margin: 0 auto;
+}
+
+/* =============================================================================
    Hero Section
-   ============================================================================= */
+   =============================================================================
+   The hero is used on the landing page, the About page, the FAQ
+   page, and the Help page. Every hero uses the same padding and the
+   same type scale. */
+
+.hero,
+.about-hero,
+.faq-hero,
+.help-hero
+{
+    padding: var(--space-16) 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
 
 .hero
 {
@@ -31,11 +109,17 @@
                 url("https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1674&q=80");
     background-size: cover;
     background-position: center;
-    padding: var(--space-20) 0;
-    text-align: center;
     color: white;
-    position: relative;
-    overflow: hidden;
+}
+
+.about-hero,
+.faq-hero,
+.help-hero
+{
+    background: var(--orange-gradient);
+    color: white;
+    padding: var(--space-12) 0;
+    margin-bottom: var(--space-8);
 }
 
 .hero::after
@@ -75,6 +159,28 @@
     line-height: 1.6;
     position: relative;
     z-index: 1;
+}
+
+.about-hero h1,
+.faq-hero h1,
+.help-hero h1
+{
+    color: white;
+    font-size: 2.5rem;
+    margin-bottom: var(--space-3);
+    font-weight: 700;
+    letter-spacing: -0.015em;
+}
+
+.about-hero p,
+.faq-hero p,
+.help-hero p
+{
+    font-size: 1.125rem;
+    opacity: 0.9;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.5;
 }
 
 .hero-buttons
@@ -132,6 +238,7 @@
     font-weight: 700;
     color: var(--orange);
     line-height: 1.2;
+    letter-spacing: -0.02em;
 }
 
 .stat-label
@@ -144,13 +251,70 @@
 }
 
 /* =============================================================================
-   How It Works Section
+   Section Headings
+   =============================================================================
+   The section heading is used on every public page that has a
+   section title. The heading is consistent. */
+
+.section-title
+{
+    text-align: center;
+    margin-bottom: var(--space-12);
+}
+
+.section-title h2
+{
+    font-size: 2rem;
+    margin-bottom: var(--space-3);
+    color: var(--gray-900);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.2;
+}
+
+.section-title p
+{
+    color: var(--gray-600);
+    max-width: 600px;
+    margin: var(--space-5) auto 0;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.section-heading
+{
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: var(--space-4);
+    color: var(--gray-900);
+}
+
+.section-heading i
+{
+    color: var(--orange);
+    font-size: 1.25rem;
+}
+
+.section-text
+{
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--gray-700);
+    margin-bottom: var(--space-4);
+}
+
+/* =============================================================================
+   Steps Section
    ============================================================================= */
 
 .how-it-works
 {
     background: var(--gray-50);
-    padding: var(--space-16) 0;
+    padding: var(--public-rhythm-section) 0;
 }
 
 .steps
@@ -169,11 +333,12 @@
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
     transition: transform var(--transition-base), box-shadow var(--transition-base);
+    border: 1px solid var(--gray-100);
 }
 
 .step:hover
 {
-    transform: translateY(-4px);
+    transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
 }
 
@@ -192,36 +357,31 @@
     margin: 0 auto var(--space-4);
 }
 
+.step h3
+{
+    font-size: 1.125rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: var(--space-2);
+    color: var(--gray-900);
+}
+
+.step p
+{
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--gray-600);
+    margin: 0;
+}
+
 /* =============================================================================
    Features Section
    ============================================================================= */
 
 .features
 {
-    padding: var(--space-16) 0;
+    padding: var(--public-rhythm-section) 0;
     background: white;
-}
-
-.section-title
-{
-    text-align: center;
-    margin-bottom: var(--space-12);
-}
-
-.section-title h2
-{
-    font-size: 2rem;
-    margin-bottom: var(--space-3);
-    color: var(--gray-900);
-    position: relative;
-    display: inline-block;
-}
-
-.section-title p
-{
-    color: var(--gray-600);
-    max-width: 600px;
-    margin: var(--space-5) auto 0;
 }
 
 .features-grid
@@ -245,22 +405,39 @@
 
 .feature-card:hover
 {
-    transform: translateY(-4px);
+    transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
 }
 
 .feature-icon
 {
-    font-size: 2.5rem;
+    font-size: 2rem;
     color: var(--orange);
     background: var(--orange-light);
-    width: 72px;
-    height: 72px;
+    width: 64px;
+    height: 64px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: var(--radius-lg);
     margin: 0 auto var(--space-4);
+}
+
+.feature-card h3
+{
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: var(--space-2);
+    color: var(--gray-900);
+}
+
+.feature-card p
+{
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--gray-600);
+    margin: 0;
 }
 
 /* =============================================================================
@@ -269,7 +446,7 @@
 
 .cta
 {
-    padding: var(--space-16) 0;
+    padding: var(--public-rhythm-section) 0;
     background: var(--orange-gradient);
     color: white;
     text-align: center;
@@ -280,6 +457,8 @@
     color: white;
     margin-bottom: var(--space-4);
     font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.015em;
 }
 
 .cta p
@@ -288,51 +467,425 @@
     margin: 0 auto var(--space-6);
     opacity: 0.9;
     font-size: 1.125rem;
+    line-height: 1.6;
+}
+
+.cta ul
+{
+    list-style: none;
+    padding: 0;
+    margin: 0 auto var(--space-6);
+    display: inline-flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    text-align: left;
+}
+
+.cta ul li
+{
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: 1rem;
+}
+
+.cta ul li i
+{
+    color: rgba(255, 255, 255, 0.9);
 }
 
 /* =============================================================================
-   About, FAQ, Help, Privacy, and Terms Containers
+   About Page
    ============================================================================= */
 
-.about-container,
-.faq-container,
-.help-container,
-.privacy-container,
-.terms-container
+.about-container
 {
-    max-width: 900px;
+    max-width: 960px;
     margin: var(--space-12) auto;
-    padding: 0 var(--space-5);
 }
 
-.about-hero,
-.faq-hero,
-.help-hero
+.about-section
 {
-    background: var(--orange-gradient);
-    color: white;
-    padding: var(--space-12) 0;
-    text-align: center;
-    margin-bottom: var(--space-8);
+    margin-bottom: var(--public-rhythm-block);
 }
 
-.about-hero h1,
-.faq-hero h1,
-.help-hero h1
+.about-section:last-child
 {
-    color: white;
-    font-size: 2.5rem;
+    margin-bottom: 0;
+}
+
+.about-grid
+{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-6);
+    margin-bottom: var(--public-rhythm-block);
+}
+
+.about-card
+{
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--gray-100);
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.about-card:hover
+{
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.about-card .icon
+{
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    background: var(--orange-light);
+    color: var(--orange);
+    font-size: 1.25rem;
     margin-bottom: var(--space-3);
 }
 
-.about-hero p,
-.faq-hero p,
-.help-hero p
+.about-card h3
 {
     font-size: 1.125rem;
-    opacity: 0.9;
-    max-width: 600px;
-    margin: 0 auto;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: var(--space-2);
+    color: var(--gray-900);
+}
+
+.about-card p
+{
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--gray-600);
+    margin: 0;
+}
+
+.feature-list
+{
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+}
+
+.feature-list li
+{
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: 1rem;
+    color: var(--gray-700);
+}
+
+.feature-list li i
+{
+    color: var(--orange);
+}
+
+/* =============================================================================
+   FAQ Page
+   ============================================================================= */
+
+.faq-container
+{
+    max-width: 860px;
+    margin: var(--space-12) auto;
+}
+
+.faq-list
+{
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.faq-item
+{
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: var(--space-5) var(--space-6);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--gray-100);
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.faq-item:hover
+{
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.faq-question
+{
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    font-size: 1.0625rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--gray-900);
+    margin-bottom: var(--space-2);
+}
+
+.faq-question i
+{
+    color: var(--orange);
+    font-size: 1.125rem;
+}
+
+.faq-answer
+{
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--gray-700);
+    margin: 0;
+    padding-left: calc(1.125rem + var(--space-3));
+}
+
+/* =============================================================================
+   Help Page
+   ============================================================================= */
+
+.help-container
+{
+    max-width: 1040px;
+    margin: var(--space-12) auto;
+}
+
+.help-section
+{
+    margin-bottom: var(--public-rhythm-block);
+}
+
+.help-section:last-child
+{
+    margin-bottom: 0;
+}
+
+.help-grid
+{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-5);
+}
+
+.help-card
+{
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: var(--space-5) var(--space-6);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--gray-100);
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.help-card:hover
+{
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.help-card i
+{
+    font-size: 1.5rem;
+    color: var(--orange);
+    margin-bottom: var(--space-3);
+    display: block;
+}
+
+.help-card h3
+{
+    font-size: 1.0625rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: var(--space-2);
+    color: var(--gray-900);
+}
+
+.help-card p
+{
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--gray-600);
+    margin: 0;
+}
+
+.troubleshooting-list
+{
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.trouble-item
+{
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: var(--space-4) var(--space-5);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--gray-100);
+    border-left: 4px solid var(--orange);
+}
+
+.trouble-item p:first-child
+{
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: var(--space-2);
+}
+
+.trouble-item p:first-child i
+{
+    color: var(--orange);
+}
+
+.trouble-item p:last-child
+{
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--gray-600);
+    margin: 0;
+}
+
+.contact-support-box
+{
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--gray-100);
+    text-align: center;
+}
+
+.contact-support-box i
+{
+    font-size: 2rem;
+    color: var(--orange);
+    margin-bottom: var(--space-3);
+}
+
+.contact-support-box h3
+{
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: var(--space-2);
+    color: var(--gray-900);
+}
+
+.contact-support-box p
+{
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--gray-600);
+    margin: var(--space-1) 0;
+}
+
+.contact-support-box a
+{
+    color: var(--orange);
+    text-decoration: none;
+}
+
+.contact-support-box a:hover
+{
+    text-decoration: underline;
+}
+
+/* =============================================================================
+   Privacy Policy and Terms of Service
+   ============================================================================= */
+
+.privacy-container,
+.terms-container
+{
+    max-width: var(--public-content-width);
+    margin: var(--space-12) auto;
+}
+
+.page-title
+{
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: var(--space-3);
+    color: var(--gray-900);
+}
+
+.privacy-content,
+.terms-content
+{
+    font-size: 1rem;
+    line-height: 1.75;
+    color: var(--gray-700);
+}
+
+.effective-date
+{
+    font-size: 0.9375rem;
+    color: var(--gray-600);
+    margin-bottom: var(--space-2);
+}
+
+.intro-text
+{
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    color: var(--gray-700);
+    margin-bottom: var(--space-6);
+}
+
+.privacy-section,
+.terms-section
+{
+    margin-bottom: var(--public-rhythm-block);
+}
+
+.privacy-section:last-child,
+.terms-section:last-child
+{
+    margin-bottom: 0;
+}
+
+.privacy-content ul,
+.terms-content ul
+{
+    padding-left: var(--space-5);
+    margin: var(--space-2) 0 var(--space-4);
+}
+
+.privacy-content li,
+.terms-content li
+{
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--gray-700);
+    margin-bottom: var(--space-1);
+}
+
+.consent-text
+{
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--gray-700);
+    padding: var(--space-4) var(--space-5);
+    background: var(--gray-50);
+    border-radius: var(--radius-md);
+    border-left: 4px solid var(--orange);
+    margin-top: var(--space-6);
 }
 
 /* =============================================================================
@@ -397,6 +950,7 @@
 {
     font-size: 1.5rem;
     font-weight: 600;
+    letter-spacing: -0.01em;
     color: white;
     margin-bottom: var(--space-2);
 }
@@ -426,22 +980,21 @@
 .auth-footer p
 {
     margin: var(--space-2) 0;
+    font-size: 0.875rem;
+    color: var(--gray-600);
 }
 
 .auth-footer a
 {
     color: var(--orange);
     text-decoration: none;
+    font-weight: 500;
 }
 
 .auth-footer a:hover
 {
     text-decoration: underline;
 }
-
-/* =============================================================================
-   Google SSO Button
-   ============================================================================= */
 
 .btn-google
 {
@@ -450,7 +1003,7 @@
     justify-content: center;
     gap: var(--space-3);
     width: 100%;
-    min-height: var(--touch-target-min);
+    min-height: 44px;
     padding: var(--space-3) var(--space-5);
     font-size: 0.9375rem;
     font-weight: 500;
@@ -486,10 +1039,6 @@
     color: #4285F4;
 }
 
-/* =============================================================================
-   SSO Note
-   ============================================================================= */
-
 .sso-note
 {
     display: flex;
@@ -510,10 +1059,6 @@
     margin-top: 2px;
     flex-shrink: 0;
 }
-
-/* =============================================================================
-   Auth Separator
-   ============================================================================= */
 
 .auth-separator
 {
@@ -540,10 +1085,6 @@
 {
     padding: 0 var(--space-3);
 }
-
-/* =============================================================================
-   First User Info Box
-   ============================================================================= */
 
 .info-box.first-user-box
 {
@@ -579,10 +1120,6 @@
     color: var(--gray-700);
     line-height: 1.4;
 }
-
-/* =============================================================================
-   User ID Display
-   ============================================================================= */
 
 .user-id-section
 {
@@ -638,6 +1175,7 @@
     cursor: pointer;
     flex-shrink: 0;
     transition: background var(--transition-fast);
+    min-height: 32px;
 }
 
 .btn-copy:hover
@@ -662,96 +1200,299 @@
 }
 
 /* =============================================================================
-   Language Switcher
-   ============================================================================= */
+   Form Controls
+   =============================================================================
+   The form controls are used on every authentication page. The rules
+   below align the controls with the Apple HIG patterns: large
+   controls, soft border, soft focus ring. */
 
-.language-switcher
+.form-group
 {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    padding: var(--space-1);
-    background: var(--gray-100);
-    border-radius: var(--radius-full);
-    font-size: 0.75rem;
+    margin-bottom: var(--space-4);
 }
 
-.language-switcher .lang-link
+.form-label
 {
-    display: inline-flex;
-    align-items: center;
-    padding: var(--space-1) var(--space-3);
-    color: var(--gray-600);
-    text-decoration: none;
-    border-radius: var(--radius-full);
+    display: block;
+    font-size: 0.9375rem;
     font-weight: 500;
-    transition: all var(--transition-fast);
+    color: var(--gray-700);
+    margin-bottom: var(--space-2);
 }
 
-.language-switcher .lang-link:hover
-{
-    color: var(--orange);
-    background: white;
-    text-decoration: none;
-}
-
-.language-switcher .lang-link.active
-{
-    color: white;
-    background: var(--orange);
-}
-
-.language-switcher .lang-link.active:hover
-{
-    color: white;
-    background: var(--orange-dark);
-}
-
-/* =============================================================================
-   Provider Badge
-   ============================================================================= */
-
-.provider-badge
-{
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 18px;
-    height: 18px;
-    margin-left: var(--space-1);
-    font-size: 0.75rem;
-    color: #4285F4;
-    background: white;
-    border-radius: 50%;
-    border: 1px solid var(--gray-200);
-    vertical-align: middle;
-}
-
-/* =============================================================================
-   Header Actions
-   ============================================================================= */
-
-.header-actions
+.form-label-row
 {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: var(--space-3);
+    margin-bottom: var(--space-2);
     flex-wrap: wrap;
+    gap: var(--space-2);
 }
 
-.footer-language
+.forgot-link
+{
+    font-size: 0.8125rem;
+    color: var(--orange);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.forgot-link:hover,
+.forgot-link:focus-visible
+{
+    text-decoration: underline;
+}
+
+.input-wrapper
+{
+    position: relative;
+}
+
+.input-icon
+{
+    position: absolute;
+    left: var(--space-4);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gray-500);
+    font-size: 1rem;
+    pointer-events: none;
+}
+
+.input-wrapper .form-control
+{
+    padding-left: 2.75rem;
+}
+
+.form-control
+{
+    width: 100%;
+    min-height: 44px;
+    padding: var(--space-3) var(--space-4);
+    font-size: 1rem;
+    font-family: var(--font-sans);
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    background: white;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    color: var(--gray-900);
+}
+
+.form-control:focus
+{
+    outline: none;
+    border-color: var(--orange);
+    box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.15);
+}
+
+.form-control::placeholder
+{
+    color: var(--gray-400);
+}
+
+textarea.form-control
+{
+    resize: vertical;
+    min-height: 96px;
+    line-height: 1.5;
+}
+
+select.form-control
+{
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23636366' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right var(--space-4) center;
+    background-size: 16px;
+    padding-right: var(--space-8);
+}
+
+.form-hint
+{
+    display: block;
+    margin-top: var(--space-2);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--gray-500);
+}
+
+/* =============================================================================
+   Password Strength
+   ============================================================================= */
+
+.password-strength
+{
+    margin-top: var(--space-2);
+    height: 4px;
+    background: var(--gray-200);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.strength-fill
+{
+    width: 0%;
+    height: 100%;
+    transition: width var(--transition-fast), background var(--transition-fast);
+}
+
+.strength-weak
+{
+    width: 25%;
+    background: var(--error);
+}
+
+.strength-fair
+{
+    width: 50%;
+    background: var(--warning);
+}
+
+.strength-good
+{
+    width: 75%;
+    background: #10B981;
+}
+
+.strength-strong
+{
+    width: 100%;
+    background: #059669;
+}
+
+/* =============================================================================
+   Buttons
+   ============================================================================= */
+
+.btn
 {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    min-height: 44px;
+    padding: var(--space-3) var(--space-5);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+    transition: background var(--transition-fast),
+                border-color var(--transition-fast),
+                transform var(--transition-fast),
+                box-shadow var(--transition-fast);
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: var(--font-sans);
 }
 
-.mobile-language
+.btn-primary
 {
-    padding: var(--space-3) 0;
-    border-top: 1px solid var(--gray-200);
-    margin-top: var(--space-3);
+    background: var(--orange);
+    color: white;
+    box-shadow: 0 2px 6px rgba(255, 149, 0, 0.2);
+}
+
+.btn-primary:hover,
+.btn-primary:focus-visible
+{
+    background: var(--orange-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 149, 0, 0.25);
+}
+
+.btn-outline
+{
+    background: transparent;
+    border: 1px solid var(--gray-300);
+    color: var(--gray-800);
+}
+
+.btn-outline:hover,
+.btn-outline:focus-visible
+{
+    background: var(--gray-50);
+    border-color: var(--gray-400);
+}
+
+.btn-block
+{
+    width: 100%;
     display: flex;
-    justify-content: center;
+}
+
+.btn-lg
+{
+    min-height: 52px;
+    padding: var(--space-4) var(--space-6);
+    font-size: 1rem;
+}
+
+.btn:focus-visible
+{
+    outline: 3px solid var(--orange);
+    outline-offset: 2px;
+}
+
+/* =============================================================================
+   Alerts
+   ============================================================================= */
+
+.alert
+{
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    margin-bottom: var(--space-4);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+}
+
+.alert i
+{
+    font-size: 1.125rem;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.alert-success
+{
+    background: var(--success-bg);
+    color: var(--success-text);
+    border-color: #C8E6C9;
+}
+
+.alert-success i
+{
+    color: var(--success);
+}
+
+.alert-error
+{
+    background: var(--error-bg);
+    color: var(--error-text);
+    border-color: #FFCDD2;
+}
+
+.alert-error i
+{
+    color: var(--error);
+}
+
+.alert-info
+{
+    background: var(--info-bg);
+    color: var(--info-text);
+    border-color: #BBDEFB;
+}
+
+.alert-info i
+{
+    color: var(--info);
 }
 
 /* =============================================================================
@@ -760,14 +1501,13 @@
 
 .public-header
 {
-    background: white;
+    background: rgba(255, 255, 255, 0.95);
     border-bottom: 1px solid var(--gray-200);
     position: sticky;
     top: 0;
     z-index: var(--z-medium);
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
-    background: rgba(255, 255, 255, 0.95);
 }
 
 .public-header .container
@@ -778,6 +1518,7 @@
     padding: var(--space-3) var(--space-6);
     flex-wrap: wrap;
     gap: var(--space-3);
+    min-height: 64px;
 }
 
 .logo a
@@ -816,9 +1557,11 @@
     font-weight: 500;
     transition: color var(--transition-fast);
     position: relative;
+    padding: var(--space-1) 0;
 }
 
-.public-nav a:hover
+.public-nav a:hover,
+.public-nav a:focus-visible
 {
     color: var(--orange);
 }
@@ -876,7 +1619,7 @@
 {
     display: none;
     position: fixed;
-    top: 60px;
+    top: 64px;
     left: 0;
     right: 0;
     background: white;
@@ -884,7 +1627,7 @@
     z-index: var(--z-high);
     padding: var(--space-4);
     border-bottom: 1px solid var(--gray-200);
-    max-height: calc(100vh - 60px);
+    max-height: calc(100vh - 64px);
     overflow-y: auto;
 }
 
@@ -920,12 +1663,30 @@
 }
 
 /* =============================================================================
-   Utility Classes
+   Skip Link
    ============================================================================= */
 
-.isActivePublicPage
+.skip-link
 {
-    /* placeholder for future JS hooks; kept to preserve structure */
+    position: absolute;
+    top: -100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--orange);
+    color: white;
+    padding: var(--space-3) var(--space-5);
+    border-radius: var(--radius-md);
+    z-index: var(--z-modal);
+    font-weight: 500;
+    text-decoration: none;
+    transition: top var(--transition-fast);
+}
+
+.skip-link:focus
+{
+    top: var(--space-3);
+    outline: 2px solid white;
+    outline-offset: 2px;
 }
 
 /* =============================================================================
@@ -939,9 +1700,14 @@
         grid-template-columns: repeat(2, 1fr);
     }
 
-    .header-actions
+    .about-grid
     {
-        gap: var(--space-2);
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .help-grid
+    {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
@@ -962,6 +1728,20 @@
         font-size: 1rem;
     }
 
+    .about-hero,
+    .faq-hero,
+    .help-hero
+    {
+        padding: var(--space-8) 0;
+    }
+
+    .about-hero h1,
+    .faq-hero h1,
+    .help-hero h1
+    {
+        font-size: 1.75rem;
+    }
+
     .stats-grid
     {
         grid-template-columns: 1fr;
@@ -979,7 +1759,10 @@
         gap: var(--space-4);
     }
 
-    .features-grid
+    .features-grid,
+    .about-grid,
+    .help-grid,
+    .feature-list
     {
         grid-template-columns: 1fr;
     }
@@ -1034,6 +1817,16 @@
     {
         font-size: 0.8125rem;
     }
+
+    .section-heading
+    {
+        font-size: 1.25rem;
+    }
+
+    .page-title
+    {
+        font-size: 1.5rem;
+    }
 }
 
 @media (max-width: 480px)
@@ -1055,6 +1848,15 @@
         font-size: 0.875rem;
     }
 
+    .about-container,
+    .faq-container,
+    .help-container,
+    .privacy-container,
+    .terms-container
+    {
+        padding: 0 var(--space-4);
+    }
+
     .auth-body
     {
         padding: var(--space-4);
@@ -1065,25 +1867,10 @@
         padding: var(--space-3) var(--space-4);
     }
 
-    .page-title
-    {
-        font-size: 1.5rem;
-    }
-
     .btn-google
     {
         font-size: 0.875rem;
         padding: var(--space-2) var(--space-4);
-    }
-
-    .language-switcher
-    {
-        font-size: 0.6875rem;
-    }
-
-    .language-switcher .lang-link
-    {
-        padding: var(--space-1) var(--space-2);
     }
 
     .logo a span
@@ -1098,189 +1885,15 @@
 }
 
 /* =============================================================================
-   Apple Human Interface Guidelines Additions
-   =============================================================================
-   The rules below tighten the visual design to conform more closely to the
-   Apple Human Interface Guidelines. The three principles are:
-
-   1. Clarity. Text is legible at every size. Icons are precise and lucid.
-      Negative space, color, and typography are used to convey meaning.
-
-   2. Deference. The interface helps users understand and interact with the
-      content, but never competes with it.
-
-   3. Depth. Distinct visual layers and realistic motion convey hierarchy
-      and facilitate understanding.
-
-   The rules are additive. They do not remove or override any existing rule
-   that is already correct.
-
-   SOURCE: REPORT.txt, UI/UX Polish.
+   Accessibility
    ============================================================================= */
-
-/* ----- Tap target minimum -------------------------------------------------
-   Apple recommends a minimum tap target of 44 by 44 points on iOS and a
-   minimum of 24 by 24 on macOS. The web application targets both. The
-   rules below set the minimum to 44 pixels for interactive controls. */
-
-button,
-a.btn,
-input[type="submit"],
-input[type="button"],
-select,
-.form-control,
-.nav-link
-{
-    min-height: 44px;
-}
-
-/* ----- Focus indicator ----------------------------------------------------
-   A visible focus indicator is required for keyboard navigation. The
-   Apple design language uses a soft blue halo. The rule below uses the
-   accent color defined in apple.css. */
 
 :focus-visible
 {
-    outline: 3px solid var(--orange, #FF9500);
+    outline: 3px solid var(--orange);
     outline-offset: 2px;
     border-radius: 8px;
 }
-
-/* ----- Typography scale ---------------------------------------------------
-   The Apple design language uses a defined type scale. The scale is used
-   for all text on the public pages. The values below are consistent with
-   the values already defined in apple.css. The rules reinforce the
-   hierarchy on the public pages. */
-
-.public-header .logo a
-{
-    font-weight: 600;
-    letter-spacing: -0.01em;
-}
-
-.hero h1
-{
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    line-height: 1.05;
-}
-
-.section-title h2
-{
-    font-weight: 600;
-    letter-spacing: -0.015em;
-}
-
-.about-section h2.section-heading
-{
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    margin-bottom: 16px;
-}
-
-/* ----- Card elevation -----------------------------------------------------
-   The Apple design language uses a soft elevation. The rules below
-   reinforce the elevation on the public pages. */
-
-.feature-card,
-.about-card,
-.help-card,
-.step
-{
-    border-radius: 16px;
-    box-shadow:
-        0 1px 3px rgba(0, 0, 0, 0.04),
-        0 1px 2px rgba(0, 0, 0, 0.02);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.feature-card:hover,
-.about-card:hover,
-.help-card:hover,
-.step:hover
-{
-    transform: translateY(-2px);
-    box-shadow:
-        0 10px 15px -3px rgba(0, 0, 0, 0.05),
-        0 4px 6px -2px rgba(0, 0, 0, 0.025);
-}
-
-/* ----- Form controls ------------------------------------------------------
-   The Apple design language uses large, softly rounded form controls with
-   a subtle border and a soft focus ring. The rules below align the
-   public form controls with that pattern. */
-
-.form-control
-{
-    border-radius: 12px;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    padding: 12px 16px;
-    font-size: 16px;
-}
-
-.form-control:focus
-{
-    outline: none;
-    border-color: var(--orange, #FF9500);
-    box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.15);
-}
-
-.form-label
-{
-    font-weight: 500;
-    font-size: 15px;
-    color: var(--gray-700, #48484A);
-}
-
-.form-hint
-{
-    font-size: 13px;
-    color: var(--gray-500, #AEAEB2);
-    margin-top: 6px;
-}
-
-/* ----- Buttons ------------------------------------------------------------
-   The Apple design language uses a solid fill for the primary button, a
-   tinted fill for the secondary button, and a text-only style for the
-   tertiary action. The rules below align the public buttons. */
-
-.btn-primary
-{
-    background: var(--orange, #FF9500);
-    color: white;
-    border-radius: 12px;
-    font-weight: 500;
-    transition: background 0.15s ease, transform 0.15s ease;
-}
-
-.btn-primary:hover,
-.btn-primary:focus-visible
-{
-    background: #E68200;
-    transform: translateY(-1px);
-}
-
-.btn-outline
-{
-    background: transparent;
-    border: 1px solid rgba(0, 0, 0, 0.15);
-    color: var(--gray-800, #48484A);
-    border-radius: 12px;
-    font-weight: 500;
-    transition: background 0.15s ease, border-color 0.15s ease;
-}
-
-.btn-outline:hover,
-.btn-outline:focus-visible
-{
-    background: rgba(0, 0, 0, 0.04);
-    border-color: rgba(0, 0, 0, 0.25);
-}
-
-/* ----- Reduced motion -----------------------------------------------------
-   The Apple design language respects the operating system setting for
-   reduced motion. The rule below disables the hover transforms and the
-   smooth scroll behavior when the setting is on. */
 
 @media (prefers-reduced-motion: reduce)
 {
@@ -1295,11 +1908,9 @@ select,
     }
 }
 
-/* ----- Toast --------------------------------------------------------------
-   The Apple design language presents transient messages in a small,
-   rounded surface that appears at the bottom of the screen. The rule
-   below defines the surface. The JavaScript that shows the surface is
-   in assets/js/toast.js. */
+/* =============================================================================
+   Toast
+   ============================================================================= */
 
 .toast-container
 {

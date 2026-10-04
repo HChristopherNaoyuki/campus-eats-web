@@ -1,0 +1,17 @@
+[2026-10-04 14:51:54] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (single canonical CSP with nonce)
+[2026-10-04 14:51:54] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: kgpbg6ijb8k32u8mrnn6qo3690] API request: GET /api/Restaurant (Attempt 1)
+[2026-10-04 14:51:57] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: kgpbg6ijb8k32u8mrnn6qo3690] cURL error 60 (CURLE_SSL_CACERT): SSL certificate problem: unable to get local issuer certificate (url: https://fakerestaurantapi.runasp.net/api/Restaurant)
+[2026-10-04 14:51:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: kgpbg6ijb8k32u8mrnn6qo3690] API request failed. Serving bundled fallback for /api/Restaurant
+[2026-10-04 14:51:57] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: kgpbg6ijb8k32u8mrnn6qo3690] Fetched 3 restaurants from API
+[2026-10-04 14:52:27] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: kgpbg6ijb8k32u8mrnn6qo3690] Database 'campus_eats' ensured to exist.
+[2026-10-04 14:52:27] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: kgpbg6ijb8k32u8mrnn6qo3690] PDO connection opened to database 'campus_eats'.
+[2026-10-04 14:52:28] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: kgpbg6ijb8k32u8mrnn6qo3690] Schema probe: users table already exists.
+[2026-10-04 14:52:28] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: kgpbg6ijb8k32u8mrnn6qo3690] Database connection and schema verified successfully.
+[2026-10-04 14:52:39] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (single canonical CSP with nonce)
+[2026-10-04 14:52:39] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: kgpbg6ijb8k32u8mrnn6qo3690] API request: GET /api/Restaurant (Attempt 1)
+[2026-10-04 14:52:42] [SECURITY] [INFO] [IP: 127.0.0.1] [User: guest] [Session: no_session] Security headers set (single canonical CSP with nonce)
+[2026-10-04 14:52:43] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: kgpbg6ijb8k32u8mrnn6qo3690] cURL error 60 (CURLE_SSL_CACERT): SSL certificate problem: unable to get local issuer certificate (url: https://fakerestaurantapi.runasp.net/api/Restaurant)
+[2026-10-04 14:52:43] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: kgpbg6ijb8k32u8mrnn6qo3690] API request failed. Serving bundled fallback for /api/Restaurant
+[2026-10-04 14:52:43] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: kgpbg6ijb8k32u8mrnn6qo3690] Fetched 3 restaurants from API
+[2026-10-04 14:52:43] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: kgpbg6ijb8k32u8mrnn6qo3690] API in failure pause. Serving bundled fallback for /api/Restaurant
+[2026-10-04 14:52:43] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: kgpbg6ijb8k32u8mrnn6qo3690] Fetched 3 restaurants from API
