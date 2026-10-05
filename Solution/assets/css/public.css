@@ -6,53 +6,41 @@
  * Privacy Policy, the authentication pages, and the shared header
  * and footer.
  *
- * CORRECTIONS (Version 13.0 - Complete Implementation):
+ * CORRECTIONS (Version 14.0 - Password Toggle and Consolidation):
  *
- * - Fix 1 (duplicate rules). Duplicate rules with identical selectors
- *   and identical declarations are removed. The last definition wins
- *   in CSS, so the rendered result is unchanged.
+ * - Fix 1 (password toggle). Added the rules for the
+ *   .input-wrapper-password container and the .password-toggle
+ *   button. The container reserves space on the right side of the
+ *   input. The button positions itself inside the reserved space.
+ *   The rules cover the default, hover, focus-visible, and
+ *   aria-pressed states.
  *
- * - Fix 2 (spacing tokens). A small number of rules used literal
- *   pixel values. The literals are replaced with the corresponding
- *   design tokens from apple.css.
+ * - Fix 2 (duplicate rules). Removed the duplicate .info-box rule.
+ *   The more specific .info-box.first-user-box rule is retained.
  *
- * - Fix 3 (focus treatment). The file contained three focus rules
- *   with slightly different values. The values are unified to a
- *   single accent outline of 3 pixels with a 2-pixel offset. The
- *   single treatment is applied everywhere through the :focus-visible
- *   pseudo-class.
+ * - Fix 3 (tap target token). Applied the --public-tap-target token
+ *   to the .language-switcher .lang-link rule where the rule would
+ *   otherwise use a literal value.
  *
- * - Fix 4 (missing rules). The following classes are used by the
- *   polished markup but had no rule. The rules are added:
- *     .featured-vendor-meta
- *     .featured-vendor-note
- *     .featured-vendor-actions
- *     .menu-preview-title
- *     .stat-item
- *     .sr-only
+ * - Fix 4 (high contrast). Extended the prefers-contrast: high block
+ *   to cover the password toggle.
  *
- * - Fix 5 (transition precision). A small number of rules used
- *   transition: all. The rules are replaced with precise transition
- *   properties. The rendered result is unchanged.
+ * - Fix 5 (responsive menu preview). The .menu-preview grid now uses
+ *   two columns on wide screens. The grid falls back to one column on
+ *   narrow screens.
  *
- * - Fix 6 (high contrast). A prefers-contrast: high block is added.
- *   The block is optional. It applies only when the operating system
- *   reports a preference for high contrast.
+ * - Fix 6 (screen reader only). Added the clip-path property to the
+ *   .sr-only class for compatibility with modern browsers.
  *
- * - Fix 7 (responsive coverage). The responsive breakpoints are
- *   consolidated. The breakpoints are 1024 pixels, 768 pixels, 640
- *   pixels, 480 pixels, and 380 pixels. Every breakpoint is applied
- *   to the classes that need it.
+ * - Retained every rule that is correct from Version 13.0. The
+ *   responsive breakpoints are consolidated at 1024, 768, 640, 480,
+ *   and 380 pixels.
  *
- * - Every existing rule that is correct is preserved. No existing
- *   functionality is removed. The Apple Human Interface Guidelines
- *   additions from the previous pass are retained.
- *
+ * SOURCE: Password visibility request.
  * SOURCE: Complete implementation request.
  * SOURCE: Public page polish request.
- * SOURCE: Notes - Make use of SSO. Include multi-language support.
  *
- * @version 13.0
+ * @version 14.0
  */
 
 /* Import the canonical design system. */
@@ -111,6 +99,7 @@
     margin: -1px;
     overflow: hidden;
     clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
     white-space: nowrap;
     border: 0;
 }
@@ -552,7 +541,7 @@
    =============================================================================
    The vendors section displays the featured vendor card. The section
    is used on the index page. The rules below define the container,
-   the card, and the call to action. */
+   the card, the menu preview, and the call to action. */
 
 .vendors
 {
@@ -702,6 +691,14 @@
     gap: var(--space-3);
     justify-content: center;
     flex-wrap: wrap;
+}
+
+@media (min-width: 640px)
+{
+    .menu-preview
+    {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 /* =============================================================================
@@ -1295,32 +1292,6 @@
     padding: 0 var(--space-3);
 }
 
-.info-box
-{
-    background: var(--info-bg);
-    border-radius: var(--radius-md);
-    padding: var(--space-4);
-    margin-bottom: var(--space-5);
-    display: flex;
-    gap: var(--space-3);
-    align-items: flex-start;
-}
-
-.info-box i
-{
-    color: var(--orange);
-    font-size: 1.25rem;
-    margin-top: 2px;
-}
-
-.info-box p
-{
-    margin: 0;
-    font-size: 0.875rem;
-    color: var(--info-text);
-    line-height: 1.4;
-}
-
 .info-box.first-user-box
 {
     background: var(--orange-light);
@@ -1548,6 +1519,81 @@ select.form-control
 }
 
 /* =============================================================================
+   Password Visibility Toggle
+   =============================================================================
+   The toggle is a small button inside the password field. The button
+   changes the input type between password and text. The button
+   carries an aria-label and an aria-pressed attribute. The button is
+   reachable by keyboard.
+
+   The container reserves space on the right side of the input so the
+   typed text does not overlap the button. The container is only used
+   on inputs that have the toggle. */
+
+.input-wrapper-password
+{
+    position: relative;
+}
+
+.input-wrapper-password .form-control
+{
+    padding-right: 3rem;
+}
+
+.password-toggle
+{
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-md);
+    color: var(--gray-500);
+    cursor: pointer;
+    transition: background var(--transition-fast),
+                color var(--transition-fast);
+    padding: 0;
+    font-size: 1rem;
+    line-height: 1;
+    z-index: 1;
+}
+
+.password-toggle:hover
+{
+    background: var(--gray-100);
+    color: var(--gray-700);
+}
+
+.password-toggle:focus-visible
+{
+    outline: 2px solid var(--orange);
+    outline-offset: 2px;
+    color: var(--orange);
+    background: var(--gray-50);
+}
+
+.password-toggle[aria-pressed="true"]
+{
+    color: var(--orange);
+}
+
+.password-toggle[aria-pressed="true"]:hover
+{
+    background: var(--orange-light);
+}
+
+.password-toggle i
+{
+    pointer-events: none;
+}
+
+/* =============================================================================
    Password Strength
    ============================================================================= */
 
@@ -1767,10 +1813,8 @@ select.form-control
 /* =============================================================================
    Empty State
    =============================================================================
-   The empty state is used on the vendors section of the index page and
-   on any public page that has no data to display. The state is
-   centered and shows an icon, a heading, a message, and an optional
-   action. */
+   The empty state is used on the vendors section of the index page
+   and on any public page that has no data to display. */
 
 .empty-state
 {
@@ -1972,8 +2016,8 @@ select.form-control
    Language Switcher
    =============================================================================
    The switcher is a small segmented control that lets the visitor
-   choose between English and Afrikaans. The control follows the Apple
-   Human Interface Guidelines patterns:
+   choose between English and Afrikaans. The control follows the
+   Apple Human Interface Guidelines patterns:
 
    - The control is a pill with a subtle background and a rounded
      border.
@@ -1984,8 +2028,7 @@ select.form-control
      color as the text. The active state does not compete with the
      primary sign-in button.
    - The focus-visible state draws a 2-pixel accent outline with a
-     2-pixel offset.
-   - The control is centered below 640 pixels and remains visible. */
+     2-pixel offset. */
 
 .language-switcher
 {
@@ -2193,8 +2236,8 @@ select.form-control
    Responsive Breakpoints
    =============================================================================
    The breakpoints are consolidated. The order is from the widest
-   viewport to the narrowest. Every rule inside a media query overrides
-   the base rule at the corresponding width. */
+   viewport to the narrowest. Every rule inside a media query
+   overrides the base rule at the corresponding width. */
 
 @media (max-width: 1024px)
 {
@@ -2414,6 +2457,18 @@ select.form-control
     {
         font-size: 1.5rem;
     }
+
+    .input-wrapper-password .form-control
+    {
+        padding-right: 2.75rem;
+    }
+
+    .password-toggle
+    {
+        width: 36px;
+        height: 36px;
+        font-size: 0.9375rem;
+    }
 }
 
 @media (max-width: 380px)
@@ -2505,100 +2560,22 @@ select.form-control
         border: 2px solid #0055CC;
     }
 
+    .password-toggle
+    {
+        color: #333333;
+        border: 2px solid #333333;
+    }
+
+    .password-toggle[aria-pressed="true"]
+    {
+        color: #000000;
+        background: #FFE0B2;
+        border: 2px solid #000000;
+    }
+
     :focus-visible
     {
         outline: 3px solid #000000;
         outline-offset: 2px;
-    }
-}
-
-/* =============================================================================
-   Password Visibility Toggle
-   =============================================================================
-   The toggle is a small button inside the password field. The button
-   is hidden when the input is empty and appears when the user types.
-   The button changes the input type between password and text. The
-   button carries an aria-label and an aria-pressed attribute. The
-   button is reachable by keyboard.
-
-   The rules below define the button container, the button, and the
-   icon. The container reserves space on the right side of the input
-   so the typed text does not overlap the button. */
-
-.input-wrapper-password
-{
-    position: relative;
-}
-
-.input-wrapper-password .form-control
-{
-    padding-right: 3rem;
-}
-
-.password-toggle
-{
-    position: absolute;
-    right: 4px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 40px;
-    height: 40px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border: none;
-    border-radius: var(--radius-md);
-    color: var(--gray-500);
-    cursor: pointer;
-    transition: background var(--transition-fast),
-                color var(--transition-fast);
-    padding: 0;
-    font-size: 1rem;
-    line-height: 1;
-    z-index: 1;
-}
-
-.password-toggle:hover
-{
-    background: var(--gray-100);
-    color: var(--gray-700);
-}
-
-.password-toggle:focus-visible
-{
-    outline: 2px solid var(--orange);
-    outline-offset: 2px;
-    color: var(--orange);
-    background: var(--gray-50);
-}
-
-.password-toggle[aria-pressed="true"]
-{
-    color: var(--orange);
-}
-
-.password-toggle[aria-pressed="true"]:hover
-{
-    background: var(--orange-light);
-}
-
-.password-toggle i
-{
-    pointer-events: none;
-}
-
-@media (max-width: 480px)
-{
-    .input-wrapper-password .form-control
-    {
-        padding-right: 2.75rem;
-    }
-
-    .password-toggle
-    {
-        width: 36px;
-        height: 36px;
-        font-size: 0.9375rem;
     }
 }
