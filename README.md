@@ -334,6 +334,7 @@ campus-eats-web/
     │   │   ├── main.js
     │   │   ├── payment-modal.js
     │   │   ├── student.js
+    │   │   ├── toast.js
     │   │   └── vendor.js
     │   └── images/
     │       └── logo.png
@@ -342,8 +343,11 @@ campus-eats-web/
     │   ├── database.php
     │   ├── demo_accounts.php
     │   ├── error_logging.php
-    │   └── firebase_sync_helper.php
+    │   ├── fallback_data.php
+    │   ├── firebase_sync_helper.php
+    │   └── network.php
     ├── includes/
+    │   ├── account_service.php
     │   ├── admin_sidebar.php
     │   ├── api_service.php
     │   ├── auth.php
@@ -353,10 +357,14 @@ campus-eats-web/
     │   ├── footer.php
     │   ├── i18n.php
     │   ├── oauth_google.php
+    │   ├── order_status_helper.php
+    │   ├── outage_spool.php
     │   ├── password_validation.php
     │   ├── public_header.php
+    │   ├── resilience.php
     │   ├── session.php
     │   ├── student_sidebar.php
+    │   ├── table_helper.php
     │   ├── user_id.php
     │   ├── vendor_functions.php
     │   └── vendor_sidebar.php
@@ -407,6 +415,7 @@ campus-eats-web/
     │   ├── seed.php
     │   └── update_account_type_enum.sql
     └── data/
+        ├── fallback_restaurants.json
         └── user.txt
 ```
 
