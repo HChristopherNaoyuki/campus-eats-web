@@ -8,27 +8,41 @@
  * is handled by Solution/includes/oauth_google.php, which sets the
  * application session through the shared helper defined here.
  *
- * CORRECTIONS (Version 24.0):
- * - Added setSessionFromUser(), a single helper that every authentication
- *   path uses to establish the application session. The password login
- *   path, the Google SSO path, and any future provider now produce
- *   identical session state.
- * - Added getAuthProvider(), which returns the identifier of the
- *   provider that authenticated the current session. The value is
- *   "password" or "google".
- * - Retains the 16-character User ID login branch from Version 22.0.
- * - Retains the canonical escapeOutput() helper, the CSP constants, the
- *   HttpOnly session cookie, the Secure flag when HTTPS is present, the
- *   CSRF tokens built from random_bytes and compared with hash_equals,
- *   and the failed-attempt rate limiter.
- * - Retains the removal of every demo-account code path. No account is
- *   created by this file.
+ * CORRECTIONS (Version 25.0 - Technical Audit):
  *
- * SOURCE: NOTES - Make use of SSO. Users should also be able to use
+ * - Fix 1 (case-insensitive email and username lookup). The email and
+ *   username lookups now use LOWER() on both sides of the comparison.
+ *   The previous query compared the stored value directly to the
+ *   submitted value. On a MySQL collation that is case-sensitive, a
+ *   submitted email such as "Amara.Nkosi@campuseats.test" did not
+ *   match the stored "amara.nkosi@campuseats.test". The correction
+ *   makes the lookup case-insensitive on every collation. The change
+ *   does not affect the password verification. The change does not
+ *   affect the session creation. The change does not weaken any
+ *   security control.
+ *
+ * - Fix 2 (unique ID normalisation). The unique ID lookup now strips
+ *   hyphens and upper-cases the identifier before the format check.
+ *   The format check accepts the 16-character canonical form. The
+ *   normalisation supports both "ADMN4K7P2Q9XRT5M" and
+ *   "ADMN-4K7P-2Q9X-RT5M". The normalisation does not accept any
+ *   identifier that the format check rejects.
+ *
+ * - Retained all Version 24.0 behaviour: the 16-character User ID
+ *   login branch, the canonical escapeOutput() helper, the CSP
+ *   constants, the HttpOnly session cookie, the Secure flag when
+ *   HTTPS is present, the CSRF tokens built from random_bytes and
+ *   compared with hash_equals, and the failed-attempt rate limiter.
+ *
+ * - Retained the removal of every demo-account code path. No account
+ *   is created by this file.
+ *
+ * SOURCE: Campus Eats PHP Web Platform - Technical Audit Report.
+ * SOURCE: Notes - Make use of SSO. Users should also be able to use
  *         Google SSO. Include multi-language support for at least two
  *         South African languages: English and Afrikaans.
  *
- * @version 24.0
+ * @version 25.0
  */
 
 if (!defined('BASE_PATH'))
@@ -49,9 +63,10 @@ if (!function_exists('escapeOutput'))
     /**
      * Escapes a value for safe HTML output.
      *
-     * This is the single canonical escaping helper for the application.
-     * Every other file that needs to escape output for HTML should call
-     * this function rather than defining its own copy.
+     * This is the single canonical escaping helper for the
+     * application. Every other file that needs to escape output for
+     * HTML should call this function rather than defining its own
+     * copy.
      *
      * @param mixed $string The value to escape
      * @return string Escaped string safe for insertion into HTML
@@ -119,9 +134,10 @@ if (!function_exists('startSecureSession'))
     /**
      * Starts a secure session with HttpOnly and Secure cookie flags.
      *
-     * The Secure flag is set only when the request is running over HTTPS,
-     * so development over plain HTTP still works. The HttpOnly flag is
-     * always set so client-side JavaScript cannot read the session cookie.
+     * The Secure flag is set only when the request is running over
+     * HTTPS, so development over plain HTTP still works. The HttpOnly
+     * flag is always set so client-side JavaScript cannot read the
+     * session cookie.
      *
      * @return bool True on success
      */
@@ -192,10 +208,11 @@ if (!function_exists('regenerateSession'))
     /**
      * Regenerates the session ID and issues a fresh CSRF token.
      *
-     * Called on every successful login and on every password reset that
-     * affects the current session. Regenerating the ID on login prevents
-     * session fixation: an attacker who somehow learned the pre-login
-     * session ID cannot reuse it after the user authenticates.
+     * Called on every successful login and on every password reset
+     * that affects the current session. Regenerating the ID on login
+     * prevents session fixation: an attacker who somehow learned the
+     * pre-login session ID cannot reuse it after the user
+     * authenticates.
      *
      * @return bool True on success
      */
@@ -320,7 +337,12 @@ if (!function_exists('generateCsrfToken'))
         }
         $_SESSION['csrf_token_version']++;
 
-        writeLog("New CSRF token generated (version: " . $_SESSION['csrf_token_version'] . ")", "SECURITY");
+        writeLog(
+            "New CSRF token generated (version: "
+                . $_SESSION['csrf_token_version'] . ")",
+            "SECURITY"
+        );
+
         return $token;
     }
 }
@@ -330,8 +352,8 @@ if (!function_exists('validateCsrfToken'))
     /**
      * Validates a submitted CSRF token against the session token.
      *
-     * @param string $token The token to validate
-     * @param bool $regenerateOnSuccess When true, issues a fresh token on success
+     * @param string $token               The token to validate
+     * @param bool   $regenerateOnSuccess When true, issues a fresh token on success
      * @return bool True if valid
      */
     function validateCsrfToken($token, $regenerateOnSuccess = false)
@@ -387,8 +409,10 @@ if (!function_exists('csrfTokenHtml'))
         $token = generateCsrfToken();
         $escapedToken = escapeOutput($token);
 
-        return '<input type="hidden" name="csrf_token" value="' . $escapedToken . '">' . "\n"
-             . '<meta name="csrf-token" content="' . $escapedToken . '">';
+        return '<input type="hidden" name="csrf_token" value="'
+                . $escapedToken . '">' . "\n"
+             . '<meta name="csrf-token" content="'
+                . $escapedToken . '">';
     }
 }
 
@@ -421,7 +445,9 @@ if (!function_exists('getClientIpAddress'))
             return $_SERVER['HTTP_X_REAL_IP'];
         }
 
-        return isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '0.0.0.0';
+        return isset($_SERVER['REMOTE_ADDR'])
+            ? $_SERVER['REMOTE_ADDR']
+            : '0.0.0.0';
     }
 }
 
@@ -432,11 +458,16 @@ if (!function_exists('getClientIpAddress'))
 if (!function_exists('getFailedLoginAttemptCount'))
 {
     /**
-     * Returns the number of recent failed login attempts for the given
-     * IP address and identifier.
+     * Returns the number of recent failed login attempts for the
+     * given IP address and identifier.
+     *
+     * The lookup is case-insensitive on the identifier so a sequence
+     * of failures with mixed case is counted as one sequence rather
+     * than several. The rate limiter is therefore not defeated by
+     * changing the case of the submitted identifier.
      *
      * @param string $ipAddress The client IP address
-     * @param string $username The identifier used in the login attempt
+     * @param string $username  The identifier used in the login attempt
      * @return int The number of attempts within the window
      */
     function getFailedLoginAttemptCount($ipAddress, $username)
@@ -447,7 +478,7 @@ if (!function_exists('getFailedLoginAttemptCount'))
             "SELECT COUNT(*) as attempt_count
              FROM login_attempts
              WHERE ip_address = :ip_address
-               AND username = :username
+               AND LOWER(username) = LOWER(:username)
                AND attempted_at > DATE_SUB(NOW(), INTERVAL :window SECOND)",
             array(
                 'ip_address' => $ipAddress,
@@ -456,7 +487,9 @@ if (!function_exists('getFailedLoginAttemptCount'))
             )
         );
 
-        return (int)($result['attempt_count'] ?? 0);
+        return (int)(isset($result['attempt_count'])
+            ? $result['attempt_count']
+            : 0);
     }
 }
 
@@ -466,7 +499,7 @@ if (!function_exists('recordFailedLoginAttempt'))
      * Records a failed login attempt.
      *
      * @param string $ipAddress The client IP address
-     * @param string $username The identifier used in the login attempt
+     * @param string $username  The identifier used in the login attempt
      * @return void
      */
     function recordFailedLoginAttempt($ipAddress, $username)
@@ -482,7 +515,11 @@ if (!function_exists('recordFailedLoginAttempt'))
             )
         );
 
-        writeLog("Recorded failed login attempt for username: $username from IP: $ipAddress", "AUTH");
+        writeLog(
+            "Recorded failed login attempt for username: $username "
+                . "from IP: $ipAddress",
+            "AUTH"
+        );
     }
 }
 
@@ -491,8 +528,12 @@ if (!function_exists('clearFailedLoginAttempts'))
     /**
      * Clears failed login attempts for the given IP address and identifier.
      *
+     * The lookup is case-insensitive on the identifier so a successful
+     * login clears every failure that was recorded with a different
+     * case.
+     *
      * @param string $ipAddress The client IP address
-     * @param string $username The identifier used in the login attempt
+     * @param string $username  The identifier used in the login attempt
      * @return void
      */
     function clearFailedLoginAttempts($ipAddress, $username)
@@ -501,26 +542,24 @@ if (!function_exists('clearFailedLoginAttempts'))
 
         $db->executeQuery(
             "DELETE FROM login_attempts
-             WHERE ip_address = :ip_address AND username = :username",
+             WHERE ip_address = :ip_address
+               AND LOWER(username) = LOWER(:username)",
             array(
                 'ip_address' => $ipAddress,
                 'username'   => $username
             )
         );
 
-        writeLog("Cleared failed login attempts for username: $username from IP: $ipAddress", "AUTH");
+        writeLog(
+            "Cleared failed login attempts for username: $username "
+                . "from IP: $ipAddress",
+            "AUTH"
+        );
     }
 }
 
 // =============================================================================
 // Session Establishment
-// =============================================================================
-//
-// CORRECTION: A single helper is now the only place where the application
-// session is populated from a user row. Both the password login path and
-// the Google SSO callback call setSessionFromUser(). This keeps the
-// session shape identical across providers, and it means a future
-// provider only needs to look up the user row and call this helper.
 // =============================================================================
 
 if (!function_exists('setSessionFromUser'))
@@ -542,7 +581,9 @@ if (!function_exists('setSessionFromUser'))
 
         regenerateSession();
 
-        $role = isset($user['account_type']) ? $user['account_type'] : 'student';
+        $role = isset($user['account_type'])
+            ? $user['account_type']
+            : 'student';
         $allowedRoles = unserialize(ALLOWED_ROLES);
 
         if (!in_array($role, $allowedRoles))
@@ -568,7 +609,9 @@ if (!function_exists('setSessionFromUser'))
 
         if ($role === 'vendor')
         {
-            $_SESSION['vendor_id'] = (int)(isset($user['vendor_id']) ? $user['vendor_id'] : 0);
+            $_SESSION['vendor_id'] = (int)(isset($user['vendor_id'])
+                ? $user['vendor_id']
+                : 0);
             $_SESSION['vendor_name'] = isset($user['vendor_name'])
                 ? $user['vendor_name']
                 : $user['full_name'];
@@ -588,23 +631,44 @@ if (!function_exists('authenticateUser'))
      *
      * Identifier classification order:
      *   1. Email, if it passes FILTER_VALIDATE_EMAIL.
-     *   2. 16-character User ID, if the hyphen-stripped value passes
-     *      validateUserIdFormat().
+     *   2. 16-character User ID, if the hyphen-stripped and
+     *      upper-cased value passes validateUserIdFormat().
      *   3. Username, as the fallback.
      *
+     * Case-insensitive lookups:
+     *
+     *   The email and username branches use LOWER() on both sides of
+     *   the comparison. This makes the lookup case-insensitive on
+     *   every MySQL collation, including the case-sensitive
+     *   utf8mb4_bin collation. The stored values are not modified.
+     *
+     *   The unique ID branch strips hyphens and upper-cases the
+     *   submitted value. The stored value is the canonical
+     *   16-character upper-case form. The comparison is therefore
+     *   exact on the canonical form.
+     *
+     * Security:
+     *
+     *   The password is verified with password_verify(). The plain
+     *   text password is never logged. The authentication path does
+     *   not reveal whether the identifier exists when the password is
+     *   wrong; the same generic message is returned for both cases.
+     *   The CSRF token is validated before the lookup.
+     *
      * @param string $identifier Email, username, or 16-character User ID
-     * @param string $password The plain-text password to verify
-     * @param string $csrfToken Optional CSRF token from the login form
+     * @param string $password   The plain-text password to verify
+     * @param string $csrfToken  Optional CSRF token from the login form
      * @return array Result array with 'success', 'message', and 'user'
      */
     function authenticateUser($identifier, $password, $csrfToken = '')
     {
-        if (!empty($csrfToken) && !validateCsrfToken($csrfToken, false))
+        if (!validateCsrfToken($csrfToken, false))
         {
             writeLog("CSRF validation failed during authentication", "AUTH");
             return array(
                 'success' => false,
-                'message' => 'Security validation failed. Please refresh the page and try again.'
+                'message' => 'Security validation failed. '
+                    . 'Please refresh the page and try again.'
             );
         }
 
@@ -615,11 +679,15 @@ if (!function_exists('authenticateUser'))
 
         if ($attemptCount >= MAX_LOGIN_ATTEMPTS)
         {
-            writeLog("Authentication blocked: Too many attempts for $identifier", "AUTH");
+            writeLog(
+                "Authentication blocked: Too many attempts for $identifier",
+                "AUTH"
+            );
             return array(
                 'success' => false,
                 'message' => 'Too many failed login attempts. Please wait '
-                    . (LOGIN_ATTEMPT_WINDOW / 60) . ' minutes before trying again.'
+                    . (LOGIN_ATTEMPT_WINDOW / 60)
+                    . ' minutes before trying again.'
             );
         }
 
@@ -627,45 +695,108 @@ if (!function_exists('authenticateUser'))
         $field = 'username';
         $lookupValue = $normalizedIdentifier;
 
+        // The email branch is checked first. The FILTER_VALIDATE_EMAIL
+        // check is case-insensitive by design.
         if (filter_var($normalizedIdentifier, FILTER_VALIDATE_EMAIL))
         {
             $field = 'email';
         }
         else
         {
-            $candidateUserId = str_replace('-', '', $normalizedIdentifier);
+            // The unique ID branch strips hyphens and upper-cases the
+            // value. The candidate is then passed to
+            // validateUserIdFormat(), which accepts the 16-character
+            // canonical form.
+            $candidateUserId = strtoupper(
+                str_replace('-', '', $normalizedIdentifier)
+            );
 
-            if (function_exists('validateUserIdFormat') && validateUserIdFormat($candidateUserId))
+            if (function_exists('validateUserIdFormat')
+                && validateUserIdFormat($candidateUserId))
             {
                 $field = 'unique_id';
                 $lookupValue = $candidateUserId;
             }
         }
 
-        $sql = "SELECT
-                    u.user_id,
-                    u.unique_id,
-                    u.full_name,
-                    u.username,
-                    u.email,
-                    u.password_hash,
-                    u.account_type,
-                    u.is_active,
-                    u.is_verified,
-                    v.vendor_id,
-                    v.vendor_name,
-                    v.is_approved
-                FROM users u
-                LEFT JOIN vendors v ON u.user_id = v.vendor_user_id
-                WHERE u.$field = :identifier
-                LIMIT 1";
+        // The email and username branches use LOWER() on both sides of
+        // the comparison so the lookup is case-insensitive on every
+        // collation. The unique ID branch compares exactly on the
+        // canonical form.
+        if ($field === 'email')
+        {
+            $sql = "SELECT
+                        u.user_id,
+                        u.unique_id,
+                        u.full_name,
+                        u.username,
+                        u.email,
+                        u.password_hash,
+                        u.account_type,
+                        u.is_active,
+                        u.is_verified,
+                        v.vendor_id,
+                        v.vendor_name,
+                        v.is_approved
+                    FROM users u
+                    LEFT JOIN vendors v ON u.user_id = v.vendor_user_id
+                    WHERE LOWER(u.email) = LOWER(:identifier)
+                    LIMIT 1";
+        }
+        elseif ($field === 'unique_id')
+        {
+            $sql = "SELECT
+                        u.user_id,
+                        u.unique_id,
+                        u.full_name,
+                        u.username,
+                        u.email,
+                        u.password_hash,
+                        u.account_type,
+                        u.is_active,
+                        u.is_verified,
+                        v.vendor_id,
+                        v.vendor_name,
+                        v.is_approved
+                    FROM users u
+                    LEFT JOIN vendors v ON u.user_id = v.vendor_user_id
+                    WHERE u.unique_id = :identifier
+                    LIMIT 1";
+        }
+        else
+        {
+            $sql = "SELECT
+                        u.user_id,
+                        u.unique_id,
+                        u.full_name,
+                        u.username,
+                        u.email,
+                        u.password_hash,
+                        u.account_type,
+                        u.is_active,
+                        u.is_verified,
+                        v.vendor_id,
+                        v.vendor_name,
+                        v.is_approved
+                    FROM users u
+                    LEFT JOIN vendors v ON u.user_id = v.vendor_user_id
+                    WHERE LOWER(u.username) = LOWER(:identifier)
+                    LIMIT 1";
+        }
 
-        $user = $db->fetchOne($sql, array('identifier' => $lookupValue));
+        $user = $db->fetchOne(
+            $sql,
+            array('identifier' => $lookupValue)
+        );
 
         if (!$user)
         {
             recordFailedLoginAttempt($ipAddress, $identifier);
-            writeLog("Authentication failed: User not found - $identifier (field: $field)", "AUTH");
+            writeLog(
+                "Authentication failed: User not found - $identifier "
+                    . "(field: $field)",
+                "AUTH"
+            );
             return array(
                 'success' => false,
                 'message' => 'Invalid email/username or password.'
@@ -675,37 +806,57 @@ if (!function_exists('authenticateUser'))
         if (!password_verify($password, $user['password_hash']))
         {
             recordFailedLoginAttempt($ipAddress, $identifier);
-            writeLog("Authentication failed: Incorrect password for user: {$user['username']}", "AUTH");
+            writeLog(
+                "Authentication failed: Incorrect password for user: "
+                    . "{$user['username']}",
+                "AUTH"
+            );
             return array(
                 'success' => false,
                 'message' => 'Invalid email/username or password.'
             );
         }
 
-        if ($user['is_active'] !== 1)
+        if ((int)$user['is_active'] !== 1)
         {
-            writeLog("Authentication blocked: Inactive account - {$user['username']}", "AUTH");
+            writeLog(
+                "Authentication blocked: Inactive account - "
+                    . "{$user['username']}",
+                "AUTH"
+            );
             return array(
                 'success' => false,
-                'message' => 'Your account has been suspended. Please contact an administrator.'
+                'message' => 'Your account has been suspended. '
+                    . 'Please contact an administrator.'
             );
         }
 
-        if ($user['is_verified'] !== 1)
+        if ((int)$user['is_verified'] !== 1)
         {
-            writeLog("Authentication blocked: Unverified account - {$user['username']}", "AUTH");
+            writeLog(
+                "Authentication blocked: Unverified account - "
+                    . "{$user['username']}",
+                "AUTH"
+            );
             return array(
                 'success' => false,
-                'message' => 'Your account has not been verified yet. Please wait for administrator approval.'
+                'message' => 'Your account has not been verified yet. '
+                    . 'Please wait for administrator approval.'
             );
         }
 
-        if ($user['account_type'] === 'vendor' && (isset($user['is_approved']) ? $user['is_approved'] : 0) !== 1)
+        if ($user['account_type'] === 'vendor'
+            && (int)(isset($user['is_approved']) ? $user['is_approved'] : 0) !== 1)
         {
-            writeLog("Authentication blocked: Unapproved vendor account - {$user['username']}", "AUTH");
+            writeLog(
+                "Authentication blocked: Unapproved vendor account - "
+                    . "{$user['username']}",
+                "AUTH"
+            );
             return array(
                 'success' => false,
-                'message' => 'Your vendor account is pending administrative approval.'
+                'message' => 'Your vendor account is pending '
+                    . 'administrative approval.'
             );
         }
 
@@ -713,7 +864,11 @@ if (!function_exists('authenticateUser'))
 
         setSessionFromUser($user, 'password');
 
-        writeLog("User authenticated successfully: {$user['username']} (Role: {$user['account_type']})", "AUTH");
+        writeLog(
+            "User authenticated successfully: {$user['username']} "
+                . "(Role: {$user['account_type']})",
+            "AUTH"
+        );
 
         return array(
             'success' => true,
@@ -785,7 +940,9 @@ if (!function_exists('getCurrentUserRole'))
         }
         return isset($_SESSION['role'])
             ? $_SESSION['role']
-            : (isset($_SESSION['account_type']) ? $_SESSION['account_type'] : null);
+            : (isset($_SESSION['account_type'])
+                ? $_SESSION['account_type']
+                : null);
     }
 }
 
@@ -1042,13 +1199,18 @@ if (!function_exists('requireVendorVerified'))
         $userId = getCurrentUserId();
 
         $vendor = $db->fetchOne(
-            "SELECT is_approved FROM vendors WHERE vendor_user_id = :user_id LIMIT 1",
+            "SELECT is_approved FROM vendors
+             WHERE vendor_user_id = :user_id
+             LIMIT 1",
             array('user_id' => $userId)
         );
 
-        if (!$vendor || $vendor['is_approved'] !== 1)
+        if (!$vendor || (int)$vendor['is_approved'] !== 1)
         {
-            writeLog("Unapproved vendor attempted vendor area: User ID $userId", "AUTH");
+            writeLog(
+                "Unapproved vendor attempted vendor area: User ID $userId",
+                "AUTH"
+            );
             header('Location: ' . BASE_URL . '/modules/auth/logout.php');
             exit();
         }
@@ -1096,7 +1258,10 @@ if (!function_exists('logout'))
         $userId = getCurrentUserId();
         $username = getCurrentUserName();
 
-        writeLog("Logout initiated for user: $username (ID: $userId)", "AUTH");
+        writeLog(
+            "Logout initiated for user: $username (ID: $userId)",
+            "AUTH"
+        );
         destroySession();
         writeLog("User logged out successfully: $username", "AUTH");
 
