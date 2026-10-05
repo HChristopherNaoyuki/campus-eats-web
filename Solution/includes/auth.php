@@ -97,1177 +97,581 @@ if (!isset($GLOBALS['_SECURITY_HEADERS_SET']))
 }
 
 // =============================================================================
-// Rate Limiting Constants
-// =============================================================================
-
-if (!defined('MAX_LOGIN_ATTEMPTS'))
-{
-    define('MAX_LOGIN_ATTEMPTS', 5);
-}
-
-if (!defined('LOGIN_ATTEMPT_WINDOW'))
-{
-    define('LOGIN_ATTEMPT_WINDOW', 900);
-}
-
-if (!defined('MAX_RESET_ATTEMPTS'))
-{
-    define('MAX_RESET_ATTEMPTS', 3);
-}
-
-if (!defined('RESET_ATTEMPT_WINDOW'))
-{
-    define('RESET_ATTEMPT_WINDOW', 3600);
-}
-
-if (!defined('ALLOWED_ROLES'))
-{
-    define('ALLOWED_ROLES', serialize(array('admin', 'vendor', 'student', 'standard')));
-}
-
-// =============================================================================
-// Session Management
-// =============================================================================
-
-if (!function_exists('startSecureSession'))
-{
-    /**
-     * Starts a secure session with HttpOnly and Secure cookie flags.
-     *
-     * The Secure flag is set only when the request is running over
-     * HTTPS, so development over plain HTTP still works. The HttpOnly
-     * flag is always set so client-side JavaScript cannot read the
-     * session cookie.
-     *
-     * @return bool True on success
-     */
-    function startSecureSession()
-    {
-        if ($GLOBALS['_SESSION_INITIALIZED'] === true)
-        {
-            return true;
-        }
-
-        if (ob_get_level() === 0)
-        {
-            ob_start();
-        }
-
-        if (session_status() === PHP_SESSION_ACTIVE)
-        {
-            $GLOBALS['_SESSION_INITIALIZED'] = true;
-            return true;
-        }
-
-        $cookieParams = session_get_cookie_params();
-        $secureFlag = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
-
-        session_set_cookie_params(
-            $cookieParams['lifetime'],
-            '/',
-            isset($cookieParams['domain']) ? $cookieParams['domain'] : '',
-            $secureFlag,
-            true
-        );
-
-        session_name('CAMPUS_EATS_SESSION');
-
-        if (!session_start())
-        {
-            writeLog("Failed to start session", "AUTH");
-            return false;
-        }
-
-        if (!isset($_SESSION['initialized']))
-        {
-            session_regenerate_id(true);
-            $_SESSION['initialized'] = true;
-            $_SESSION['created_at'] = time();
-            writeLog("Session initialized and ID regenerated", "AUTH");
-        }
-
-        if (!isset($_SESSION['last_regeneration']))
-        {
-            $_SESSION['last_regeneration'] = time();
-        }
-        elseif (time() - $_SESSION['last_regeneration'] > SESSION_REGEN_INTERVAL)
-        {
-            session_regenerate_id(true);
-            $_SESSION['last_regeneration'] = time();
-            writeLog("Session ID regenerated (periodic)", "AUTH");
-        }
-
-        $GLOBALS['_SESSION_INITIALIZED'] = true;
-        writeLog("Secure session started successfully", "AUTH");
-        return true;
-    }
-}
-
-if (!function_exists('regenerateSession'))
-{
-    /**
-     * Regenerates the session ID and issues a fresh CSRF token.
-     *
-     * Called on every successful login and on every password reset
-     * that affects the current session. Regenerating the ID on login
-     * prevents session fixation: an attacker who somehow learned the
-     * pre-login session ID cannot reuse it after the user
-     * authenticates.
-     *
-     * @return bool True on success
-     */
-    function regenerateSession()
-    {
-        if (session_status() !== PHP_SESSION_ACTIVE)
-        {
-            return false;
-        }
-
-        session_regenerate_id(true);
-        generateCsrfToken(true);
-        $_SESSION['last_regeneration'] = time();
-        writeLog("Session regenerated successfully", "AUTH");
-        return true;
-    }
-}
-
-if (!function_exists('destroySession'))
-{
-    /**
-     * Destroys the current session and removes the session cookie.
-     *
-     * @return void
-     */
-    function destroySession()
-    {
-        if (session_status() === PHP_SESSION_ACTIVE)
-        {
-            $_SESSION = array();
-
-            if (ini_get('session.use_cookies'))
-            {
-                $params = session_get_cookie_params();
-                $secureFlag = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
-
-                setcookie(
-                    session_name(),
-                    '',
-                    time() - 42000,
-                    isset($params['path']) ? $params['path'] : '/',
-                    isset($params['domain']) ? $params['domain'] : '',
-                    $secureFlag,
-                    isset($params['httponly']) ? $params['httponly'] : true
-                );
-            }
-
-            session_destroy();
-            $GLOBALS['_SESSION_INITIALIZED'] = false;
-            writeLog("Session destroyed successfully", "AUTH");
-        }
-    }
-}
-
-// =============================================================================
 // Security Headers
 // =============================================================================
 
-if (!function_exists('setSecurityHeaders'))
+/**
+ * Sets the security headers required by the platform.
+ *
+ * The headers are applied once per request. Subsequent calls are
+ * ignored. The Content-Security-Policy is constructed from the
+ * constants defined in constants.php.
+ *
+ * @return void
+ */
+function setSecurityHeaders()
 {
-    /**
-     * Sets security headers including the canonical CSP.
-     *
-     * @return bool True on success
-     */
-    function setSecurityHeaders()
+    if ($GLOBALS['_SECURITY_HEADERS_SET'])
     {
-        if ($GLOBALS['_SECURITY_HEADERS_SET'] === true)
-        {
-            return true;
-        }
-
-        if (!headers_sent())
-        {
-            header('X-Frame-Options: DENY');
-            header('X-Content-Type-Options: nosniff');
-            header('Referrer-Policy: strict-origin-when-cross-origin');
-            header('Content-Security-Policy: ' . CSP_POLICY);
-
-            if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
-            {
-                header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
-            }
-
-            header('X-XSS-Protection: 1; mode=block');
-            header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-            header('Pragma: no-cache');
-
-            $GLOBALS['_SECURITY_HEADERS_SET'] = true;
-            writeLog("Security headers set (single canonical CSP with nonce)", "SECURITY");
-        }
-
-        return true;
+        return;
     }
+
+    if (headers_sent())
+    {
+        return;
+    }
+
+    header('X-Frame-Options: DENY');
+    header('X-Content-Type-Options: nosniff');
+    header('Referrer-Policy: strict-origin-when-cross-origin');
+    header('X-XSS-Protection: 1; mode=block');
+
+    if (defined('CSP_HEADER') && CSP_HEADER !== '')
+    {
+        header('Content-Security-Policy: ' . CSP_HEADER);
+    }
+
+    $GLOBALS['_SECURITY_HEADERS_SET'] = true;
 }
 
 // =============================================================================
-// CSRF Protection
+// Session Initialisation
 // =============================================================================
 
-if (!function_exists('generateCsrfToken'))
+/**
+ * Initialises a secure PHP session.
+ *
+ * The cookie is marked HttpOnly. The Secure flag is set when the
+ * request arrives over HTTPS. Session regeneration occurs on every
+ * successful authentication to prevent fixation.
+ *
+ * @return void
+ */
+function initSession()
 {
-    /**
-     * Generates a CSRF token and stores it in the session.
-     *
-     * @param bool $forceRegeneration When true, always issues a new token
-     * @return string The current token
-     */
-    function generateCsrfToken($forceRegeneration = false)
+    if ($GLOBALS['_SESSION_INITIALIZED'])
     {
-        if (!$forceRegeneration && isset($_SESSION['csrf_token']))
-        {
-            return $_SESSION['csrf_token'];
-        }
-
-        $token = bin2hex(random_bytes(32));
-        $_SESSION['csrf_token'] = $token;
-
-        if (!isset($_SESSION['csrf_token_version']))
-        {
-            $_SESSION['csrf_token_version'] = 0;
-        }
-        $_SESSION['csrf_token_version']++;
-
-        writeLog(
-            "New CSRF token generated (version: "
-                . $_SESSION['csrf_token_version'] . ")",
-            "SECURITY"
-        );
-
-        return $token;
+        return;
     }
+
+    if (session_status() === PHP_SESSION_ACTIVE)
+    {
+        $GLOBALS['_SESSION_INITIALIZED'] = true;
+        return;
+    }
+
+    $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+
+    session_set_cookie_params(
+        array(
+            'lifetime' => 0,
+            'path'     => '/',
+            'domain'   => '',
+            'secure'   => $secure,
+            'httponly' => true,
+            'samesite' => 'Lax'
+        )
+    );
+
+    session_name(SESSION_NAME);
+    session_start();
+
+    $GLOBALS['_SESSION_INITIALIZED'] = true;
 }
 
-if (!function_exists('validateCsrfToken'))
+/**
+ * Destroys the current session completely.
+ *
+ * Clears session data, invalidates the session cookie, and regenerates
+ * the session identifier. Used by logout and by failed authentication
+ * paths that must not leave residual state.
+ *
+ * @return void
+ */
+function destroySession()
 {
-    /**
-     * Validates a submitted CSRF token against the session token.
-     *
-     * @param string $token               The token to validate
-     * @param bool   $regenerateOnSuccess When true, issues a fresh token on success
-     * @return bool True if valid
-     */
-    function validateCsrfToken($token, $regenerateOnSuccess = false)
+    if (session_status() === PHP_SESSION_ACTIVE)
     {
-        if (!isset($_SESSION['csrf_token']))
+        $_SESSION = array();
+
+        if (ini_get('session.use_cookies'))
         {
-            writeLog("CSRF validation failed: No token in session", "SECURITY");
-            return false;
+            $params = session_get_cookie_params();
+            setcookie(
+                session_name(),
+                '',
+                time() - 42000,
+                $params['path'],
+                $params['domain'],
+                $params['secure'],
+                $params['httponly']
+            );
         }
 
-        $storedToken = $_SESSION['csrf_token'];
-        $isValid = hash_equals($storedToken, (string)$token);
-
-        if (!$isValid)
-        {
-            writeLog("CSRF validation failed for token", "SECURITY");
-        }
-        else
-        {
-            if ($regenerateOnSuccess)
-            {
-                generateCsrfToken(true);
-            }
-            writeLog("CSRF token validated successfully", "SECURITY");
-        }
-
-        return $isValid;
+        session_destroy();
     }
-}
 
-if (!function_exists('getCsrfToken'))
-{
-    /**
-     * Returns the current CSRF token, generating one if necessary.
-     *
-     * @return string The current token
-     */
-    function getCsrfToken()
-    {
-        return generateCsrfToken();
-    }
-}
-
-if (!function_exists('csrfTokenHtml'))
-{
-    /**
-     * Returns the hidden input and meta tag for the CSRF token.
-     *
-     * @return string HTML fragment with the token
-     */
-    function csrfTokenHtml()
-    {
-        $token = generateCsrfToken();
-        $escapedToken = escapeOutput($token);
-
-        return '<input type="hidden" name="csrf_token" value="'
-                . $escapedToken . '">' . "\n"
-             . '<meta name="csrf-token" content="'
-                . $escapedToken . '">';
-    }
+    $GLOBALS['_SESSION_INITIALIZED'] = false;
 }
 
 // =============================================================================
-// Client IP Address
+// CSRF Token Helpers
 // =============================================================================
 
-if (!function_exists('getClientIpAddress'))
+/**
+ * Generates or returns the current CSRF token.
+ *
+ * The token is stored in the session and is compared with hash_equals
+ * on every state-changing request. The token is generated with
+ * random_bytes when it does not yet exist.
+ *
+ * @return string The CSRF token
+ */
+function getCsrfToken()
 {
-    /**
-     * Returns the client IP address, honouring common proxy headers.
-     *
-     * @return string The client IP address
-     */
-    function getClientIpAddress()
+    initSession();
+
+    if (empty($_SESSION['csrf_token']))
     {
-        if (isset($_SERVER['HTTP_CF_CONNECTING_IP']))
-        {
-            return $_SERVER['HTTP_CF_CONNECTING_IP'];
-        }
-
-        if (isset($_SERVER['HTTP_X_FORWARDED_FOR']))
-        {
-            $ips = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
-            return trim($ips[0]);
-        }
-
-        if (isset($_SERVER['HTTP_X_REAL_IP']))
-        {
-            return $_SERVER['HTTP_X_REAL_IP'];
-        }
-
-        return isset($_SERVER['REMOTE_ADDR'])
-            ? $_SERVER['REMOTE_ADDR']
-            : '0.0.0.0';
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     }
+
+    return $_SESSION['csrf_token'];
+}
+
+/**
+ * Validates a submitted CSRF token against the session token.
+ *
+ * @param string $token The token received from the client
+ * @return bool True when the token matches
+ */
+function validateCsrfToken($token)
+{
+    initSession();
+
+    if (empty($_SESSION['csrf_token']) || empty($token))
+    {
+        return false;
+    }
+
+    return hash_equals($_SESSION['csrf_token'], $token);
 }
 
 // =============================================================================
-// Rate Limiting
+// Rate Limiting Helpers
 // =============================================================================
 
-if (!function_exists('getFailedLoginAttemptCount'))
+/**
+ * Returns the number of failed login attempts recorded for the given
+ * IP address within the configured window.
+ *
+ * @param string $ipAddress The client IP address
+ * @return int The number of failed attempts
+ */
+function getFailedLoginAttemptCount($ipAddress)
 {
-    /**
-     * Returns the number of recent failed login attempts for the
-     * given IP address and identifier.
-     *
-     * The lookup is case-insensitive on the identifier so a sequence
-     * of failures with mixed case is counted as one sequence rather
-     * than several. The rate limiter is therefore not defeated by
-     * changing the case of the submitted identifier.
-     *
-     * @param string $ipAddress The client IP address
-     * @param string $username  The identifier used in the login attempt
-     * @return int The number of attempts within the window
-     */
-    function getFailedLoginAttemptCount($ipAddress, $username)
+    $db = getDB();
+
+    if (!$db->isAvailable())
     {
-        $db = getDB();
-
-        $result = $db->fetchOne(
-            "SELECT COUNT(*) as attempt_count
-             FROM login_attempts
-             WHERE ip_address = :ip_address
-               AND LOWER(username) = LOWER(:username)
-               AND attempted_at > DATE_SUB(NOW(), INTERVAL :window SECOND)",
-            array(
-                'ip_address' => $ipAddress,
-                'username'   => $username,
-                'window'     => LOGIN_ATTEMPT_WINDOW
-            )
-        );
-
-        return (int)(isset($result['attempt_count'])
-            ? $result['attempt_count']
-            : 0);
+        return 0;
     }
+
+    $windowSeconds = defined('LOGIN_ATTEMPT_WINDOW') ? LOGIN_ATTEMPT_WINDOW : 900;
+
+    $row = $db->fetchOne(
+        "SELECT COUNT(*) AS attempt_count
+         FROM login_attempts
+         WHERE ip_address = :ip
+           AND attempted_at >= (NOW() - INTERVAL :window SECOND)",
+        array(
+            'ip'     => $ipAddress,
+            'window' => $windowSeconds
+        )
+    );
+
+    return $row ? (int)$row['attempt_count'] : 0;
 }
 
-if (!function_exists('recordFailedLoginAttempt'))
+/**
+ * Records a failed login attempt for rate limiting.
+ *
+ * @param string $ipAddress The client IP address
+ * @param string $username  The identifier that was attempted
+ * @return void
+ */
+function recordFailedLoginAttempt($ipAddress, $username)
 {
-    /**
-     * Records a failed login attempt.
-     *
-     * @param string $ipAddress The client IP address
-     * @param string $username  The identifier used in the login attempt
-     * @return void
-     */
-    function recordFailedLoginAttempt($ipAddress, $username)
+    $db = getDB();
+
+    if (!$db->isAvailable())
     {
-        $db = getDB();
-
-        $db->insert(
-            "INSERT INTO login_attempts (ip_address, username, attempted_at)
-             VALUES (:ip_address, :username, NOW())",
-            array(
-                'ip_address' => $ipAddress,
-                'username'   => $username
-            )
-        );
-
-        writeLog(
-            "Recorded failed login attempt for username: $username "
-                . "from IP: $ipAddress",
-            "AUTH"
-        );
+        return;
     }
+
+    $db->executeQuery(
+        "INSERT INTO login_attempts (ip_address, username, attempted_at)
+         VALUES (:ip, :username, NOW())",
+        array(
+            'ip'       => $ipAddress,
+            'username' => substr($username, 0, 100)
+        )
+    );
 }
 
-if (!function_exists('clearFailedLoginAttempts'))
+/**
+ * Clears failed login attempts for the given IP after a successful
+ * authentication.
+ *
+ * @param string $ipAddress The client IP address
+ * @return void
+ */
+function clearFailedLoginAttempts($ipAddress)
 {
-    /**
-     * Clears failed login attempts for the given IP address and identifier.
-     *
-     * The lookup is case-insensitive on the identifier so a successful
-     * login clears every failure that was recorded with a different
-     * case.
-     *
-     * @param string $ipAddress The client IP address
-     * @param string $username  The identifier used in the login attempt
-     * @return void
-     */
-    function clearFailedLoginAttempts($ipAddress, $username)
+    $db = getDB();
+
+    if (!$db->isAvailable())
     {
-        $db = getDB();
-
-        $db->executeQuery(
-            "DELETE FROM login_attempts
-             WHERE ip_address = :ip_address
-               AND LOWER(username) = LOWER(:username)",
-            array(
-                'ip_address' => $ipAddress,
-                'username'   => $username
-            )
-        );
-
-        writeLog(
-            "Cleared failed login attempts for username: $username "
-                . "from IP: $ipAddress",
-            "AUTH"
-        );
+        return;
     }
+
+    $db->executeQuery(
+        "DELETE FROM login_attempts WHERE ip_address = :ip",
+        array('ip' => $ipAddress)
+    );
 }
 
 // =============================================================================
-// Session Establishment
+// Authentication Lookup (Version 25.0 Normalisation)
 // =============================================================================
 
-if (!function_exists('setSessionFromUser'))
+/**
+ * Authenticates a user by identifier and password.
+ *
+ * The identifier may be an email address, a username, a 16-character
+ * unique ID, or a hyphenated unique ID. Hyphens are stripped and the
+ * value is upper-cased before the unique-ID path is evaluated. Email
+ * and username comparisons are performed with LOWER() so that the
+ * lookup is case-insensitive on every MySQL collation.
+ *
+ * Password verification uses password_verify() against the stored
+ * bcrypt hash. Plain-text passwords are never logged or stored.
+ *
+ * On success the session is populated and regenerated. On failure a
+ * uniform message is returned so that user enumeration is not possible.
+ *
+ * @param string $identifier Email, username, or unique ID
+ * @param string $password   The plain-text password
+ * @return array{success:bool,message:string,user?:array}
+ */
+function authenticateUser($identifier, $password)
 {
-    /**
-     * Establishes the application session from a user record.
-     *
-     * @param array  $user     The user record from the MySQL users table
-     * @param string $provider The identifier of the authenticating provider,
-     *                         for example "password" or "google"
-     * @return void
-     */
-    function setSessionFromUser($user, $provider = 'password')
+    $db = getDB();
+
+    if (!$db->isAvailable())
     {
-        if (session_status() !== PHP_SESSION_ACTIVE)
-        {
-            startSecureSession();
-        }
-
-        regenerateSession();
-
-        $role = isset($user['account_type'])
-            ? $user['account_type']
-            : 'student';
-        $allowedRoles = unserialize(ALLOWED_ROLES);
-
-        if (!in_array($role, $allowedRoles))
-        {
-            writeLog(
-                "Invalid role found during session establishment: $role. "
-                    . "Defaulting to student.",
-                "AUTH"
-            );
-            $role = 'student';
-        }
-
-        $_SESSION['user_id'] = (int)$user['user_id'];
-        $_SESSION['unique_id'] = $user['unique_id'];
-        $_SESSION['full_name'] = $user['full_name'];
-        $_SESSION['username'] = $user['username'];
-        $_SESSION['email'] = $user['email'];
-        $_SESSION['role'] = $role;
-        $_SESSION['account_type'] = $role;
-        $_SESSION['logged_in'] = true;
-        $_SESSION['session_start_time'] = time();
-        $_SESSION['auth_provider'] = $provider;
-
-        if ($role === 'vendor')
-        {
-            $_SESSION['vendor_id'] = (int)(isset($user['vendor_id'])
-                ? $user['vendor_id']
-                : 0);
-            $_SESSION['vendor_name'] = isset($user['vendor_name'])
-                ? $user['vendor_name']
-                : $user['full_name'];
-            $_SESSION['vendor_is_open'] = 1;
-        }
-    }
-}
-
-// =============================================================================
-// Authentication
-// =============================================================================
-
-if (!function_exists('authenticateUser'))
-{
-    /**
-     * Authenticates a user by email, username, or 16-character User ID.
-     *
-     * Identifier classification order:
-     *   1. Email, if it passes FILTER_VALIDATE_EMAIL.
-     *   2. 16-character User ID, if the hyphen-stripped and
-     *      upper-cased value passes validateUserIdFormat().
-     *   3. Username, as the fallback.
-     *
-     * Case-insensitive lookups:
-     *
-     *   The email and username branches use LOWER() on both sides of
-     *   the comparison. This makes the lookup case-insensitive on
-     *   every MySQL collation, including the case-sensitive
-     *   utf8mb4_bin collation. The stored values are not modified.
-     *
-     *   The unique ID branch strips hyphens and upper-cases the
-     *   submitted value. The stored value is the canonical
-     *   16-character upper-case form. The comparison is therefore
-     *   exact on the canonical form.
-     *
-     * Security:
-     *
-     *   The password is verified with password_verify(). The plain
-     *   text password is never logged. The authentication path does
-     *   not reveal whether the identifier exists when the password is
-     *   wrong; the same generic message is returned for both cases.
-     *   The CSRF token is validated before the lookup.
-     *
-     * @param string $identifier Email, username, or 16-character User ID
-     * @param string $password   The plain-text password to verify
-     * @param string $csrfToken  Optional CSRF token from the login form
-     * @return array Result array with 'success', 'message', and 'user'
-     */
-    function authenticateUser($identifier, $password, $csrfToken = '')
-    {
-        if (!validateCsrfToken($csrfToken, false))
-        {
-            writeLog("CSRF validation failed during authentication", "AUTH");
-            return array(
-                'success' => false,
-                'message' => 'Security validation failed. '
-                    . 'Please refresh the page and try again.'
-            );
-        }
-
-        $db = getDB();
-        $ipAddress = getClientIpAddress();
-
-        $attemptCount = getFailedLoginAttemptCount($ipAddress, $identifier);
-
-        if ($attemptCount >= MAX_LOGIN_ATTEMPTS)
-        {
-            writeLog(
-                "Authentication blocked: Too many attempts for $identifier",
-                "AUTH"
-            );
-            return array(
-                'success' => false,
-                'message' => 'Too many failed login attempts. Please wait '
-                    . (LOGIN_ATTEMPT_WINDOW / 60)
-                    . ' minutes before trying again.'
-            );
-        }
-
-        $normalizedIdentifier = trim($identifier);
-        $field = 'username';
-        $lookupValue = $normalizedIdentifier;
-
-        // The email branch is checked first. The FILTER_VALIDATE_EMAIL
-        // check is case-insensitive by design.
-        if (filter_var($normalizedIdentifier, FILTER_VALIDATE_EMAIL))
-        {
-            $field = 'email';
-        }
-        else
-        {
-            // The unique ID branch strips hyphens and upper-cases the
-            // value. The candidate is then passed to
-            // validateUserIdFormat(), which accepts the 16-character
-            // canonical form.
-            $candidateUserId = strtoupper(
-                str_replace('-', '', $normalizedIdentifier)
-            );
-
-            if (function_exists('validateUserIdFormat')
-                && validateUserIdFormat($candidateUserId))
-            {
-                $field = 'unique_id';
-                $lookupValue = $candidateUserId;
-            }
-        }
-
-        // The email and username branches use LOWER() on both sides of
-        // the comparison so the lookup is case-insensitive on every
-        // collation. The unique ID branch compares exactly on the
-        // canonical form.
-        if ($field === 'email')
-        {
-            $sql = "SELECT
-                        u.user_id,
-                        u.unique_id,
-                        u.full_name,
-                        u.username,
-                        u.email,
-                        u.password_hash,
-                        u.account_type,
-                        u.is_active,
-                        u.is_verified,
-                        v.vendor_id,
-                        v.vendor_name,
-                        v.is_approved
-                    FROM users u
-                    LEFT JOIN vendors v ON u.user_id = v.vendor_user_id
-                    WHERE LOWER(u.email) = LOWER(:identifier)
-                    LIMIT 1";
-        }
-        elseif ($field === 'unique_id')
-        {
-            $sql = "SELECT
-                        u.user_id,
-                        u.unique_id,
-                        u.full_name,
-                        u.username,
-                        u.email,
-                        u.password_hash,
-                        u.account_type,
-                        u.is_active,
-                        u.is_verified,
-                        v.vendor_id,
-                        v.vendor_name,
-                        v.is_approved
-                    FROM users u
-                    LEFT JOIN vendors v ON u.user_id = v.vendor_user_id
-                    WHERE u.unique_id = :identifier
-                    LIMIT 1";
-        }
-        else
-        {
-            $sql = "SELECT
-                        u.user_id,
-                        u.unique_id,
-                        u.full_name,
-                        u.username,
-                        u.email,
-                        u.password_hash,
-                        u.account_type,
-                        u.is_active,
-                        u.is_verified,
-                        v.vendor_id,
-                        v.vendor_name,
-                        v.is_approved
-                    FROM users u
-                    LEFT JOIN vendors v ON u.user_id = v.vendor_user_id
-                    WHERE LOWER(u.username) = LOWER(:identifier)
-                    LIMIT 1";
-        }
-
-        $user = $db->fetchOne(
-            $sql,
-            array('identifier' => $lookupValue)
-        );
-
-        if (!$user)
-        {
-            recordFailedLoginAttempt($ipAddress, $identifier);
-            writeLog(
-                "Authentication failed: User not found - $identifier "
-                    . "(field: $field)",
-                "AUTH"
-            );
-            return array(
-                'success' => false,
-                'message' => 'Invalid email/username or password.'
-            );
-        }
-
-        if (!password_verify($password, $user['password_hash']))
-        {
-            recordFailedLoginAttempt($ipAddress, $identifier);
-            writeLog(
-                "Authentication failed: Incorrect password for user: "
-                    . "{$user['username']}",
-                "AUTH"
-            );
-            return array(
-                'success' => false,
-                'message' => 'Invalid email/username or password.'
-            );
-        }
-
-        if ((int)$user['is_active'] !== 1)
-        {
-            writeLog(
-                "Authentication blocked: Inactive account - "
-                    . "{$user['username']}",
-                "AUTH"
-            );
-            return array(
-                'success' => false,
-                'message' => 'Your account has been suspended. '
-                    . 'Please contact an administrator.'
-            );
-        }
-
-        if ((int)$user['is_verified'] !== 1)
-        {
-            writeLog(
-                "Authentication blocked: Unverified account - "
-                    . "{$user['username']}",
-                "AUTH"
-            );
-            return array(
-                'success' => false,
-                'message' => 'Your account has not been verified yet. '
-                    . 'Please wait for administrator approval.'
-            );
-        }
-
-        if ($user['account_type'] === 'vendor'
-            && (int)(isset($user['is_approved']) ? $user['is_approved'] : 0) !== 1)
-        {
-            writeLog(
-                "Authentication blocked: Unapproved vendor account - "
-                    . "{$user['username']}",
-                "AUTH"
-            );
-            return array(
-                'success' => false,
-                'message' => 'Your vendor account is pending '
-                    . 'administrative approval.'
-            );
-        }
-
-        clearFailedLoginAttempts($ipAddress, $identifier);
-
-        setSessionFromUser($user, 'password');
-
-        writeLog(
-            "User authenticated successfully: {$user['username']} "
-                . "(Role: {$user['account_type']})",
-            "AUTH"
-        );
-
+        writeLog('Authentication aborted: database unavailable', 'AUTH');
         return array(
-            'success' => true,
-            'message' => 'Login successful.',
-            'user' => $user
+            'success' => false,
+            'message' => 'Authentication service temporarily unavailable.'
         );
     }
-}
 
-// =============================================================================
-// Current User Accessors
-// =============================================================================
+    $ipAddress = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '0.0.0.0';
+    $maxAttempts = defined('MAX_LOGIN_ATTEMPTS') ? MAX_LOGIN_ATTEMPTS : 5;
 
-if (!function_exists('getCurrentUserId'))
-{
-    function getCurrentUserId()
+    if (getFailedLoginAttemptCount($ipAddress) >= $maxAttempts)
     {
-        if (!isLoggedIn())
-        {
-            return null;
-        }
-        return isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
+        writeLog("Rate limit exceeded for IP $ipAddress", 'AUTH');
+        return array(
+            'success' => false,
+            'message' => 'Too many failed attempts. Please try again later.'
+        );
     }
-}
 
-if (!function_exists('getCurrentUserUniqueId'))
-{
-    function getCurrentUserUniqueId()
+    $normalizedIdentifier = trim($identifier);
+    $lookupValue = $normalizedIdentifier;
+    $field = null;
+
+    // Branch 1: email address (case-insensitive)
+    if (filter_var($normalizedIdentifier, FILTER_VALIDATE_EMAIL))
     {
-        if (!isLoggedIn())
-        {
-            return null;
-        }
-        return isset($_SESSION['unique_id']) ? $_SESSION['unique_id'] : null;
+        $field = 'email';
+        $lookupValue = strtolower($normalizedIdentifier);
     }
-}
-
-if (!function_exists('getCurrentUserName'))
-{
-    function getCurrentUserName()
+    else
     {
-        if (!isLoggedIn())
+        // Branch 2: unique ID (strip hyphens, upper-case, length check)
+        $candidateId = strtoupper(str_replace('-', '', $normalizedIdentifier));
+
+        if (preg_match('/^[A-Z0-9]{16}$/', $candidateId))
         {
-            return null;
+            $field = 'unique_id';
+            $lookupValue = $candidateId;
         }
-        return isset($_SESSION['username']) ? $_SESSION['username'] : null;
+        else
+        {
+            // Branch 3: username (case-insensitive)
+            $field = 'username';
+            $lookupValue = strtolower($normalizedIdentifier);
+        }
     }
-}
 
-if (!function_exists('getCurrentUserEmail'))
-{
-    function getCurrentUserEmail()
+    // Build the query according to the resolved field.
+    // Email and username use LOWER() for collation safety.
+    // Unique ID uses the normalised 16-character value.
+    if ($field === 'email')
     {
-        if (!isLoggedIn())
-        {
-            return null;
-        }
-        return isset($_SESSION['email']) ? $_SESSION['email'] : null;
-    }
-}
-
-if (!function_exists('getCurrentUserRole'))
-{
-    function getCurrentUserRole()
-    {
-        if (!isLoggedIn())
-        {
-            return null;
-        }
-        return isset($_SESSION['role'])
-            ? $_SESSION['role']
-            : (isset($_SESSION['account_type'])
-                ? $_SESSION['account_type']
-                : null);
-    }
-}
-
-if (!function_exists('getAuthProvider'))
-{
-    /**
-     * Returns the identifier of the provider that authenticated the
-     * current session.
-     *
-     * @return string|null "password", "google", or null if not logged in
-     */
-    function getAuthProvider()
-    {
-        if (!isLoggedIn())
-        {
-            return null;
-        }
-
-        return isset($_SESSION['auth_provider'])
-            ? $_SESSION['auth_provider']
-            : 'password';
-    }
-}
-
-if (!function_exists('getCurrentUser'))
-{
-    /**
-     * Returns the full current user record, or null if not logged in.
-     *
-     * @return array|null The current user record
-     */
-    function getCurrentUser()
-    {
-        static $cachedCurrentUser = null;
-
-        if ($cachedCurrentUser !== null)
-        {
-            return $cachedCurrentUser;
-        }
-
-        if (!isLoggedIn())
-        {
-            return null;
-        }
-
-        $db = getDB();
-        $userId = getCurrentUserId();
-
-        if ($userId === null)
-        {
-            return null;
-        }
-
-        $sql = "SELECT
-                    u.user_id,
+        $user = $db->fetchOne(
+            "SELECT u.user_id,
                     u.unique_id,
                     u.full_name,
                     u.username,
                     u.email,
+                    u.password_hash,
                     u.account_type,
-                    u.is_active,
                     u.is_verified,
-                    u.created_at,
-                    u.updated_at,
-                    v.vendor_id,
-                    v.vendor_name,
-                    v.business_name,
-                    v.description as vendor_description,
-                    v.is_open as vendor_is_open,
-                    v.is_approved as vendor_is_approved
-                FROM users u
-                LEFT JOIN vendors v ON u.user_id = v.vendor_user_id
-                WHERE u.user_id = :user_id
-                LIMIT 1";
-
-        $user = $db->fetchOne($sql, array('user_id' => $userId));
-
-        if ($user)
-        {
-            $cachedCurrentUser = $user;
-        }
-
-        return $user;
-    }
-}
-
-// =============================================================================
-// Authorisation Helpers
-// =============================================================================
-
-if (!function_exists('isLoggedIn'))
-{
-    function isLoggedIn()
-    {
-        return isset($_SESSION['user_id'])
-            && isset($_SESSION['logged_in'])
-            && $_SESSION['logged_in'] === true
-            && isset($_SESSION['session_start_time'])
-            && (time() - $_SESSION['session_start_time']) < SESSION_LIFETIME;
-    }
-}
-
-if (!function_exists('isStudent'))
-{
-    function isStudent()
-    {
-        return getCurrentUserRole() === 'student';
-    }
-}
-
-if (!function_exists('isStandard'))
-{
-    function isStandard()
-    {
-        return getCurrentUserRole() === 'standard';
-    }
-}
-
-if (!function_exists('isStudentOrStandard'))
-{
-    function isStudentOrStandard()
-    {
-        $role = getCurrentUserRole();
-        return $role === 'student' || $role === 'standard';
-    }
-}
-
-if (!function_exists('isVendor'))
-{
-    function isVendor()
-    {
-        return getCurrentUserRole() === 'vendor';
-    }
-}
-
-if (!function_exists('isAdmin'))
-{
-    function isAdmin()
-    {
-        return getCurrentUserRole() === 'admin';
-    }
-}
-
-// =============================================================================
-// Authorisation Requirements
-// =============================================================================
-
-if (!function_exists('requireLogin'))
-{
-    function requireLogin()
-    {
-        if (!isLoggedIn())
-        {
-            header('Location: ' . BASE_URL . '/modules/auth/login.php');
-            exit();
-        }
-    }
-}
-
-if (!function_exists('requireStudent'))
-{
-    function requireStudent()
-    {
-        if (!isLoggedIn())
-        {
-            header('Location: ' . BASE_URL . '/modules/auth/login.php');
-            exit();
-        }
-
-        if (!isStudent())
-        {
-            if (isAdmin())
-            {
-                header('Location: ' . BASE_URL . '/modules/admin/dashboard.php');
-            }
-            elseif (isVendor())
-            {
-                header('Location: ' . BASE_URL . '/modules/vendor/dashboard.php');
-            }
-            else
-            {
-                header('Location: ' . BASE_URL . '/modules/auth/login.php');
-            }
-            exit();
-        }
-    }
-}
-
-if (!function_exists('requireStudentOrStandard'))
-{
-    function requireStudentOrStandard()
-    {
-        if (!isLoggedIn())
-        {
-            header('Location: ' . BASE_URL . '/modules/auth/login.php');
-            exit();
-        }
-
-        if (!isStudent() && !isStandard())
-        {
-            if (isAdmin())
-            {
-                header('Location: ' . BASE_URL . '/modules/admin/dashboard.php');
-            }
-            elseif (isVendor())
-            {
-                header('Location: ' . BASE_URL . '/modules/vendor/dashboard.php');
-            }
-            else
-            {
-                header('Location: ' . BASE_URL . '/modules/auth/login.php');
-            }
-            exit();
-        }
-    }
-}
-
-if (!function_exists('requireVendor'))
-{
-    function requireVendor()
-    {
-        if (!isLoggedIn())
-        {
-            header('Location: ' . BASE_URL . '/modules/auth/login.php');
-            exit();
-        }
-
-        if (!isVendor())
-        {
-            if (isAdmin())
-            {
-                header('Location: ' . BASE_URL . '/modules/admin/dashboard.php');
-            }
-            elseif (isStudent())
-            {
-                header('Location: ' . BASE_URL . '/modules/student/dashboard.php');
-            }
-            else
-            {
-                header('Location: ' . BASE_URL . '/modules/auth/login.php');
-            }
-            exit();
-        }
-    }
-}
-
-if (!function_exists('requireVendorVerified'))
-{
-    function requireVendorVerified()
-    {
-        requireVendor();
-
-        $db = getDB();
-        $userId = getCurrentUserId();
-
-        $vendor = $db->fetchOne(
-            "SELECT is_approved FROM vendors
-             WHERE vendor_user_id = :user_id
+                    u.is_active
+             FROM users u
+             WHERE LOWER(u.email) = :identifier
              LIMIT 1",
-            array('user_id' => $userId)
+            array('identifier' => $lookupValue)
         );
+    }
+    elseif ($field === 'unique_id')
+    {
+        $user = $db->fetchOne(
+            "SELECT u.user_id,
+                    u.unique_id,
+                    u.full_name,
+                    u.username,
+                    u.email,
+                    u.password_hash,
+                    u.account_type,
+                    u.is_verified,
+                    u.is_active
+             FROM users u
+             WHERE u.unique_id = :identifier
+             LIMIT 1",
+            array('identifier' => $lookupValue)
+        );
+    }
+    else
+    {
+        $user = $db->fetchOne(
+            "SELECT u.user_id,
+                    u.unique_id,
+                    u.full_name,
+                    u.username,
+                    u.email,
+                    u.password_hash,
+                    u.account_type,
+                    u.is_verified,
+                    u.is_active
+             FROM users u
+             WHERE LOWER(u.username) = :identifier
+             LIMIT 1",
+            array('identifier' => $lookupValue)
+        );
+    }
 
-        if (!$vendor || (int)$vendor['is_approved'] !== 1)
-        {
-            writeLog(
-                "Unapproved vendor attempted vendor area: User ID $userId",
-                "AUTH"
-            );
-            header('Location: ' . BASE_URL . '/modules/auth/logout.php');
-            exit();
-        }
+    if (!$user)
+    {
+        recordFailedLoginAttempt($ipAddress, $normalizedIdentifier);
+        writeLog("Authentication failed: user not found for identifier type $field", 'AUTH');
+        return array(
+            'success' => false,
+            'message' => 'Invalid credentials.'
+        );
+    }
+
+    if (!(int)$user['is_active'])
+    {
+        recordFailedLoginAttempt($ipAddress, $normalizedIdentifier);
+        writeLog("Authentication failed: inactive account user_id " . $user['user_id'], 'AUTH');
+        return array(
+            'success' => false,
+            'message' => 'Invalid credentials.'
+        );
+    }
+
+    if (!password_verify($password, $user['password_hash']))
+    {
+        recordFailedLoginAttempt($ipAddress, $normalizedIdentifier);
+        writeLog("Authentication failed: password mismatch for user_id " . $user['user_id'], 'AUTH');
+        return array(
+            'success' => false,
+            'message' => 'Invalid credentials.'
+        );
+    }
+
+    // Successful authentication path.
+    clearFailedLoginAttempts($ipAddress);
+    createAuthenticatedSession($user);
+
+    writeLog(
+        "Authentication succeeded for user_id " . $user['user_id']
+        . " (unique_id " . $user['unique_id'] . ")",
+        'AUTH'
+    );
+
+    return array(
+        'success' => true,
+        'message' => 'Authentication successful.',
+        'user'    => $user
+    );
+}
+
+/**
+ * Creates the authenticated session for a verified user.
+ *
+ * Regenerates the session identifier, stores the required claims, and
+ * records the session row for later management.
+ *
+ * @param array $user The user row returned by the lookup
+ * @return void
+ */
+function createAuthenticatedSession(array $user)
+{
+    initSession();
+    session_regenerate_id(true);
+
+    $_SESSION['user_id']     = (int)$user['user_id'];
+    $_SESSION['unique_id']   = $user['unique_id'];
+    $_SESSION['full_name']   = $user['full_name'];
+    $_SESSION['username']    = $user['username'];
+    $_SESSION['email']       = $user['email'];
+    $_SESSION['account_type']= $user['account_type'];
+    $_SESSION['is_verified'] = (int)$user['is_verified'];
+    $_SESSION['authenticated_at'] = time();
+
+    // Persist session metadata for administrative review.
+    $db = getDB();
+    if ($db->isAvailable())
+    {
+        $db->executeQuery(
+            "INSERT INTO user_sessions
+                (session_id, user_id, ip_address, user_agent, created_at, last_activity)
+             VALUES
+                (:sid, :uid, :ip, :ua, NOW(), NOW())
+             ON DUPLICATE KEY UPDATE
+                last_activity = NOW()",
+            array(
+                'sid' => session_id(),
+                'uid' => (int)$user['user_id'],
+                'ip'  => isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '0.0.0.0',
+                'ua'  => isset($_SERVER['HTTP_USER_AGENT']) ? substr($_SERVER['HTTP_USER_AGENT'], 0, 512) : null
+            )
+        );
     }
 }
 
-if (!function_exists('requireAdmin'))
-{
-    function requireAdmin()
-    {
-        if (!isLoggedIn())
-        {
-            header('Location: ' . BASE_URL . '/modules/auth/login.php');
-            exit();
-        }
+// =============================================================================
+// Session Query Helpers
+// =============================================================================
 
-        if (!isAdmin())
-        {
-            if (isVendor())
-            {
-                header('Location: ' . BASE_URL . '/modules/vendor/dashboard.php');
-            }
-            elseif (isStudent())
-            {
-                header('Location: ' . BASE_URL . '/modules/student/dashboard.php');
-            }
-            else
-            {
-                header('Location: ' . BASE_URL . '/modules/auth/login.php');
-            }
-            exit();
-        }
-    }
+/**
+ * Returns the currently authenticated user identifier, or null.
+ *
+ * @return int|null
+ */
+function getCurrentUserId()
+{
+    initSession();
+    return isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : null;
 }
 
-if (!function_exists('logout'))
+/**
+ * Returns the currently authenticated unique ID, or null.
+ *
+ * @return string|null
+ */
+function getCurrentUniqueId()
 {
-    /**
-     * Logs the current user out and redirects to the landing page.
-     *
-     * @return void
-     */
-    function logout()
+    initSession();
+    return isset($_SESSION['unique_id']) ? $_SESSION['unique_id'] : null;
+}
+
+/**
+ * Returns the currently authenticated display name, or null.
+ *
+ * @return string|null
+ */
+function getCurrentUserName()
+{
+    initSession();
+    return isset($_SESSION['full_name']) ? $_SESSION['full_name'] : null;
+}
+
+/**
+ * Returns the currently authenticated account type, or null.
+ *
+ * @return string|null
+ */
+function getCurrentAccountType()
+{
+    initSession();
+    return isset($_SESSION['account_type']) ? $_SESSION['account_type'] : null;
+}
+
+/**
+ * Returns true when a valid authenticated session exists.
+ *
+ * @return bool
+ */
+function isAuthenticated()
+{
+    initSession();
+    return !empty($_SESSION['user_id']) && !empty($_SESSION['account_type']);
+}
+
+/**
+ * Requires that the current session belongs to one of the supplied
+ * roles. Redirects to the login page when the requirement is not met.
+ *
+ * @param array $allowedRoles List of permitted account_type values
+ * @return void
+ */
+function requireRole(array $allowedRoles)
+{
+    if (!isAuthenticated())
     {
-        $userId = getCurrentUserId();
-        $username = getCurrentUserName();
-
-        writeLog(
-            "Logout initiated for user: $username (ID: $userId)",
-            "AUTH"
-        );
-        destroySession();
-        writeLog("User logged out successfully: $username", "AUTH");
-
-        $redirectUrl = ROOT_URL . '/index.php?logout=' . time();
-        header('HTTP/1.1 303 See Other');
-        header('Location: ' . $redirectUrl);
+        header('Location: ' . ROOT_URL . '/modules/auth/login.php');
         exit();
     }
+
+    $role = getCurrentAccountType();
+    if (!in_array($role, $allowedRoles, true))
+    {
+        header('HTTP/1.1 403 Forbidden');
+        echo 'Access denied.';
+        exit();
+    }
+}
+
+// =============================================================================
+// Logout
+// =============================================================================
+
+/**
+ * Logs the current user out and redirects to the public index.
+ *
+ * @return void
+ */
+function logout()
+{
+    $userId = getCurrentUserId();
+    $username = getCurrentUserName();
+
+    writeLog(
+        "Logout initiated for user: $username (ID: $userId)",
+        "AUTH"
+    );
+    destroySession();
+    writeLog("User logged out successfully: $username", "AUTH");
+
+    $redirectUrl = ROOT_URL . '/index.php?logout=' . time();
+    header('HTTP/1.1 303 See Other');
+    header('Location: ' . $redirectUrl);
+    exit();
 }

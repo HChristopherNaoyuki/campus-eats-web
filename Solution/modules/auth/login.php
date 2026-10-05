@@ -28,269 +28,191 @@
  * - The paths use the Solution directory with a capital S. The
  *   directory is case-sensitive on Linux.
  *
- * SOURCE: Password visibility request.
  * SOURCE: Campus Eats process document, section 15.
- * SOURCE: Notes - Make use of SSO.
+ * SOURCE: Technical Audit Report - Password Visibility Toggle.
  *
  * @version 24.0
  */
 
-require_once dirname(__DIR__, 2) . '/config/constants.php';
+session_start();
+
 require_once dirname(__DIR__, 2) . '/includes/auth.php';
 require_once dirname(__DIR__, 2) . '/includes/i18n.php';
-require_once dirname(__DIR__, 2) . '/config/database.php';
-require_once dirname(__DIR__, 2) . '/config/error_logging.php';
+require_once dirname(__DIR__, 2) . '/config/constants.php';
 
-startSecureSession();
+setSecurityHeaders();
+initSession();
 
-// =============================================================================
-// Redirect Helper
-// =============================================================================
-//
-// The helper is defined before every call site. The definition is
-// guarded by function_exists so a second include of this file does
-// not cause a redeclaration fatal.
-
-if (!function_exists('redirectToDashboardAfterLogin'))
+/**
+ * Redirects an already-authenticated user to the role-appropriate
+ * dashboard. Defined before any call site so that early returns do
+ * not produce a fatal error.
+ *
+ * @return void
+ */
+function redirectToDashboardAfterLogin()
 {
-    /**
-     * Redirects the authenticated user to the dashboard for their role.
-     *
-     * @return void
-     */
-    function redirectToDashboardAfterLogin()
+    $role = getCurrentAccountType();
+
+    switch ($role)
     {
-        $accountType = getCurrentUserRole();
-
-        switch ($accountType)
-        {
-            case 'admin':
-                header('Location: ' . BASE_URL . '/modules/admin/dashboard.php');
-                exit();
-
-            case 'vendor':
-                header('Location: ' . BASE_URL . '/modules/vendor/dashboard.php');
-                exit();
-
-            case 'student':
-            case 'standard':
-                header('Location: ' . BASE_URL . '/modules/student/dashboard.php');
-                exit();
-
-            default:
-                header('Location: ' . ROOT_URL . '/index.php');
-                exit();
-        }
+        case 'admin':
+            header('Location: ' . ROOT_URL . '/modules/admin/dashboard.php');
+            break;
+        case 'vendor':
+            header('Location: ' . ROOT_URL . '/modules/vendor/dashboard.php');
+            break;
+        case 'student':
+        case 'standard':
+        default:
+            header('Location: ' . ROOT_URL . '/modules/student/dashboard.php');
+            break;
     }
+    exit();
 }
 
-// Redirect authenticated users before rendering the form.
-if (isLoggedIn())
+// Already signed in: send the user to the correct dashboard.
+if (isAuthenticated())
 {
     redirectToDashboardAfterLogin();
 }
 
-// =============================================================================
-// Google SSO state
-// =============================================================================
-
-$googleConfigured = false;
-
-if (file_exists(dirname(__DIR__, 2) . '/includes/oauth_google.php'))
-{
-    require_once dirname(__DIR__, 2) . '/includes/oauth_google.php';
-
-    if (function_exists('googleIsConfigured'))
-    {
-        $googleConfigured = googleIsConfigured();
-    }
-}
-
-// =============================================================================
-// Form Handling
-// =============================================================================
-
-$error = '';
-$formData = array('email' => '');
+$errorMessage = '';
 $csrfToken = getCsrfToken();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST')
 {
-    $identifier = trim(isset($_POST['email']) ? $_POST['email'] : '');
-    $passwordInput = isset($_POST['password']) ? $_POST['password'] : '';
-    $submittedCsrfToken = isset($_POST['csrf_token'])
-        ? $_POST['csrf_token']
-        : '';
+    $submittedToken = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
 
-    $formData['email'] = $identifier;
-
-    if (empty($identifier) || empty($passwordInput))
+    if (!validateCsrfToken($submittedToken))
     {
-        $error = __('error.required_fields');
+        $errorMessage = __('Invalid security token. Please try again.');
     }
     else
     {
-        try
+        $identifier = isset($_POST['identifier']) ? trim($_POST['identifier']) : '';
+        $password   = isset($_POST['password']) ? $_POST['password'] : '';
+
+        if ($identifier === '' || $password === '')
         {
-            $result = authenticateUser(
-                $identifier,
-                $passwordInput,
-                $submittedCsrfToken
-            );
-
-            if ($result['success'])
-            {
-                redirectToDashboardAfterLogin();
-            }
-
-            $error = $result['message'];
+            $errorMessage = __('Please enter both identifier and password.');
         }
-        catch (Exception $exception)
+        else
         {
-            // The authentication path reports a database-unavailable
-            // condition as an exception. The message is logged. The
-            // user sees a generic message.
-            writeLog(
-                'Authentication failed: ' . $exception->getMessage(),
-                "AUTH_ERROR"
-            );
-            $error = __('error.generic');
+            try
+            {
+                $result = authenticateUser($identifier, $password);
+
+                if ($result['success'])
+                {
+                    redirectToDashboardAfterLogin();
+                }
+                else
+                {
+                    $errorMessage = __($result['message']);
+                }
+            }
+            catch (Throwable $t)
+            {
+                writeLog(
+                    'Login handler exception: ' . $t->getMessage(),
+                    'AUTH'
+                );
+                $errorMessage = __('Authentication service temporarily unavailable.');
+            }
         }
     }
-
-    $csrfToken = getCsrfToken();
 }
 
-$pageTitle = __('login.title');
+$pageTitle = __('Sign In');
 ?>
 <!DOCTYPE html>
 <html lang="<?php echo escapeOutput(getCurrentLanguage()); ?>">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?php echo escapeOutput($csrfToken); ?>">
-    <title><?php echo escapeOutput($pageTitle); ?> - <?php echo __e('app.name'); ?></title>
+    <title><?php echo escapeOutput($pageTitle); ?> - Campus Eats</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="<?php echo ASSETS_URL; ?>/css/public.css">
+    <link rel="stylesheet" href="<?php echo ROOT_URL; ?>/assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo ROOT_URL; ?>/assets/css/public.css">
 </head>
-<body class="auth-page">
-    <div class="auth-container">
-        <div class="auth-card">
-            <div class="auth-header">
-                <div class="auth-logo">
-                    <i class="fas fa-utensils"></i>
-                </div>
-                <h1 class="auth-title"><?php echo __e('login.title'); ?></h1>
-                <p class="auth-subtitle"><?php echo __e('login.subtitle'); ?></p>
-            </div>
+<body>
+    <?php include_once dirname(__DIR__, 2) . '/includes/public_header.php'; ?>
 
-            <?php if (!empty($error)): ?>
+    <main class="auth-main">
+        <div class="auth-container">
+            <h1><?php echo escapeOutput(__('Sign in to Campus Eats')); ?></h1>
+
+            <?php if ($errorMessage !== ''): ?>
                 <div class="alert alert-error" role="alert">
-                    <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
-                    <?php echo escapeOutput($error); ?>
+                    <?php echo escapeOutput($errorMessage); ?>
                 </div>
             <?php endif; ?>
 
-            <div class="auth-body">
-                <a href="<?php echo escapeOutput(googleStartUrl()); ?>"
-                   class="btn-google">
-                    <i class="fab fa-google" aria-hidden="true"></i>
-                    <span><?php echo __e('auth.sign_in_google'); ?></span>
-                </a>
+            <form method="post" action="" id="login-form" novalidate>
+                <input type="hidden" name="csrf_token" value="<?php echo escapeOutput($csrfToken); ?>">
 
-                <?php if (!$googleConfigured): ?>
-                    <p class="sso-note">
-                        <i class="fas fa-info-circle" aria-hidden="true"></i>
-                        <?php echo __e('auth.sso_not_configured'); ?>
-                    </p>
-                <?php endif; ?>
-
-                <div class="auth-separator">
-                    <span><?php echo __e('common.or'); ?></span>
+                <div class="form-group">
+                    <label for="identifier"><?php echo escapeOutput(__('Email, username or User ID')); ?></label>
+                    <input
+                        type="text"
+                        id="identifier"
+                        name="identifier"
+                        autocomplete="username"
+                        required
+                        value="<?php echo isset($_POST['identifier']) ? escapeOutput($_POST['identifier']) : ''; ?>"
+                    >
                 </div>
 
-                <form method="POST" action="" id="login-form">
-                    <input type="hidden" name="csrf_token"
-                           value="<?php echo escapeOutput($csrfToken); ?>">
-
-                    <div class="form-group">
-                        <label class="form-label" for="email">
-                            <?php echo __e('auth.email_or_user_id'); ?>
-                        </label>
-                        <div class="input-wrapper">
-                            <i class="fas fa-envelope input-icon"
-                               aria-hidden="true"></i>
-                            <input type="text"
-                                   id="email"
-                                   name="email"
-                                   class="form-control"
-                                   required
-                                   autocomplete="username"
-                                   value="<?php echo escapeOutput($formData['email']); ?>"
-                                   placeholder="<?php echo __e('auth.email_placeholder'); ?>"
-                                   autofocus>
-                        </div>
-                        <span class="form-hint">
-                            <?php echo __e('login.hint_identifier'); ?>
-                        </span>
+                <div class="form-group">
+                    <label for="password"><?php echo escapeOutput(__('Password')); ?></label>
+                    <div class="input-wrapper-password">
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            autocomplete="current-password"
+                            required
+                        >
+                        <button
+                            type="button"
+                            id="password-toggle"
+                            class="password-toggle"
+                            aria-label="<?php echo escapeOutput(__('Show password')); ?>"
+                            aria-pressed="false"
+                        >
+                            <i id="password-toggle-icon" class="fas fa-eye" aria-hidden="true"></i>
+                        </button>
                     </div>
+                </div>
 
-                    <div class="form-group">
-                        <div class="form-label-row">
-                            <label class="form-label" for="password">
-                                <?php echo __e('auth.password'); ?>
-                            </label>
-                            <a href="forgot_password.php" class="forgot-link">
-                                <?php echo __e('auth.forgot_password'); ?>
-                            </a>
-                        </div>
-                        <div class="input-wrapper input-wrapper-password">
-                            <i class="fas fa-lock input-icon"
-                               aria-hidden="true"></i>
-                            <input type="password"
-                                   id="password"
-                                   name="password"
-                                   class="form-control"
-                                   required
-                                   autocomplete="current-password"
-                                   placeholder="<?php echo __e('auth.password_placeholder'); ?>">
-                            <button type="button"
-                                    class="password-toggle"
-                                    id="password-toggle"
-                                    aria-label="<?php echo __e('auth.show_password'); ?>"
-                                    aria-pressed="false"
-                                    tabindex="0">
-                                <i class="fas fa-eye"
-                                   id="password-toggle-icon"
-                                   aria-hidden="true"></i>
-                            </button>
-                        </div>
-                    </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <?php echo escapeOutput(__('Sign In')); ?>
+                </button>
+            </form>
 
-                    <button type="submit"
-                            class="btn btn-primary btn-block btn-lg"
-                            id="login-submit-btn">
-                        <i class="fas fa-arrow-right" aria-hidden="true"></i>
-                        <?php echo __e('auth.sign_in'); ?>
-                    </button>
-                </form>
-            </div>
+            <p class="auth-links">
+                <a href="<?php echo ROOT_URL; ?>/modules/auth/forgot_password.php">
+                    <?php echo escapeOutput(__('Forgot password?')); ?>
+                </a>
+                <span aria-hidden="true"> · </span>
+                <a href="<?php echo ROOT_URL; ?>/modules/auth/register.php">
+                    <?php echo escapeOutput(__('Create an account')); ?>
+                </a>
+            </p>
 
-            <div class="auth-footer">
-                <p>
-                    <?php echo __e('auth.no_account'); ?>
-                    <a href="register.php"><?php echo __e('auth.sign_up'); ?></a>
-                </p>
-                <p class="return-home">
-                    <a href="<?php echo escapeOutput(ROOT_URL); ?>/index.php">
-                        <?php echo __e('auth.return_home'); ?>
-                    </a>
-                </p>
-            </div>
+            <?php if (defined('GOOGLE_CLIENT_ID') && GOOGLE_CLIENT_ID !== ''): ?>
+                <div class="auth-divider">
+                    <span><?php echo escapeOutput(__('or')); ?></span>
+                </div>
+                <div id="google-signin-button"></div>
+            <?php endif; ?>
         </div>
-    </div>
+    </main>
 
-    <script src="<?php echo ASSETS_URL; ?>/js/auth.js"></script>
-    <script src="<?php echo ASSETS_URL; ?>/js/main.js"></script>
+    <?php include_once dirname(__DIR__, 2) . '/includes/footer.php'; ?>
+
+    <script src="<?php echo ROOT_URL; ?>/assets/js/auth.js"></script>
 </body>
 </html>

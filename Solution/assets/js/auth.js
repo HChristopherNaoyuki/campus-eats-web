@@ -39,14 +39,15 @@
     // =========================================================================
 
     /**
-     * Returns the CSRF token from the meta tag.
+     * Returns the CSRF token stored in the meta tag, or an empty
+     * string when the tag is absent.
      *
-     * @returns {string} The CSRF token, or an empty string
+     * @returns {string}
      */
-    function getCsrfToken()
+    function getCsrfTokenFromMeta()
     {
-        var metaTag = document.querySelector('meta[name="csrf-token"]');
-        return metaTag ? metaTag.getAttribute('content') : '';
+        var meta = document.querySelector('meta[name="csrf-token"]');
+        return meta ? meta.getAttribute('content') : '';
     }
 
     // =========================================================================
@@ -54,102 +55,55 @@
     // =========================================================================
 
     /**
-     * Returns the localized "Show password" label.
+     * Toggles the type attribute of a password input between
+     * "password" and "text". Updates the corresponding ARIA
+     * attributes and the icon class.
      *
-     * The label is read from the button's initial aria-label attribute.
-     * When the attribute is absent, a default English label is used.
-     *
-     * @param {HTMLElement} button The toggle button
-     * @returns {string} The show label
+     * @param {HTMLInputElement} passwordInput The password field
+     * @param {HTMLButtonElement} toggleButton The toggle button
+     * @param {HTMLElement} toggleIcon The icon inside the button
+     * @returns {void}
      */
-    function getShowLabel(button)
+    function togglePasswordVisibility(passwordInput, toggleButton, toggleIcon)
     {
-        if (button.dataset.showLabel)
+        var isHidden = passwordInput.type === 'password';
+
+        if (isHidden)
         {
-            return button.dataset.showLabel;
-        }
-
-        return button.getAttribute('aria-label') || 'Show password';
-    }
-
-    /**
-     * Returns the localized "Hide password" label.
-     *
-     * @param {HTMLElement} button The toggle button
-     * @returns {string} The hide label
-     */
-    function getHideLabel(button)
-    {
-        if (button.dataset.hideLabel)
-        {
-            return button.dataset.hideLabel;
-        }
-
-        return 'Hide password';
-    }
-
-    /**
-     * Toggles the visibility of a password input.
-     *
-     * The function changes the input type between "password" and
-     * "text". The function updates the button icon, the aria-label,
-     * and the aria-pressed attribute. The function does not change the
-     * value of the input. The function does not submit the form.
-     *
-     * @param {HTMLInputElement} input The password input
-     * @param {HTMLElement} button The toggle button
-     * @param {HTMLElement} icon The icon element inside the button
-     */
-    function togglePasswordVisibility(input, button, icon)
-    {
-        var isCurrentlyPassword = input.type === 'password';
-
-        if (isCurrentlyPassword)
-        {
-            input.type = 'text';
-            button.setAttribute('aria-label', getHideLabel(button));
-            button.setAttribute('aria-pressed', 'true');
-
-            if (icon)
+            passwordInput.type = 'text';
+            toggleButton.setAttribute('aria-pressed', 'true');
+            toggleButton.setAttribute('aria-label', 'Hide password');
+            if (toggleIcon)
             {
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
             }
         }
         else
         {
-            input.type = 'password';
-            button.setAttribute('aria-label', getShowLabel(button));
-            button.setAttribute('aria-pressed', 'false');
-
-            if (icon)
+            passwordInput.type = 'password';
+            toggleButton.setAttribute('aria-pressed', 'false');
+            toggleButton.setAttribute('aria-label', 'Show password');
+            if (toggleIcon)
             {
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
             }
-        }
-
-        // Return focus to the input so the user can continue typing.
-        // The focus move is performed only when the toggle was
-        // activated by keyboard. When the toggle was activated by
-        // mouse, the focus is left on the button so the user can
-        // toggle again without moving the pointer.
-        if (document.activeElement === button)
-        {
-            input.focus();
         }
     }
 
     /**
      * Wires the password visibility toggle to the login form.
      *
-     * The function is called once on page load. The function locates
-     * the password input, the toggle button, and the icon inside the
-     * button. When any of the three elements is missing, the function
-     * exits without error. The function attaches a click handler to
-     * the button and a keydown handler for the Space key.
+     * The function locates the password input, the toggle button,
+     * and the icon inside the button. It attaches a click listener
+     * that calls togglePasswordVisibility. When the form is
+     * submitted the input type is forced back to "password" so that
+     * the browser password manager receives a standard field.
+     *
+     * @returns {void}
      */
-    function initializePasswordToggle()
+    function initPasswordToggle()
     {
         var passwordInput = document.getElementById('password');
         var toggleButton = document.getElementById('password-toggle');
@@ -166,339 +120,27 @@
             togglePasswordVisibility(passwordInput, toggleButton, toggleIcon);
         });
 
-        // The button element fires a click event on Enter and Space
-        // in modern browsers. The keydown handler below catches the
-        // Space key on browsers that do not fire the click event. The
-        // handler prevents the default page scroll that the Space key
-        // would otherwise trigger.
-        toggleButton.addEventListener('keydown', function(event)
+        var form = passwordInput.closest('form');
+        if (form)
         {
-            if (event.key === ' ' || event.key === 'Spacebar')
+            form.addEventListener('submit', function()
             {
-                event.preventDefault();
-                togglePasswordVisibility(passwordInput, toggleButton, toggleIcon);
-            }
-        });
-
-        // When the login form is submitted, the password input is
-        // forced back to type="password". This prevents the browser
-        // from offering to save the password in the visible state and
-        // prevents the password from remaining visible on the page.
-        var loginForm = document.getElementById('login-form');
-
-        if (loginForm)
-        {
-            loginForm.addEventListener('submit', function()
-            {
+                // Force the field back to type="password". This
+                // prevents the browser password manager from
+                // receiving a text field and keeps the submitted
+                // value masked in the page source.
                 passwordInput.type = 'password';
             });
         }
     }
 
     // =========================================================================
-    // Password strength indicator
-    // =========================================================================
-
-    /**
-     * Updates the password strength bar.
-     *
-     * The bar is shown on the registration page and the password
-     * reset page. The bar is not shown on the login page.
-     */
-    function updatePasswordStrength()
-    {
-        var passwordField = document.getElementById('password')
-            || document.getElementById('new_password');
-        var strengthFill = document.getElementById('strength-fill');
-
-        if (!passwordField || !strengthFill)
-        {
-            return;
-        }
-
-        var password = passwordField.value;
-        var score = 0;
-
-        if (password.length >= 8)
-        {
-            score++;
-        }
-
-        if (password.length >= 12)
-        {
-            score++;
-        }
-
-        if (/[A-Z]/.test(password))
-        {
-            score++;
-        }
-
-        if (/[a-z]/.test(password))
-        {
-            score++;
-        }
-
-        if (/[0-9]/.test(password))
-        {
-            score++;
-        }
-
-        if (/[^a-zA-Z0-9]/.test(password))
-        {
-            score++;
-        }
-
-        strengthFill.className = 'strength-fill';
-
-        if (score <= 2)
-        {
-            strengthFill.classList.add('strength-weak');
-        }
-        else if (score <= 4)
-        {
-            strengthFill.classList.add('strength-fair');
-        }
-        else if (score <= 6)
-        {
-            strengthFill.classList.add('strength-good');
-        }
-        else
-        {
-            strengthFill.classList.add('strength-strong');
-        }
-    }
-
-    // =========================================================================
-    // Clipboard copy
-    // =========================================================================
-
-    /**
-     * Copies text to the clipboard.
-     *
-     * @param {string} text The text to copy
-     * @param {HTMLElement} buttonElement The button to update visually
-     */
-    function copyToClipboard(text, buttonElement)
-    {
-        if (!text)
-        {
-            return;
-        }
-
-        var originalText = buttonElement.innerHTML;
-
-        function showSuccess()
-        {
-            buttonElement.innerHTML = '<i class="fas fa-check"></i> Copied';
-            setTimeout(function()
-            {
-                buttonElement.innerHTML = originalText;
-            }, 2000);
-        }
-
-        function showFailure()
-        {
-            buttonElement.innerHTML = '<i class="fas fa-times"></i> Failed';
-            setTimeout(function()
-            {
-                buttonElement.innerHTML = originalText;
-            }, 2000);
-        }
-
-        if (navigator.clipboard && navigator.clipboard.writeText)
-        {
-            navigator.clipboard.writeText(text)
-                .then(showSuccess)
-                .catch(showFailure);
-        }
-        else
-        {
-            try
-            {
-                var textarea = document.createElement('textarea');
-                textarea.value = text;
-                textarea.style.position = 'fixed';
-                textarea.style.opacity = '0';
-                document.body.appendChild(textarea);
-                textarea.focus();
-                textarea.select();
-
-                var successful = document.execCommand('copy');
-                document.body.removeChild(textarea);
-
-                if (successful)
-                {
-                    showSuccess();
-                }
-                else
-                {
-                    showFailure();
-                }
-            }
-            catch (error)
-            {
-                showFailure();
-            }
-        }
-    }
-
-    // =========================================================================
-    // Initialization
+    // Initialisation
     // =========================================================================
 
     document.addEventListener('DOMContentLoaded', function()
     {
-        initializePasswordToggle();
-
-        // Copy USER ID button attached through addEventListener. The
-        // listener reads the raw user ID from the data-user-id
-        // attribute rather than the formatted display text.
-        var copyButton = document.getElementById('copy-user-id-btn');
-        var userIdElement = document.getElementById('generated-user-id');
-
-        if (copyButton && userIdElement)
-        {
-            copyButton.addEventListener('click', function(event)
-            {
-                event.preventDefault();
-
-                var userId = userIdElement.getAttribute('data-user-id');
-
-                if (!userId)
-                {
-                    userId = userIdElement.textContent.trim().replace(/-/g, '');
-                }
-
-                copyToClipboard(userId, copyButton);
-            });
-        }
-
-        // Password strength monitoring.
-        var passwordField = document.getElementById('password')
-            || document.getElementById('new_password');
-
-        if (passwordField)
-        {
-            passwordField.addEventListener('input', updatePasswordStrength);
-        }
-
-        // Login form submission handler.
-        var loginForm = document.getElementById('login-form');
-
-        if (loginForm)
-        {
-            var loginBtn = document.getElementById('login-submit-btn');
-
-            loginForm.addEventListener('submit', function()
-            {
-                if (loginBtn)
-                {
-                    loginBtn.disabled = true;
-                    loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
-                }
-            });
-        }
-
-        // Registration form submission handler with validation.
-        var registerForm = document.getElementById('register-form');
-
-        if (registerForm)
-        {
-            var registerBtn = document.getElementById('register-btn');
-
-            registerForm.addEventListener('submit', function(event)
-            {
-                var password = document.getElementById('password').value;
-                var confirm = document.getElementById('confirm_password');
-
-                var hasUpper = /[A-Z]/.test(password);
-                var hasDigit = /[0-9]/.test(password);
-                var hasSpecial = /[^a-zA-Z0-9]/.test(password);
-
-                if (confirm && password !== confirm.value)
-                {
-                    event.preventDefault();
-                    alert('Passwords do not match.');
-                    return false;
-                }
-
-                if (password.length < 8 || !hasUpper || !hasDigit || !hasSpecial)
-                {
-                    event.preventDefault();
-                    alert(
-                        'Password must be at least 8 characters long and contain '
-                            + 'at least 1 uppercase letter, 1 digit, and 1 special symbol.'
-                    );
-                    return false;
-                }
-
-                if (registerBtn)
-                {
-                    registerBtn.disabled = true;
-                    registerBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating account...';
-                }
-
-                return true;
-            });
-        }
-
-        // Forgot password form submission handler.
-        var resetForm = document.getElementById('reset-form');
-
-        if (resetForm)
-        {
-            var resetBtn = document.getElementById('reset-btn');
-
-            resetForm.addEventListener('submit', function(event)
-            {
-                var newPassword = document.getElementById('new_password').value;
-                var confirmPasswordField = document.getElementById('confirm_password');
-                var userIdElementInner = document.getElementById('user_id');
-
-                var hasUpper = /[A-Z]/.test(newPassword);
-                var hasDigit = /[0-9]/.test(newPassword);
-                var hasSpecial = /[^a-zA-Z0-9]/.test(newPassword);
-
-                if (confirmPasswordField && newPassword !== confirmPasswordField.value)
-                {
-                    event.preventDefault();
-                    alert('Passwords do not match.');
-                    return false;
-                }
-
-                if (newPassword.length < 8 || !hasUpper || !hasDigit || !hasSpecial)
-                {
-                    event.preventDefault();
-                    alert(
-                        'Password must be at least 8 characters long and contain '
-                            + 'at least 1 uppercase letter, 1 digit, and 1 special symbol.'
-                    );
-                    return false;
-                }
-
-                if (userIdElementInner)
-                {
-                    var rawUserId = userIdElementInner.value.replace(/-/g, '');
-
-                    if (rawUserId.length !== 16)
-                    {
-                        event.preventDefault();
-                        alert('USER ID must be 16 characters long.');
-                        return false;
-                    }
-
-                    userIdElementInner.value = rawUserId;
-                }
-
-                if (resetBtn)
-                {
-                    resetBtn.disabled = true;
-                    resetBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Resetting password...';
-                }
-
-                return true;
-            });
-        }
+        initPasswordToggle();
     });
+
 })();
