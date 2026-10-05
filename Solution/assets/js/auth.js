@@ -4,55 +4,211 @@
  * Handles password visibility toggle, password strength indicator,
  * form validation, and clipboard copy functionality.
  *
- * CORRECTIONS (Version 5.0):
- * - The Copy button listener is now attached with addEventListener
- *   instead of an inline onclick handler. This allows the Content
- *   Security Policy to remain strict (no unsafe-inline).
- * - Reads the raw USER ID from the data-user-id attribute rather than
- *   from the formatted display text.
- * - Adds error handling for the Clipboard API.
+ * CORRECTIONS (Version 6.0 - Password Visibility):
  *
- * SOURCE: Issue report - items 3, 23
+ * - Added the password visibility toggle. The toggle changes the
+ *   type attribute of the password input between "password" and
+ *   "text". The toggle updates the aria-label and the aria-pressed
+ *   attribute of the button. The toggle does not change the value of
+ *   the input. The toggle does not submit the form.
  *
- * @version 5.0
+ * - The toggle is reachable by keyboard. The button element receives
+ *   focus through the Tab key. The Enter key and the Space key
+ *   activate the button because the button element handles those
+ *   keys natively.
+ *
+ * - Retained the clipboard copy listener attached through
+ *   addEventListener. The listener reads the raw user ID from the
+ *   data-user-id attribute rather than the formatted display text.
+ *
+ * - Retained the password strength monitor, the form validation, and
+ *   the submission button state.
+ *
+ * SOURCE: Password visibility request.
+ * SOURCE: Notes - Make use of SSO.
+ *
+ * @version 6.0
  */
 
 (function()
 {
     'use strict';
 
+    // =========================================================================
+    // CSRF token retrieval
+    // =========================================================================
+
+    /**
+     * Returns the CSRF token from the meta tag.
+     *
+     * @returns {string} The CSRF token, or an empty string
+     */
     function getCsrfToken()
     {
         var metaTag = document.querySelector('meta[name="csrf-token"]');
         return metaTag ? metaTag.getAttribute('content') : '';
     }
 
-    function togglePasswordVisibility(inputId, iconId)
-    {
-        var passwordInput = document.getElementById(inputId);
-        var toggleIcon = document.getElementById(iconId);
+    // =========================================================================
+    // Password visibility toggle
+    // =========================================================================
 
-        if (passwordInput && toggleIcon)
+    /**
+     * Returns the localized "Show password" label.
+     *
+     * The label is read from the button's initial aria-label attribute.
+     * When the attribute is absent, a default English label is used.
+     *
+     * @param {HTMLElement} button The toggle button
+     * @returns {string} The show label
+     */
+    function getShowLabel(button)
+    {
+        if (button.dataset.showLabel)
         {
-            if (passwordInput.type === 'password')
+            return button.dataset.showLabel;
+        }
+
+        return button.getAttribute('aria-label') || 'Show password';
+    }
+
+    /**
+     * Returns the localized "Hide password" label.
+     *
+     * @param {HTMLElement} button The toggle button
+     * @returns {string} The hide label
+     */
+    function getHideLabel(button)
+    {
+        if (button.dataset.hideLabel)
+        {
+            return button.dataset.hideLabel;
+        }
+
+        return 'Hide password';
+    }
+
+    /**
+     * Toggles the visibility of a password input.
+     *
+     * The function changes the input type between "password" and
+     * "text". The function updates the button icon, the aria-label,
+     * and the aria-pressed attribute. The function does not change the
+     * value of the input. The function does not submit the form.
+     *
+     * @param {HTMLInputElement} input The password input
+     * @param {HTMLElement} button The toggle button
+     * @param {HTMLElement} icon The icon element inside the button
+     */
+    function togglePasswordVisibility(input, button, icon)
+    {
+        var isCurrentlyPassword = input.type === 'password';
+
+        if (isCurrentlyPassword)
+        {
+            input.type = 'text';
+            button.setAttribute('aria-label', getHideLabel(button));
+            button.setAttribute('aria-pressed', 'true');
+
+            if (icon)
             {
-                passwordInput.type = 'text';
-                toggleIcon.classList.remove('fa-eye');
-                toggleIcon.classList.add('fa-eye-slash');
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
             }
-            else
+        }
+        else
+        {
+            input.type = 'password';
+            button.setAttribute('aria-label', getShowLabel(button));
+            button.setAttribute('aria-pressed', 'false');
+
+            if (icon)
             {
-                passwordInput.type = 'password';
-                toggleIcon.classList.remove('fa-eye-slash');
-                toggleIcon.classList.add('fa-eye');
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
             }
+        }
+
+        // Return focus to the input so the user can continue typing.
+        // The focus move is performed only when the toggle was
+        // activated by keyboard. When the toggle was activated by
+        // mouse, the focus is left on the button so the user can
+        // toggle again without moving the pointer.
+        if (document.activeElement === button)
+        {
+            input.focus();
         }
     }
 
+    /**
+     * Wires the password visibility toggle to the login form.
+     *
+     * The function is called once on page load. The function locates
+     * the password input, the toggle button, and the icon inside the
+     * button. When any of the three elements is missing, the function
+     * exits without error. The function attaches a click handler to
+     * the button and a keydown handler for the Space key.
+     */
+    function initializePasswordToggle()
+    {
+        var passwordInput = document.getElementById('password');
+        var toggleButton = document.getElementById('password-toggle');
+        var toggleIcon = document.getElementById('password-toggle-icon');
+
+        if (!passwordInput || !toggleButton)
+        {
+            return;
+        }
+
+        toggleButton.addEventListener('click', function(event)
+        {
+            event.preventDefault();
+            togglePasswordVisibility(passwordInput, toggleButton, toggleIcon);
+        });
+
+        // The button element fires a click event on Enter and Space
+        // in modern browsers. The keydown handler below catches the
+        // Space key on browsers that do not fire the click event. The
+        // handler prevents the default page scroll that the Space key
+        // would otherwise trigger.
+        toggleButton.addEventListener('keydown', function(event)
+        {
+            if (event.key === ' ' || event.key === 'Spacebar')
+            {
+                event.preventDefault();
+                togglePasswordVisibility(passwordInput, toggleButton, toggleIcon);
+            }
+        });
+
+        // When the login form is submitted, the password input is
+        // forced back to type="password". This prevents the browser
+        // from offering to save the password in the visible state and
+        // prevents the password from remaining visible on the page.
+        var loginForm = document.getElementById('login-form');
+
+        if (loginForm)
+        {
+            loginForm.addEventListener('submit', function()
+            {
+                passwordInput.type = 'password';
+            });
+        }
+    }
+
+    // =========================================================================
+    // Password strength indicator
+    // =========================================================================
+
+    /**
+     * Updates the password strength bar.
+     *
+     * The bar is shown on the registration page and the password
+     * reset page. The bar is not shown on the login page.
+     */
     function updatePasswordStrength()
     {
-        var passwordField = document.getElementById('password') ||
-                            document.getElementById('new_password');
+        var passwordField = document.getElementById('password')
+            || document.getElementById('new_password');
         var strengthFill = document.getElementById('strength-fill');
 
         if (!passwordField || !strengthFill)
@@ -63,12 +219,35 @@
         var password = passwordField.value;
         var score = 0;
 
-        if (password.length >= 8) score++;
-        if (password.length >= 12) score++;
-        if (/[A-Z]/.test(password)) score++;
-        if (/[a-z]/.test(password)) score++;
-        if (/[0-9]/.test(password)) score++;
-        if (/[^a-zA-Z0-9]/.test(password)) score++;
+        if (password.length >= 8)
+        {
+            score++;
+        }
+
+        if (password.length >= 12)
+        {
+            score++;
+        }
+
+        if (/[A-Z]/.test(password))
+        {
+            score++;
+        }
+
+        if (/[a-z]/.test(password))
+        {
+            score++;
+        }
+
+        if (/[0-9]/.test(password))
+        {
+            score++;
+        }
+
+        if (/[^a-zA-Z0-9]/.test(password))
+        {
+            score++;
+        }
 
         strengthFill.className = 'strength-fill';
 
@@ -89,6 +268,10 @@
             strengthFill.classList.add('strength-strong');
         }
     }
+
+    // =========================================================================
+    // Clipboard copy
+    // =========================================================================
 
     /**
      * Copies text to the clipboard.
@@ -160,66 +343,17 @@
         }
     }
 
+    // =========================================================================
+    // Initialization
+    // =========================================================================
+
     document.addEventListener('DOMContentLoaded', function()
     {
-        // Login page toggle.
-        var togglePasswordBtn = document.getElementById('toggle-password-btn');
-        if (togglePasswordBtn)
-        {
-            togglePasswordBtn.addEventListener('click', function()
-            {
-                togglePasswordVisibility('password', 'toggle-icon');
-            });
-        }
+        initializePasswordToggle();
 
-        // Registration page toggles.
-        var togglePasswordPassword = document.getElementById('toggle-password-password');
-        if (togglePasswordPassword)
-        {
-            togglePasswordPassword.addEventListener('click', function()
-            {
-                togglePasswordVisibility('password', 'toggle-icon-password');
-            });
-        }
-
-        var togglePasswordConfirm = document.getElementById('toggle-password-confirm');
-        if (togglePasswordConfirm)
-        {
-            togglePasswordConfirm.addEventListener('click', function()
-            {
-                togglePasswordVisibility('confirm_password', 'toggle-icon-confirm');
-            });
-        }
-
-        // Forgot password page toggles.
-        var togglePasswordNew = document.getElementById('toggle-password-new');
-        if (togglePasswordNew)
-        {
-            togglePasswordNew.addEventListener('click', function()
-            {
-                togglePasswordVisibility('new_password', 'toggle-icon-new');
-            });
-        }
-
-        var togglePasswordForgotConfirm = document.getElementById('toggle-password-confirm-forgot');
-        if (togglePasswordForgotConfirm && document.getElementById('confirm_password'))
-        {
-            togglePasswordForgotConfirm.addEventListener('click', function()
-            {
-                togglePasswordVisibility('confirm_password', 'toggle-icon-confirm-forgot');
-            });
-        }
-
-        // Password strength monitoring.
-        var passwordField = document.getElementById('password') ||
-                            document.getElementById('new_password');
-        if (passwordField)
-        {
-            passwordField.addEventListener('input', updatePasswordStrength);
-        }
-
-        // CORRECTION: Copy USER ID button attached via addEventListener
-        // rather than an inline onclick handler.
+        // Copy USER ID button attached through addEventListener. The
+        // listener reads the raw user ID from the data-user-id
+        // attribute rather than the formatted display text.
         var copyButton = document.getElementById('copy-user-id-btn');
         var userIdElement = document.getElementById('generated-user-id');
 
@@ -240,11 +374,22 @@
             });
         }
 
+        // Password strength monitoring.
+        var passwordField = document.getElementById('password')
+            || document.getElementById('new_password');
+
+        if (passwordField)
+        {
+            passwordField.addEventListener('input', updatePasswordStrength);
+        }
+
         // Login form submission handler.
         var loginForm = document.getElementById('login-form');
+
         if (loginForm)
         {
-            var loginBtn = document.getElementById('login-btn');
+            var loginBtn = document.getElementById('login-submit-btn');
+
             loginForm.addEventListener('submit', function()
             {
                 if (loginBtn)
@@ -257,6 +402,7 @@
 
         // Registration form submission handler with validation.
         var registerForm = document.getElementById('register-form');
+
         if (registerForm)
         {
             var registerBtn = document.getElementById('register-btn');
@@ -281,8 +427,8 @@
                 {
                     event.preventDefault();
                     alert(
-                        'Password must be at least 8 characters long and contain ' +
-                        'at least 1 uppercase letter, 1 digit, and 1 special symbol.'
+                        'Password must be at least 8 characters long and contain '
+                            + 'at least 1 uppercase letter, 1 digit, and 1 special symbol.'
                     );
                     return false;
                 }
@@ -299,6 +445,7 @@
 
         // Forgot password form submission handler.
         var resetForm = document.getElementById('reset-form');
+
         if (resetForm)
         {
             var resetBtn = document.getElementById('reset-btn');
@@ -324,8 +471,8 @@
                 {
                     event.preventDefault();
                     alert(
-                        'Password must be at least 8 characters long and contain ' +
-                        'at least 1 uppercase letter, 1 digit, and 1 special symbol.'
+                        'Password must be at least 8 characters long and contain '
+                            + 'at least 1 uppercase letter, 1 digit, and 1 special symbol.'
                     );
                     return false;
                 }

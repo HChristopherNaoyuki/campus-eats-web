@@ -2511,3 +2511,94 @@ select.form-control
         outline-offset: 2px;
     }
 }
+
+/* =============================================================================
+   Password Visibility Toggle
+   =============================================================================
+   The toggle is a small button inside the password field. The button
+   is hidden when the input is empty and appears when the user types.
+   The button changes the input type between password and text. The
+   button carries an aria-label and an aria-pressed attribute. The
+   button is reachable by keyboard.
+
+   The rules below define the button container, the button, and the
+   icon. The container reserves space on the right side of the input
+   so the typed text does not overlap the button. */
+
+.input-wrapper-password
+{
+    position: relative;
+}
+
+.input-wrapper-password .form-control
+{
+    padding-right: 3rem;
+}
+
+.password-toggle
+{
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-md);
+    color: var(--gray-500);
+    cursor: pointer;
+    transition: background var(--transition-fast),
+                color var(--transition-fast);
+    padding: 0;
+    font-size: 1rem;
+    line-height: 1;
+    z-index: 1;
+}
+
+.password-toggle:hover
+{
+    background: var(--gray-100);
+    color: var(--gray-700);
+}
+
+.password-toggle:focus-visible
+{
+    outline: 2px solid var(--orange);
+    outline-offset: 2px;
+    color: var(--orange);
+    background: var(--gray-50);
+}
+
+.password-toggle[aria-pressed="true"]
+{
+    color: var(--orange);
+}
+
+.password-toggle[aria-pressed="true"]:hover
+{
+    background: var(--orange-light);
+}
+
+.password-toggle i
+{
+    pointer-events: none;
+}
+
+@media (max-width: 480px)
+{
+    .input-wrapper-password .form-control
+    {
+        padding-right: 2.75rem;
+    }
+
+    .password-toggle
+    {
+        width: 36px;
+        height: 36px;
+        font-size: 0.9375rem;
+    }
+}

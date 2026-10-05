@@ -7,30 +7,32 @@
  * have been configured. All user-facing strings are translated
  * through the shared __() helper.
  *
- * CORRECTIONS (Version 23.0 - Audit Continuation):
+ * CORRECTIONS (Version 24.0 - Password Visibility):
  *
- * - Fix 1 (redirect helper defined before use). The helper
- *   redirectToDashboardAfterLogin() is now defined above every call
- *   site. The previous version defined it after the call site, which
- *   produced a fatal error when a signed-in user opened the login
- *   page.
+ * - Added the password visibility toggle. The toggle is a small
+ *   button inside the password field. The button changes the input
+ *   type between password and text. The button carries an aria-label
+ *   and an aria-pressed attribute. The button is reachable by
+ *   keyboard and announced by screen readers. The button does not
+ *   change the entered value. The button does not submit the form.
  *
- * - Fix 2 (safe error display). The page never echoes a raw database
- *   error to the browser. The error is logged. The user sees a
- *   generic message.
+ * - The redirect helper redirectToDashboardAfterLogin() is defined
+ *   above every call site. The previous version defined it after the
+ *   call site, which produced a fatal error when a signed-in user
+ *   opened the login page.
  *
- * - Fix 3 (case-sensitive path). The require statements use
- *   "Solution" with a capital S. The directory is case-sensitive on
- *   Linux.
+ * - The login handler catches database exceptions and logs them. The
+ *   user sees a generic message. The handler does not echo a raw
+ *   database error to the browser.
  *
- * - Retained the User ID login branch, the CSRF protection, the
- *   escapeOutput() helper, and the session handling from earlier
- *   versions.
+ * - The paths use the Solution directory with a capital S. The
+ *   directory is case-sensitive on Linux.
  *
- * SOURCE: Audit continuation, Part 3.
+ * SOURCE: Password visibility request.
+ * SOURCE: Campus Eats process document, section 15.
  * SOURCE: Notes - Make use of SSO.
  *
- * @version 23.0
+ * @version 24.0
  */
 
 require_once dirname(__DIR__, 2) . '/config/constants.php';
@@ -45,10 +47,9 @@ startSecureSession();
 // Redirect Helper
 // =============================================================================
 //
-// The helper is defined before every call site. The previous version
-// defined it after the authentication check, which produced a fatal
-// error when a signed-in user opened the login page.
-// =============================================================================
+// The helper is defined before every call site. The definition is
+// guarded by function_exists so a second include of this file does
+// not cause a redeclaration fatal.
 
 if (!function_exists('redirectToDashboardAfterLogin'))
 {
@@ -184,8 +185,8 @@ $pageTitle = __('login.title');
             </div>
 
             <?php if (!empty($error)): ?>
-                <div class="alert alert-error">
-                    <i class="fas fa-exclamation-circle"></i>
+                <div class="alert alert-error" role="alert">
+                    <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
                     <?php echo escapeOutput($error); ?>
                 </div>
             <?php endif; ?>
@@ -208,20 +209,23 @@ $pageTitle = __('login.title');
                     <span><?php echo __e('common.or'); ?></span>
                 </div>
 
-                <form method="POST" action="">
-                    <?php echo csrfTokenHtml(); ?>
+                <form method="POST" action="" id="login-form">
+                    <input type="hidden" name="csrf_token"
+                           value="<?php echo escapeOutput($csrfToken); ?>">
 
                     <div class="form-group">
                         <label class="form-label" for="email">
                             <?php echo __e('auth.email_or_user_id'); ?>
                         </label>
                         <div class="input-wrapper">
-                            <i class="fas fa-envelope input-icon"></i>
+                            <i class="fas fa-envelope input-icon"
+                               aria-hidden="true"></i>
                             <input type="text"
                                    id="email"
                                    name="email"
                                    class="form-control"
                                    required
+                                   autocomplete="username"
                                    value="<?php echo escapeOutput($formData['email']); ?>"
                                    placeholder="<?php echo __e('auth.email_placeholder'); ?>"
                                    autofocus>
@@ -240,19 +244,33 @@ $pageTitle = __('login.title');
                                 <?php echo __e('auth.forgot_password'); ?>
                             </a>
                         </div>
-                        <div class="input-wrapper">
-                            <i class="fas fa-lock input-icon"></i>
+                        <div class="input-wrapper input-wrapper-password">
+                            <i class="fas fa-lock input-icon"
+                               aria-hidden="true"></i>
                             <input type="password"
                                    id="password"
                                    name="password"
                                    class="form-control"
                                    required
+                                   autocomplete="current-password"
                                    placeholder="<?php echo __e('auth.password_placeholder'); ?>">
+                            <button type="button"
+                                    class="password-toggle"
+                                    id="password-toggle"
+                                    aria-label="<?php echo __e('auth.show_password'); ?>"
+                                    aria-pressed="false"
+                                    tabindex="0">
+                                <i class="fas fa-eye"
+                                   id="password-toggle-icon"
+                                   aria-hidden="true"></i>
+                            </button>
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary btn-block btn-lg">
-                        <i class="fas fa-arrow-right"></i>
+                    <button type="submit"
+                            class="btn btn-primary btn-block btn-lg"
+                            id="login-submit-btn">
+                        <i class="fas fa-arrow-right" aria-hidden="true"></i>
                         <?php echo __e('auth.sign_in'); ?>
                     </button>
                 </form>
