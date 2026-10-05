@@ -7,10 +7,12 @@
  *
  * IMPORTANT: DEMONSTRATION DATA
  *
- * The accounts inserted by this script are the ten accounts supplied
- * in REPORT.txt. Every name, email, and password is fabricated for
- * local testing. The passwords are public and must never be used in a
- * deployed environment.
+ * The accounts inserted by this script are the ten accounts defined
+ * in Solution/config/demo_accounts.php. Every name, email, and
+ * password in that file is fabricated for local testing. The
+ * passwords are public and must never be used in a deployed
+ * environment. See the header of demo_accounts.php for the full
+ * notice.
  *
  * USAGE
  *
@@ -19,16 +21,25 @@
  *
  *   php Solution/sql/seed.php
  *
- * The script is idempotent. A second run does not duplicate a row. An
- * account that already exists is left in place. The password hash is
- * refreshed only when the stored hash does not verify against the
- * plain-text password in the definitions below.
+ * The script is idempotent. Running it multiple times does not
+ * produce duplicate rows. An account that already exists with the
+ * same email is left in place. Its password hash is refreshed only
+ * when the stored hash does not verify against the plain-text
+ * password in the definitions.
  *
- * The script is intended to be run from the command line. It prints a
- * report to standard output and exits with a non-zero status when any
- * account fails to be created or verified.
+ * The script does not accept any argument. It exits with a non-zero
+ * status when any account fails to be created or verified.
  *
- * SOURCE: REPORT.txt, Demo Account Seeding.
+ * BEHAVIOUR WITH RESPECT TO FIREBASE
+ *
+ * The seed script writes to MySQL only. Firebase is not contacted.
+ * The accounts become visible in Firebase only after a client signs
+ * in and the Firebase projection runs. The seed script does not
+ * require a Firebase ID token and does not depend on Firebase being
+ * reachable.
+ *
+ * SOURCE: Campus Eats process document, section 12.5.
+ * SOURCE: Demonstration account reference file.
  *
  * @version 1.0
  */
@@ -50,93 +61,76 @@ require_once BASE_PATH . '/includes/password_validation.php';
 require_once BASE_PATH . '/includes/user_id.php';
 
 // =============================================================================
-// Account definitions
+// Load the demonstration account definitions
+// =============================================================================
+
+$demoAccountsPath = BASE_PATH . '/config/demo_accounts.php';
+
+if (!file_exists($demoAccountsPath))
+{
+    echo "ERROR: demo_accounts.php was not found at:\n";
+    echo "       " . $demoAccountsPath . "\n";
+    exit(1);
+}
+
+$demoAccounts = require $demoAccountsPath;
+
+if (!is_array($demoAccounts) || empty($demoAccounts))
+{
+    echo "ERROR: demo_accounts.php did not return a non-empty array.\n";
+    exit(1);
+}
+
+// =============================================================================
+// Verify the role distribution
 // =============================================================================
 //
-// The list is taken from REPORT.txt. The userId and uniqueId values
-// are generated on insert. The plain-text passwords are present only
-// in this file. They are hashed before they reach the database.
-// =============================================================================
+// The reference file states a role distribution of two administrators,
+// three vendors, four standard users, and one student. The script
+// checks the distribution and reports a warning when the file does
+// not match. The script does not stop on a mismatch because a future
+// change to the reference may legitimately alter the distribution.
 
-$demoAccounts = array(
-    array(
-        'full_name'     => 'Amara Nkosi',
-        'email'         => 'amara.nkosi@campuseats.test',
-        'password'      => 'Adm1n#Amara',
-        'account_type'  => 'admin',
-        'vendor_name'   => null
-    ),
-    array(
-        'full_name'     => 'Pieter van Wyk',
-        'email'         => 'pieter.vanwyk@campuseats.test',
-        'password'      => 'Adm1n#Pieter',
-        'account_type'  => 'admin',
-        'vendor_name'   => null
-    ),
-    array(
-        'full_name'     => 'Thandiwe Mokoena',
-        'email'         => 'thandiwe.mokoena@campuseats.test',
-        'password'      => 'Vend0r#Thandi',
-        'account_type'  => 'vendor',
-        'vendor_name'   => 'Campus Corner Kitchen'
-    ),
-    array(
-        'full_name'     => 'Sipho Dlamini',
-        'email'         => 'sipho.dlamini@campuseats.test',
-        'password'      => 'Vend0r#Sipho',
-        'account_type'  => 'vendor',
-        'vendor_name'   => 'Braai Brothers'
-    ),
-    array(
-        'full_name'     => 'Annelie Botha',
-        'email'         => 'annelie.botha@campuseats.test',
-        'password'      => 'Vend0r#Annelie',
-        'account_type'  => 'vendor',
-        'vendor_name'   => 'Coffee and Koeksisters'
-    ),
-    array(
-        'full_name'     => 'Lerato Khumalo',
-        'email'         => 'lerato.khumalo@campuseats.test',
-        'password'      => 'Stand@rd#Lerato',
-        'account_type'  => 'standard',
-        'vendor_name'   => null
-    ),
-    array(
-        'full_name'     => 'Johan Pretorius',
-        'email'         => 'johan.pretorius@campuseats.test',
-        'password'      => 'Stand@rd#Johan',
-        'account_type'  => 'standard',
-        'vendor_name'   => null
-    ),
-    array(
-        'full_name'     => 'Zanele Ndlovu',
-        'email'         => 'zanele.ndlovu@campuseats.test',
-        'password'      => 'Stand@rd#Zanele',
-        'account_type'  => 'standard',
-        'vendor_name'   => null
-    ),
-    array(
-        'full_name'     => 'Marius Steyn',
-        'email'         => 'marius.steyn@campuseats.test',
-        'password'      => 'Stand@rd#Marius',
-        'account_type'  => 'standard',
-        'vendor_name'   => null
-    ),
-    array(
-        'full_name'     => 'Naledi Mahlangu',
-        'email'         => 'naledi.mahlangu@campuseats.test',
-        'password'      => 'Stud3nt#Naledi',
-        'account_type'  => 'student',
-        'vendor_name'   => null
-    )
+$roleCounts = array(
+    'admin'    => 0,
+    'vendor'   => 0,
+    'standard' => 0,
+    'student'  => 0
 );
 
+foreach ($demoAccounts as $account)
+{
+    if (isset($roleCounts[$account['account_type']]))
+    {
+        $roleCounts[$account['account_type']]++;
+    }
+}
+
+$expectedCounts = array(
+    'admin'    => 2,
+    'vendor'   => 3,
+    'standard' => 4,
+    'student'  => 1
+);
+
+$distributionMatches = true;
+
+foreach ($expectedCounts as $role => $expected)
+{
+    if ($roleCounts[$role] !== $expected)
+    {
+        $distributionMatches = false;
+        break;
+    }
+}
+
 // =============================================================================
-// Seed execution
+// Connect to the database
 // =============================================================================
 
 echo "Campus Eats demonstration data seeding.\n";
-echo "Accounts: " . count($demoAccounts) . "\n\n";
+echo "Accounts: " . count($demoAccounts) . "\n";
+echo "\n";
 
 try
 {
@@ -144,15 +138,33 @@ try
 }
 catch (Throwable $t)
 {
-    echo "Unable to connect to the database: " . $t->getMessage() . "\n";
+    echo "ERROR: Unable to connect to the database.\n";
+    echo "       " . $t->getMessage() . "\n";
     exit(1);
 }
 
 if (!$db->isAvailable())
 {
-    echo "Database is not available: " . $db->getLastError() . "\n";
+    echo "ERROR: The database is not available.\n";
+    echo "       " . $db->getLastError() . "\n";
     exit(1);
 }
+
+if (!$distributionMatches)
+{
+    echo "WARNING: The role distribution does not match the reference.\n";
+    echo "         Expected: 2 admins, 3 vendors, 4 standard, 1 student.\n";
+    echo "         Found:    "
+        . $roleCounts['admin'] . " admins, "
+        . $roleCounts['vendor'] . " vendors, "
+        . $roleCounts['standard'] . " standard, "
+        . $roleCounts['student'] . " student.\n";
+    echo "\n";
+}
+
+// =============================================================================
+// Seed each account
+// =============================================================================
 
 $created = 0;
 $verified = 0;
@@ -164,6 +176,13 @@ foreach ($demoAccounts as $account)
 
     try
     {
+        // Check whether the account already exists. The check is by
+        // email. When the account exists, the stored hash is compared
+        // against the plain-text password. When the hash matches, the
+        // account is left in place. When the hash does not match, the
+        // hash is refreshed. The refresh path is reached only when the
+        // definition file was edited after a previous seed run.
+
         $existing = $db->fetchOne(
             "SELECT user_id, password_hash
              FROM users
@@ -181,10 +200,6 @@ foreach ($demoAccounts as $account)
 
             if (!$hashMatches)
             {
-                // The stored hash does not verify against the plain
-                // text value in the definition. This case is reached
-                // only when the definition was edited after a previous
-                // seed run. The hash is refreshed.
                 $newHash = hashPassword($account['password']);
 
                 $db->executeQuery(
@@ -203,8 +218,11 @@ foreach ($demoAccounts as $account)
             continue;
         }
 
-        $uniqueId = generateAlphanumericUserId($account['account_type']);
-        $username = explode('@', $email)[0];
+        // The account does not exist. It is created. The password is
+        // hashed with bcrypt at cost factor 12. The unique ID and the
+        // username are taken from the definition. The role is taken
+        // from the definition.
+
         $passwordHash = hashPassword($account['password']);
 
         $db->beginTransaction();
@@ -216,16 +234,31 @@ foreach ($demoAccounts as $account)
                  is_active, created_at, updated_at)
              VALUES
                 (:unique_id, :full_name, :username, :email,
-                 :password_hash, :account_type, 1, 1, NOW(), NOW())",
+                 :password_hash, :account_type, :is_verified,
+                 :is_active, NOW(), NOW())",
             array(
-                'unique_id'     => $uniqueId,
+                'unique_id'     => $account['unique_id'],
                 'full_name'     => $account['full_name'],
-                'username'      => $username,
+                'username'      => $account['username'],
                 'email'         => $email,
                 'password_hash' => $passwordHash,
-                'account_type'  => $account['account_type']
+                'account_type'  => $account['account_type'],
+                'is_verified'   => $account['is_verified'],
+                'is_active'     => $account['is_active']
             )
         );
+
+        if (!$userId)
+        {
+            throw new RuntimeException(
+                "User insert returned no ID for $email."
+            );
+        }
+
+        // The vendor accounts receive a row in the vendors table. The
+        // vendor row is linked to the user row through the vendor_user_id
+        // column. The vendor is marked as approved so the account can
+        // sign in immediately.
 
         if ($account['account_type'] === 'vendor'
             && !empty($account['vendor_name']))
@@ -239,7 +272,7 @@ foreach ($demoAccounts as $account)
                 array(
                     'user_id'     => $userId,
                     'vendor_name' => $account['vendor_name'],
-                    'description' => 'Demonstration vendor.'
+                    'description' => $account['description']
                 )
             );
         }
@@ -256,20 +289,30 @@ foreach ($demoAccounts as $account)
             $db->rollback();
         }
 
-        echo "  FAILED    $email: " . $t->getMessage() . "\n";
+        echo "  FAILED    $email\n";
+        echo "            " . $t->getMessage() . "\n";
         $failed++;
     }
 }
 
+// =============================================================================
+// Summary
+// =============================================================================
+
 echo "\n";
-echo "Created:  $created\n";
-echo "Verified: $verified\n";
-echo "Failed:   $failed\n";
+echo "Summary\n";
+echo "-------\n";
+echo "  Created:  $created\n";
+echo "  Verified: $verified\n";
+echo "  Failed:   $failed\n";
+echo "  Total:    " . ($created + $verified + $failed) . "\n";
 echo "\n";
 
 if ($failed > 0)
 {
+    echo "One or more accounts could not be seeded.\n";
     exit(1);
 }
 
+echo "Seeding complete.\n";
 exit(0);

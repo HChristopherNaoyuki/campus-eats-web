@@ -2,8 +2,8 @@
 /**
  * Demonstration Accounts Configuration
  *
- * Returns the demonstration account table used by the seed script and by
- * the development installer. The accounts exist so that a fresh
+ * Returns the demonstration account table used by the seed script and
+ * by the development installer. The accounts exist so that a fresh
  * installation can be tested without manually registering ten users.
  *
  * IMPORTANT: DEMONSTRATION DATA
@@ -14,39 +14,38 @@
  * The passwords are public and must never be used in a deployed
  * environment.
  *
- * Before deploying this application to any host that is reachable from
- * a network, delete this file or change every password to a value that
- * is not published here, and remove the call to the seed script from
- * the installation procedure.
+ * Before deploying this application to any host that is reachable
+ * from a network, delete this file or change every password to a value
+ * that is not published here, and remove the call to the seed script
+ * from the installation procedure.
  *
  * ROLE DISTRIBUTION
  *
- * The ten accounts are distributed as requested:
+ * The ten accounts are distributed as follows:
  *
  *   admins     2
  *   vendors    3
  *   standard   4
  *   students   1
- *
- * Total       10
+ *   --------  --
+ *   total     10
  *
  * PASSWORD POLICY
  *
  * Each password satisfies the application policy:
  *
- *   - At least 8 characters.
- *   - At least one uppercase letter.
- *   - At least one lowercase letter.
- *   - At least one digit.
- *   - At least one special symbol.
+ *   - At least 8 characters long.
+ *   - Contains at least one uppercase letter.
+ *   - Contains at least one lowercase letter.
+ *   - Contains at least one digit.
+ *   - Contains at least one special symbol.
  *
  * The accounts are stored in MySQL with a bcrypt hash. The plain-text
  * values in this file exist only so the accounts can be seeded and
  * documented. They are never stored in the database.
  *
- * SOURCE: NOTES - Populate the database using real or simulated data,
- *         with at least ten records per table. Make use of demo
- *         accounts.
+ * SOURCE: Campus Eats process document, section 12.5.
+ * SOURCE: Demonstration account reference file.
  *
  * @version 1.0
  */

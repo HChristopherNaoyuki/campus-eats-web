@@ -77,7 +77,7 @@ Email     : sipho.dlamini@campuseats.test
 Password  : Vend0r#Sipho
 Role      : vendor
 Shop      : Braai Brothers
-Shop info : Flame-grilled meat, boerewors rolls, and vegetarian skewers.
+Shop info : Flame-grilled meats, boerewors rolls, and vegetarian skewers.
             Open from breakfast until late afternoon.
 
 User ID   : 2003
