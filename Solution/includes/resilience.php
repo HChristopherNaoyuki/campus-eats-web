@@ -5,25 +5,21 @@
  * Converts an uncaught error or exception into a response that is
  * appropriate for the caller. An API request receives a JSON 503
  * response. A page request receives a friendly HTML page that
- * retries once after a short delay.
+ * retries once after a short delay and offers a stable mirror link.
  *
- * The helper is not wired into constants.php by this file. The wiring
- * is a separate change. When the helper is not loaded, an uncaught
- * exception reaches the default handler in error_logging.php. That
- * handler already produces a 500 response and logs the error.
+ * CORRECTIONS (Version 2.0 - Resilience Fix):
  *
- * CORRECTIONS (Version 1.0 - Audit Continuation):
- * - Initial implementation.
- * - The JSON response uses the 503 status code so a client can
- *   distinguish a transient outage from a permanent failure.
- * - The HTML response includes a meta refresh tag with a five-second
- *   delay. The browser retries the same URL. A single retry is
- *   sufficient for a transient outage. A longer outage is reported
- *   through the same page on each retry.
+ * - The HTML temporary-unavailable page now contains a clear
+ *   paragraph that instructs the user to open the stable mirror
+ *   https://campus-eats-platform.lovable.app after five refresh
+ *   attempts or after waiting longer than fifteen seconds.
+ * - The URL is rendered as a clickable link.
+ * - Language remains direct and free of technical jargon.
+ * - The five-second meta-refresh and Retry-After header are retained.
  *
- * SOURCE: Audit continuation, Part 1.
+ * SOURCE: SOFTWARE ENGINEER PROMPT – Campus Eats Resilience Fixes.
  *
- * @version 1.0
+ * @version 2.0
  */
 
 if (!defined('BASE_PATH'))
@@ -37,10 +33,6 @@ if (!function_exists('campus_eats_is_api_request'))
 {
     /**
      * Returns true when the current request is an API request.
-     *
-     * The check examines the request URI and the Accept header. A
-     * request whose path begins with "/api/" is an API request. A
-     * request whose Accept header prefers JSON is an API request.
      *
      * @return bool
      */
@@ -114,18 +106,24 @@ if (!function_exists('campus_eats_render_resilient_response'))
         echo '<!DOCTYPE html>';
         echo '<html lang="en"><head><meta charset="UTF-8">';
         echo '<meta http-equiv="refresh" content="5">';
-        echo '<title>Temporarily unavailable</title>';
+        echo '<meta name="viewport" content="width=device-width, initial-scale=1.0">';
+        echo '<title>Temporarily unavailable – Campus Eats</title>';
         echo '<style>';
-        echo 'body { font-family: sans-serif; padding: 40px; ';
-        echo 'max-width: 600px; margin: 0 auto; color: #333; }';
-        echo 'h1 { font-size: 1.5rem; }';
+        echo 'body { font-family: system-ui, sans-serif; padding: 40px; ';
+        echo 'max-width: 640px; margin: 0 auto; color: #222; line-height: 1.5; }';
+        echo 'h1 { font-size: 1.6rem; margin-bottom: 0.5em; }';
         echo '.toast { background: #fff3e0; border-left: 4px solid #ff9500; ';
-        echo 'padding: 12px 16px; border-radius: 6px; margin-bottom: 16px; }';
+        echo 'padding: 14px 18px; border-radius: 6px; margin-bottom: 20px; }';
+        echo 'a { color: #0066cc; }';
         echo '</style>';
         echo '</head><body>';
         echo '<h1>Temporarily unavailable</h1>';
         echo '<div class="toast">The service is temporarily unavailable. ';
         echo 'The page will retry in five seconds.</div>';
+        echo '<p>If the page remains unavailable after five refresh attempts ';
+        echo 'or after waiting longer than fifteen seconds, open the stable mirror:</p>';
+        echo '<p><a href="https://campus-eats-platform.lovable.app" ';
+        echo 'rel="noopener noreferrer">https://campus-eats-platform.lovable.app</a></p>';
         echo '<p><a href="">Retry now</a></p>';
         echo '</body></html>';
 
@@ -134,7 +132,5 @@ if (!function_exists('campus_eats_render_resilient_response'))
 }
 
 // Register the resilient handler only when the caller has not
-// registered a handler of its own. The default handler in
-// error_logging.php is replaced by this one when the resilience
-// helper is loaded.
+// registered a handler of its own.
 set_exception_handler('campus_eats_render_resilient_response');
