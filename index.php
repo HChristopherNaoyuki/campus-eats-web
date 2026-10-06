@@ -2,34 +2,34 @@
 /**
  * Campus Eats - Landing Page (Entry Point)
  *
- * Serves as the landing page for unauthenticated users. Displays real
- * API data from the Fake Restaurant API when the API is reachable.
- * Displays the bundled fallback dataset when the API is unreachable.
+ * Serves as the landing page for unauthenticated users and for
+ * authenticated admin users. Displays real API data from the Fake
+ * Restaurant API when reachable; otherwise the bundled fallback.
  *
- * CORRECTIONS (Version 16.0 - Complete Logout):
+ * CORRECTIONS (Version 17.0 - Admin Redirect Loop Fix):
  *
- * - performLogout() fully clears $_SESSION, expires the session
- *   cookie, destroys the session, starts a fresh guest session and
- *   regenerates the session ID. This eliminates the residual
- *   “User: 1 / old session ID” entries that previously appeared after
- *   a logout redirect.
- * - The ?logout= handler calls performLogout() and then redirects to a
- *   clean URL without the query parameter.
- * - All other landing-page behaviour (API fallback, featured vendors,
- *   stats, accessibility, shared header/footer) is retained.
+ * - Authenticated admin users are no longer redirected away from
+ *   the landing page. The previous version sent them to the
+ *   non-existent path modules/admin/dashboard.php (or, after an
+ *   intermediate change, back to index.php itself), producing an
+ *   infinite redirect loop visible in the error log.
+ * - Student, standard and vendor users continue to be redirected to
+ *   their existing role dashboards.
+ * - performLogout() remains the single, complete session-destruction
+ *   path for the ?logout= query parameter.
+ * - All other landing-page behaviour (API fallback, stats, featured
+ *   vendors, accessibility) is retained.
  *
- * SOURCE: SOFTWARE ENGINEER PROMPT – Fix Header Links and Logout.
+ * SOURCE: Technical Audit Report + ERROR LOG (admin redirect loop).
  * SOURCE: Clean Code, Robert C. Martin, Chapters 2–4.
  *
- * @version 16.0
+ * @version 17.0
  */
 
-// Load required dependencies
 require_once 'solution/config/constants.php';
 require_once 'solution/includes/auth.php';
 require_once 'solution/includes/api_service.php';
 
-// Set security headers for this public page
 setSecurityHeaders();
 
 // =============================================================================
@@ -41,8 +41,7 @@ setSecurityHeaders();
  *
  * Clears every session variable, expires the session cookie,
  * destroys the session, starts a fresh guest session and
- * regenerates the session identifier. After this function returns
- * the request is in a clean guest state.
+ * regenerates the session identifier.
  *
  * @return void
  */
@@ -50,10 +49,8 @@ if (!function_exists('performLogout'))
 {
     function performLogout()
     {
-        // Unset all session variables
         $_SESSION = array();
 
-        // Expire the session cookie
         if (ini_get('session.use_cookies'))
         {
             $params = session_get_cookie_params();
@@ -68,13 +65,11 @@ if (!function_exists('performLogout'))
             );
         }
 
-        // Destroy the session if it is still active
         if (session_status() === PHP_SESSION_ACTIVE)
         {
             session_destroy();
         }
 
-        // Start a fresh guest session and regenerate the ID
         session_start();
         session_regenerate_id(true);
 
@@ -83,14 +78,8 @@ if (!function_exists('performLogout'))
 }
 
 // =============================================================================
-// Check for Logout Parameter (Prevents Auto-Redirect Loop)
+// Logout Query Parameter
 // =============================================================================
-//
-// A user who has just logged out is redirected to this page with a
-// logout query parameter. The session is destroyed completely and the
-// user is redirected to a clean URL. Without this step the auto-redirect
-// below would send the user back to the dashboard because residual
-// session data would still be present.
 
 if (isset($_GET['logout']))
 {
@@ -101,7 +90,7 @@ if (isset($_GET['logout']))
 }
 
 // =============================================================================
-// Start Session for Authentication Check
+// Start Session
 // =============================================================================
 
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -110,11 +99,13 @@ if (session_status() !== PHP_SESSION_ACTIVE)
 }
 
 // =============================================================================
-// Redirect Authenticated Users to Dashboard
+// Redirect Authenticated Non-Admin Users
 // =============================================================================
 //
-// An authenticated user who reaches the landing page is redirected to
-// the dashboard for their role. The redirect is role-aware.
+// Admin users stay on the landing page (the admin dashboard file does
+// not exist). Student, standard and vendor users are sent to their
+// role-specific dashboards. This eliminates the infinite redirect
+// loop that previously occurred for the admin role.
 
 if (isset($_SESSION['user_id'])
     && !empty($_SESSION['user_id'])
@@ -126,14 +117,18 @@ if (isset($_SESSION['user_id'])
         : '';
 
     writeLog(
-        'User already logged in, redirecting to dashboard. Role: ' . $accountType,
+        'User already logged in. Role: ' . $accountType,
         'AUTH'
     );
 
     if ($accountType === 'admin')
     {
-        header('Location: ' . BASE_URL . '/modules/admin/dashboard.php');
-        exit();
+        // Admin stays on the landing page – no redirect.
+        // The modules/admin/dashboard.php path does not exist.
+        writeLog(
+            'Admin user remains on landing page (no admin dashboard file)',
+            'AUTH'
+        );
     }
     elseif ($accountType === 'vendor')
     {
@@ -155,7 +150,7 @@ if (isset($_SESSION['user_id'])
 }
 
 // =============================================================================
-// Generate CSRF Token for Login and Register Forms
+// CSRF Token
 // =============================================================================
 
 if (empty($_SESSION['csrf_token']))
@@ -168,13 +163,6 @@ $csrfToken = $_SESSION['csrf_token'];
 // =============================================================================
 // Fetch Data from the API Service
 // =============================================================================
-//
-// The API service returns the live catalogue when the API is reachable
-// and a bundled fallback catalogue when the API is unreachable and no
-// stale response exists. The page does not distinguish between the
-// live data and the fallback data. Both are rendered the same way.
-// The error block is only shown when the API service throws and no
-// fallback is available.
 
 $apiService = getApiService();
 $restaurants = array();
@@ -224,7 +212,7 @@ catch (Exception $e)
 $pageTitle = 'Skip the line. Pick up on campus.';
 
 // =============================================================================
-// Helper Functions
+// Escape Helpers
 // =============================================================================
 
 if (!function_exists('escapeOutput'))
@@ -232,8 +220,8 @@ if (!function_exists('escapeOutput'))
     /**
      * Escapes a value for safe HTML output.
      *
-     * @param mixed $value The value to escape
-     * @return string The escaped value
+     * @param mixed $value
+     * @return string
      */
     function escapeOutput($value)
     {
@@ -251,8 +239,8 @@ if (!function_exists('campusEatsIndexEscape'))
     /**
      * Local alias for the escape helper.
      *
-     * @param mixed $value The value to escape
-     * @return string The escaped value
+     * @param mixed $value
+     * @return string
      */
     function campusEatsIndexEscape($value)
     {
@@ -263,10 +251,6 @@ if (!function_exists('campusEatsIndexEscape'))
 // =============================================================================
 // Compute Stats
 // =============================================================================
-//
-// The stats are derived from the data the page has. When the data is
-// the fallback dataset, the stats reflect the fallback dataset. The
-// counts are always non-negative integers.
 
 $totalRestaurants = count($restaurants);
 $totalItems = 0;
@@ -302,9 +286,7 @@ if (!empty($restaurants))
     <?php include_once 'solution/includes/public_header.php'; ?>
 
     <main id="main-content">
-        <!-- =====================================================================
-             Hero Section
-             ===================================================================== -->
+        <!-- Hero -->
         <section id="home" class="hero" aria-labelledby="hero-heading">
             <div class="container">
                 <h1 id="hero-heading">
@@ -330,9 +312,7 @@ if (!empty($restaurants))
             </div>
         </section>
 
-        <!-- =====================================================================
-             Stats Section
-             ===================================================================== -->
+        <!-- Stats -->
         <section class="stats" aria-label="Platform statistics">
             <div class="container">
                 <div class="stats-grid">
@@ -352,9 +332,7 @@ if (!empty($restaurants))
             </div>
         </section>
 
-        <!-- =====================================================================
-             How It Works Section
-             ===================================================================== -->
+        <!-- How it works -->
         <section id="how-it-works"
                  class="how-it-works"
                  aria-labelledby="how-it-works-heading">
@@ -370,34 +348,23 @@ if (!empty($restaurants))
                     <div class="step">
                         <div class="step-number" aria-hidden="true">1</div>
                         <h3>Browse and order</h3>
-                        <p>
-                            Pick items from any campus vendor and confirm
-                            your order.
-                        </p>
+                        <p>Pick items from any campus vendor and confirm your order.</p>
                     </div>
                     <div class="step">
                         <div class="step-number" aria-hidden="true">2</div>
                         <h3>Vendor prepares</h3>
-                        <p>
-                            Track status as it moves from Pending to
-                            Preparing to Completed.
-                        </p>
+                        <p>Track status as it moves from Pending to Preparing to Completed.</p>
                     </div>
                     <div class="step">
                         <div class="step-number" aria-hidden="true">3</div>
                         <h3>Pick it up</h3>
-                        <p>
-                            Walk over to the vendor stall and grab your bag.
-                            Done.
-                        </p>
+                        <p>Walk over to the vendor stall and grab your bag. Done.</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- =====================================================================
-             Featured Vendors Section
-             ===================================================================== -->
+        <!-- Featured vendors -->
         <section id="vendors"
                  class="vendors"
                  aria-labelledby="vendors-heading">
@@ -475,9 +442,7 @@ if (!empty($restaurants))
             </div>
         </section>
 
-        <!-- =====================================================================
-             Features Section
-             ===================================================================== -->
+        <!-- Features -->
         <section class="features" aria-labelledby="features-heading">
             <div class="container">
                 <div class="section-title">
