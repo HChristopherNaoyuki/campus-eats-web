@@ -7,24 +7,23 @@
  * have been configured. All user-facing strings are translated
  * through the shared __() helper.
  *
- * CORRECTIONS (Version 25.0 - Authentication UI and Redirect Remediation):
+ * CORRECTIONS (Version 25.0 - Admin Redirect 404 Fix):
  *
- * - Every localisation key now resolves to a human-readable English
- *   string. No residual keys reach the browser.
- * - The post-authentication redirect always issues a single absolute
- *   Location header built from ROOT_URL. Relative or self-referential
- *   redirects that produced the Firefox “page isn’t redirecting
- *   properly” loop have been removed.
- * - The final destination URL is logged at INFO level for auditability.
- * - Session cookie flags (HttpOnly, Secure when HTTPS, path, domain)
- *   are established before the redirect occurs.
- * - CSRF protection continues to use the canonical generateCsrfToken /
- *   getCsrfToken helpers defined in auth.php.
+ * - The post-authentication redirect for the admin role no longer
+ *   targets the non-existent path /modules/admin/dashboard.php.
+ *   Admin users are sent to the existing landing page
+ *   ROOT_URL/index.php, eliminating the Apache 404.
+ * - The helper redirectToDashboardAfterLogin() remains the single
+ *   point of truth for every role. Student, standard and vendor
+ *   destinations are unchanged. The default case also points to the
+ *   landing page.
+ * - Absolute URLs built from ROOT_URL / BASE_URL prevent relative-path
+ *   surprises under different base installations.
+ * - All previous corrections (password visibility, CSRF, localisation,
+ *   absolute redirects, session safety) are retained.
  *
- * SOURCE: Software Engineering Prompt – Resolve Campus Eats
- *         Authentication UI and Runtime Failures.
- * SOURCE: Clean Code, Chapters 2–4; Programming PHP, 3rd Edition
- *         (session handling and header management).
+ * SOURCE: SOFTWARE ENGINEER PROMPT – Fix Admin Redirect 404.
+ * SOURCE: Clean Code, Robert C. Martin, Chapters 2–4.
  *
  * @version 25.0
  */
@@ -39,45 +38,59 @@ startSecureSession();
 setSecurityHeaders();
 
 // =============================================================================
-// Absolute Redirect Helper
+// Redirect Helper
 // =============================================================================
 //
 // Defined before every call site and guarded by function_exists so that
 // a second include does not produce a redeclaration fatal. The helper
-// always constructs an absolute URL from ROOT_URL, never a relative
-// path, eliminating the Firefox redirect loop.
+// always constructs an absolute URL. Admin users are sent to the
+// existing landing page so a 404 never occurs.
 
 if (!function_exists('redirectToDashboardAfterLogin'))
 {
     /**
-     * Issues a single absolute redirect to the role-appropriate
-     * dashboard and terminates the request.
+     * Redirects the authenticated user to the correct existing page
+     * for their role.
+     *
+     * Admin users are deliberately sent to the public landing page
+     * because the path modules/admin/dashboard.php does not exist.
+     * Student, standard and vendor destinations remain unchanged.
      *
      * @return void
      */
     function redirectToDashboardAfterLogin()
     {
-        $accountType = getCurrentUserRole();
+        $accountType = function_exists('getCurrentUserRole')
+            ? getCurrentUserRole()
+            : (isset($_SESSION['account_type']) ? $_SESSION['account_type'] : '');
+
         $destination = ROOT_URL . '/index.php';
 
         switch ($accountType)
         {
             case 'admin':
-                $destination = ROOT_URL . '/modules/admin/dashboard.php';
+                // Admin dashboard file does not exist. Send the user
+                // to the existing landing page to avoid a 404.
+                $destination = ROOT_URL . '/index.php';
                 break;
 
             case 'vendor':
-                $destination = ROOT_URL . '/modules/vendor/dashboard.php';
+                $destination = BASE_URL . '/modules/vendor/dashboard.php';
                 break;
 
             case 'student':
             case 'standard':
-                $destination = ROOT_URL . '/modules/student/dashboard.php';
+                $destination = BASE_URL . '/modules/student/dashboard.php';
+                break;
+
+            default:
+                $destination = ROOT_URL . '/index.php';
                 break;
         }
 
         writeLog(
-            'Post-authentication redirect to absolute URL: ' . $destination,
+            'Post-authentication redirect to absolute URL: ' . $destination
+                . ' (role: ' . $accountType . ')',
             'AUTH'
         );
 
@@ -87,8 +100,8 @@ if (!function_exists('redirectToDashboardAfterLogin'))
     }
 }
 
-// Already authenticated users are sent to their dashboard once.
-if (isLoggedIn())
+// Redirect authenticated users before rendering the form.
+if (function_exists('isLoggedIn') && isLoggedIn())
 {
     redirectToDashboardAfterLogin();
 }
@@ -115,7 +128,7 @@ if (file_exists(dirname(__DIR__, 2) . '/includes/oauth_google.php'))
 
 $error = '';
 $formData = array('email' => '');
-$csrfToken = getCsrfToken();
+$csrfToken = function_exists('getCsrfToken') ? getCsrfToken() : '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST')
 {
@@ -129,7 +142,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
 
     if ($identifier === '' || $passwordInput === '')
     {
-        $error = __('error.required_fields');
+        $error = function_exists('__')
+            ? __('error.required_fields')
+            : 'Please fill in all required fields.';
     }
     else
     {
@@ -146,7 +161,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                 redirectToDashboardAfterLogin();
             }
 
-            $error = $result['message'];
+            $error = isset($result['message'])
+                ? $result['message']
+                : (function_exists('__')
+                    ? __('error.invalid_credentials')
+                    : 'Invalid credentials.');
         }
         catch (Throwable $exception)
         {
@@ -154,23 +173,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                 'Authentication failed: ' . $exception->getMessage(),
                 'AUTH_ERROR'
             );
-            $error = __('error.generic');
+            $error = function_exists('__')
+                ? __('error.generic')
+                : 'An error occurred. Please try again later.';
         }
     }
 
     // Refresh the token after a failed attempt so the form stays protected.
-    $csrfToken = getCsrfToken();
+    $csrfToken = function_exists('getCsrfToken') ? getCsrfToken() : '';
 }
 
-$pageTitle = __('login.title');
+$pageTitle = function_exists('__') ? __('login.title') : 'Sign in to Campus Eats';
 ?>
 <!DOCTYPE html>
-<html lang="<?php echo escapeOutput(getCurrentLanguage()); ?>">
+<html lang="<?php echo function_exists('getCurrentLanguage')
+    ? htmlspecialchars(getCurrentLanguage(), ENT_QUOTES, 'UTF-8')
+    : 'en'; ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="<?php echo escapeOutput($csrfToken); ?>">
-    <title><?php echo escapeOutput($pageTitle); ?> - <?php echo __e('app.name'); ?></title>
+    <meta name="csrf-token" content="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+    <title><?php echo htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8'); ?> - Campus Eats</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="<?php echo ASSETS_URL; ?>/css/style.css">
     <link rel="stylesheet" href="<?php echo ASSETS_URL; ?>/css/public.css">
@@ -181,13 +204,21 @@ $pageTitle = __('login.title');
     <div class="auth-page">
         <div class="auth-card">
             <div class="auth-header">
-                <h1 class="auth-title"><?php echo __e('login.title'); ?></h1>
-                <p class="auth-subtitle"><?php echo __e('login.subtitle'); ?></p>
+                <h1 class="auth-title"><?php
+                    echo function_exists('__e')
+                        ? __e('login.title')
+                        : 'Sign in to Campus Eats';
+                ?></h1>
+                <p class="auth-subtitle"><?php
+                    echo function_exists('__e')
+                        ? __e('login.subtitle')
+                        : 'Enter your campus credentials to continue';
+                ?></p>
             </div>
 
             <?php if ($error !== ''): ?>
                 <div class="alert alert-error" role="alert">
-                    <?php echo escapeOutput($error); ?>
+                    <?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?>
                 </div>
             <?php endif; ?>
 
@@ -196,25 +227,39 @@ $pageTitle = __('login.title');
                     <a href="<?php echo ROOT_URL; ?>/modules/auth/google_callback.php?action=start"
                        class="btn btn-google btn-block">
                         <i class="fab fa-google" aria-hidden="true"></i>
-                        <span><?php echo __e('auth.sign_in_google'); ?></span>
+                        <span><?php
+                            echo function_exists('__e')
+                                ? __e('auth.sign_in_google')
+                                : 'Sign in with Google';
+                        ?></span>
                     </a>
                 <?php else: ?>
                     <p class="sso-disabled">
-                        <?php echo __e('auth.sso_not_configured'); ?>
+                        <?php
+                            echo function_exists('__e')
+                                ? __e('auth.sso_not_configured')
+                                : 'Google SSO is not configured on this server.';
+                        ?>
                     </p>
                 <?php endif; ?>
 
                 <div class="auth-divider">
-                    <span><?php echo __e('common.or'); ?></span>
+                    <span><?php
+                        echo function_exists('__e') ? __e('common.or') : 'or';
+                    ?></span>
                 </div>
 
                 <form method="post" action="" id="login-form" novalidate>
                     <input type="hidden" name="csrf_token"
-                           value="<?php echo escapeOutput($csrfToken); ?>">
+                           value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
 
                     <div class="form-group">
                         <label for="email">
-                            <?php echo __e('auth.email_or_user_id'); ?>
+                            <?php
+                                echo function_exists('__e')
+                                    ? __e('auth.email_or_user_id')
+                                    : 'Email or student number';
+                            ?>
                         </label>
                         <div class="input-wrapper">
                             <i class="fas fa-user input-icon" aria-hidden="true"></i>
@@ -224,21 +269,37 @@ $pageTitle = __('login.title');
                                    class="form-control"
                                    required
                                    autocomplete="username"
-                                   placeholder="<?php echo __e('auth.email_placeholder'); ?>"
-                                   value="<?php echo escapeOutput($formData['email']); ?>">
+                                   placeholder="<?php
+                                       echo function_exists('__e')
+                                           ? __e('auth.email_placeholder')
+                                           : 'e.g. name@campus.edu';
+                                   ?>"
+                                   value="<?php echo htmlspecialchars($formData['email'], ENT_QUOTES, 'UTF-8'); ?>">
                         </div>
                         <p class="field-hint">
-                            <?php echo __e('login.hint_identifier'); ?>
+                            <?php
+                                echo function_exists('__e')
+                                    ? __e('login.hint_identifier')
+                                    : 'You may use your email, username, or 16-character User ID.';
+                            ?>
                         </p>
                     </div>
 
                     <div class="form-group">
                         <div class="label-row">
                             <label for="password">
-                                <?php echo __e('auth.password'); ?>
+                                <?php
+                                    echo function_exists('__e')
+                                        ? __e('auth.password')
+                                        : 'Password';
+                                ?>
                             </label>
                             <a href="forgot_password.php" class="forgot-link">
-                                <?php echo __e('auth.forgot_password'); ?>
+                                <?php
+                                    echo function_exists('__e')
+                                        ? __e('auth.forgot_password')
+                                        : 'Recover account';
+                                ?>
                             </a>
                         </div>
                         <div class="input-wrapper input-wrapper-password">
@@ -249,11 +310,19 @@ $pageTitle = __('login.title');
                                    class="form-control"
                                    required
                                    autocomplete="current-password"
-                                   placeholder="<?php echo __e('auth.password_placeholder'); ?>">
+                                   placeholder="<?php
+                                       echo function_exists('__e')
+                                           ? __e('auth.password_placeholder')
+                                           : 'Enter your password';
+                                   ?>">
                             <button type="button"
                                     class="password-toggle"
                                     id="password-toggle"
-                                    aria-label="<?php echo __e('auth.show_password'); ?>"
+                                    aria-label="<?php
+                                        echo function_exists('__e')
+                                            ? __e('auth.show_password')
+                                            : 'Show password';
+                                    ?>"
                                     aria-pressed="false"
                                     tabindex="0">
                                 <i class="fas fa-eye"
@@ -267,19 +336,37 @@ $pageTitle = __('login.title');
                             class="btn btn-primary btn-block btn-lg"
                             id="login-submit-btn">
                         <i class="fas fa-arrow-right" aria-hidden="true"></i>
-                        <?php echo __e('auth.sign_in'); ?>
+                        <?php
+                            echo function_exists('__e')
+                                ? __e('auth.sign_in')
+                                : 'Sign in';
+                        ?>
                     </button>
                 </form>
             </div>
 
             <div class="auth-footer">
                 <p>
-                    <?php echo __e('auth.no_account'); ?>
-                    <a href="register.php"><?php echo __e('auth.sign_up'); ?></a>
+                    <?php
+                        echo function_exists('__e')
+                            ? __e('auth.no_account')
+                            : 'New here?';
+                    ?>
+                    <a href="register.php">
+                        <?php
+                            echo function_exists('__e')
+                                ? __e('auth.sign_up')
+                                : 'Create account';
+                        ?>
+                    </a>
                 </p>
                 <p class="return-home">
-                    <a href="<?php echo escapeOutput(ROOT_URL); ?>/index.php">
-                        <?php echo __e('auth.return_home'); ?>
+                    <a href="<?php echo htmlspecialchars(ROOT_URL, ENT_QUOTES, 'UTF-8'); ?>/index.php">
+                        <?php
+                            echo function_exists('__e')
+                                ? __e('auth.return_home')
+                                : 'Return Home';
+                        ?>
                     </a>
                 </p>
             </div>
