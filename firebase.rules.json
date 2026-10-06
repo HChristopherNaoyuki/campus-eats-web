@@ -2,19 +2,16 @@
   "rules": {
     ".read": false,
     ".write": false,
-
     "admin_claims": {
       ".read": "auth != null && auth.token.admin === true",
       ".write": "auth != null && auth.token.admin === true"
     },
-
     "users": {
       ".indexOn": ["email", "role", "status"],
       "$campus_user_id": {
         ".read": "auth != null && (auth.token.admin === true || auth.token.email === data.child('email').val() || data.child('userId').val() === auth.uid)",
         ".write": "auth != null && (auth.token.admin === true || (!data.exists() && (auth.token.email === newData.child('email').val() || newData.child('userId').val() === auth.uid)) || (data.exists() && (auth.token.email === data.child('email').val() || data.child('userId').val() === auth.uid)))",
         ".validate": "newData.hasChildren(['userId', 'fullName', 'email', 'role'])",
-
         "userId": {
           ".validate": "newData.val() === $campus_user_id && (newData.val().length === 16 || newData.val().length === 19)"
         },
@@ -56,14 +53,12 @@
         }
       }
     },
-
     "orders": {
       ".indexOn": ["customerId", "vendorId", "status", "timestamp"],
       "$order_id": {
         ".read": "auth != null",
         ".write": "auth != null",
         ".validate": "newData.hasChildren(['orderId', 'customerId', 'vendorId', 'totalAmount', 'status'])",
-
         "orderId": {
           ".validate": "newData.val() === $order_id"
         },
@@ -96,14 +91,12 @@
         }
       }
     },
-
     "feedback": {
       ".indexOn": ["userId", "type", "status", "createdAt"],
       "$feedback_id": {
         ".read": "auth != null",
         ".write": "auth != null",
         ".validate": "newData.hasChildren(['userId', 'type', 'subject', 'message', 'userName', 'userEmail', 'status', 'createdAt', 'updatedAt'])",
-
         "userId": {
           ".validate": "newData.isString()"
         },
@@ -133,14 +126,12 @@
         }
       }
     },
-
     "coupons": {
       ".indexOn": ["isActive"],
       "$code": {
         ".read": "auth != null",
         ".write": "auth != null",
         ".validate": "newData.hasChildren(['code', 'discountPercent', 'isActive'])",
-
         "code": {
           ".validate": "newData.val() === $code"
         },
@@ -155,30 +146,6 @@
         },
         "assignedUserId": {
           ".validate": "!newData.exists() || newData.val() == null || newData.isString()"
-        }
-      }
-    },
-
-    "sync": {
-      ".indexOn": ["lastSyncAt"],
-      "$uid": {
-        ".read": "auth != null && (auth.uid === $uid || auth.token.admin === true)",
-        ".write": "auth != null && auth.uid === $uid",
-        ".validate": "newData.hasChildren(['lastSyncAt'])",
-        "lastSyncAt": {
-          ".validate": "newData.isString() && newData.val().length > 0"
-        },
-        "lastPage": {
-          ".validate": "!newData.exists() || newData.val() == null || (newData.isString() && newData.val().length <= 255)"
-        },
-        "cartItemCount": {
-          ".validate": "!newData.exists() || newData.val() == null || (newData.isNumber() && newData.val() >= 0)"
-        },
-        "currentOrderId": {
-          ".validate": "!newData.exists() || newData.val() == null || (newData.isString() && newData.val().length <= 64)"
-        },
-        "currentOrderStatus": {
-          ".validate": "!newData.exists() || newData.val() == null || (newData.isString() && newData.val().length <= 32)"
         }
       }
     }

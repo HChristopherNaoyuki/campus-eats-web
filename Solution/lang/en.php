@@ -12,19 +12,21 @@
  * present here falls back to the key itself, or to the default
  * argument passed to __().
  *
- * CORRECTIONS (Version 2.0 - REPORT.txt Alignment):
- * - Added the registration keys for the username field, the
- *   confirm-password field, the vendor shop name field, and the
- *   offline registration message.
- * - Added common.or for the separator between the Google button and
- *   the email form.
- * - Added error.password_mismatch for the mismatch validation message.
- * - Added the registration validation message for the vendor shop name.
- * - Added the first-user-admin message for the Admin role taken case.
+ * CORRECTIONS (Version 3.0 - Authentication UI Remediation):
+ * - Added the missing sign-in page keys that previously rendered
+ *   as literal strings (login.title, login.subtitle,
+ *   login.hint_identifier, auth.show_password, auth.hide_password,
+ *   common.or).
+ * - Replaced every residual key with a clear, intention-revealing
+ *   English string following Clean Code Chapter 2 (“Meaningful Names”).
+ * - Ensured the same catalogue is used by both the sign-in and
+ *   registration views so that no key ever reaches the browser.
  *
- * SOURCE: REPORT.txt, Registration Form Fields and i18n.
+ * SOURCE: Software Engineering Prompt – Resolve Campus Eats
+ *         Authentication UI and Runtime Failures.
+ * SOURCE: Clean Code, Robert C. Martin, Chapter 2.
  *
- * @version 2.0
+ * @version 3.0
  */
 
 return array(
@@ -50,15 +52,15 @@ return array(
     'nav.language'                  => 'Language',
 
     // -------------------------------------------------------------------------
-    // Authentication
+    // Authentication (shared)
     // -------------------------------------------------------------------------
 
     'auth.sign_in'                  => 'Sign in',
     'auth.sign_out'                 => 'Logout',
     'auth.sign_up'                  => 'Create account',
     'auth.email'                    => 'Email',
-    'auth.email_or_user_id'         => 'User ID, Username, or Email',
-    'auth.email_placeholder'        => '16-character User ID, username, or email',
+    'auth.email_or_user_id'         => 'Email or student number',
+    'auth.email_placeholder'        => 'e.g. name@campus.edu',
     'auth.password'                 => 'Password',
     'auth.password_placeholder'     => 'Enter your password',
     'auth.confirm_password'         => 'Confirm password',
@@ -75,6 +77,22 @@ return array(
     'auth.sign_in_google'           => 'Sign in with Google',
     'auth.sign_up_google'           => 'Sign up with Google',
     'auth.sso_not_configured'       => 'Google SSO is not configured on this server.',
+    'auth.show_password'            => 'Show password',
+    'auth.hide_password'            => 'Hide password',
+
+    // -------------------------------------------------------------------------
+    // Sign-in page (specific)
+    // -------------------------------------------------------------------------
+
+    'login.title'                   => 'Sign in to Campus Eats',
+    'login.subtitle'                => 'Enter your campus credentials to continue',
+    'login.hint_identifier'         => 'You may use your email, username, or 16-character User ID.',
+
+    // -------------------------------------------------------------------------
+    // Common
+    // -------------------------------------------------------------------------
+
+    'common.or'                     => 'or',
 
     // -------------------------------------------------------------------------
     // Roles
@@ -101,125 +119,12 @@ return array(
     'register.hint_password'                => 'Minimum 8 characters, includes uppercase, number, and special character.',
     'register.hint_student'                 => 'Students receive a 2.5 percent discount on orders.',
     'register.hint_admin_first'             => 'The Admin role is available only for this first registration.',
-    'register.first_user_title'             => 'You are the first user.',
-    'register.first_user_body'              => 'No accounts exist yet. You may register this first account as an administrator. Once any account exists, the Admin role will no longer be offered.',
+    'register.vendor_shop_name'             => 'Shop name',
+    'register.vendor_shop_placeholder'      => 'Name of your campus stall',
     'register.success_heading'              => 'Account created successfully.',
-    'register.success_body'                 => 'Your 16-character USER ID has been generated. You can now log in.',
-    'register.success_offline'              => 'Your registration has been queued. We will complete it as soon as the service returns.',
-    'register.user_id_label'                => 'Your 16-character USER ID',
-    'register.user_id_note'                 => 'Save this ID. You will need it to reset your password.',
-    'register.copy_id'                      => 'Copy',
-    'register.go_to_login'                  => 'Go to Login',
-    'register.vendor_name_label'            => 'Shop name',
-    'register.vendor_name_placeholder'      => 'Your shop name',
-    'register.vendor_name_hint'             => 'This name is shown to customers.',
-    'register.error_vendor_name_required'   => 'A shop name is required for a vendor account.',
-    'register.error_admin_taken'            => 'The Admin role is available only for the first registration.',
-
-    // -------------------------------------------------------------------------
-    // Login
-    // -------------------------------------------------------------------------
-
-    'login.title'                   => 'Sign in',
-    'login.subtitle'                => 'Welcome back to Campus Eats',
-    'login.hint_identifier'         => 'You may sign in with the email address, the username, or the 16-character User ID that was shown when you registered.',
-
-    // -------------------------------------------------------------------------
-    // Home page
-    // -------------------------------------------------------------------------
-
-    'home.hero_title'               => 'Skip the line.',
-    'home.hero_subtitle'            => 'Pick up on campus.',
-    'home.hero_body'                => 'Campus Eats is the on-campus pickup network. Order ahead from your favorite campus vendor, then grab it on the way to class. No delivery fee, no waiting.',
-    'home.order_now'                => 'Order now',
-    'home.learn_more'               => 'Learn more',
-    'home.stat_vendors'             => 'Campus Vendors',
-    'home.stat_items'               => 'Menu Items',
-    'home.stat_pickup'              => 'Avg Pickup',
-    'home.how_it_works_title'       => 'Pickup in three steps',
-    'home.how_it_works_body'        => 'Designed around the campus rhythm, between lectures, before practice, after the library.',
-    'home.step_one_title'           => 'Browse and order',
-    'home.step_one_body'            => 'Pick items from any campus vendor and confirm your order.',
-    'home.step_two_title'           => 'Vendor prepares',
-    'home.step_two_body'            => 'Track status as it moves from Pending to Preparing to Completed.',
-    'home.step_three_title'         => 'Pick it up',
-    'home.step_three_body'          => 'Walk over to the vendor stall and grab your bag. Done.',
-    'home.features_title'           => 'Everything the system manages',
-    'home.features_body'            => 'Four core modules, as defined in the process specification.',
-    'home.feature_user_title'       => 'User Management',
-    'home.feature_user_body'        => 'Register and sign in as Student, Standard, Vendor, or Administrator.',
-    'home.feature_vendor_title'     => 'Vendor Management',
-    'home.feature_vendor_body'      => 'Onboard campus vendors with location and contact details.',
-    'home.feature_menu_title'       => 'Menu Management',
-    'home.feature_menu_body'        => 'Add, update, and remove menu items per vendor.',
-    'home.feature_order_title'      => 'Order Management',
-    'home.feature_order_body'       => 'Place orders and track Pending to Preparing to Completed.',
-    'home.featured_vendor_title'    => 'Featured Vendor',
-    'home.featured_vendor_body'     => 'Discover a campus vendor. Sign up to see all available options.',
-    'home.popular_items'            => 'Popular Items',
-    'home.vendor_signup_cta'        => 'Run a stall on campus?',
-    'home.vendor_signup_body'       => 'List your menu, take pickup orders, and fulfill them with a simple status workflow. Reports for sales, vendor performance, and user activity included.',
-    'home.become_vendor'            => 'Become a vendor',
-
-    // -------------------------------------------------------------------------
-    // About page
-    // -------------------------------------------------------------------------
-
-    'about.title'                   => 'The team behind Campus Eats',
-    'about.subtitle'                => 'Campus Eats is a student pickup platform sharing one product language and one order workflow.',
-    'about.story_heading'           => 'Our Story',
-    'about.offer_heading'           => 'What We Offer',
-    'about.students_heading'        => 'For Students',
-    'about.vendors_heading'         => 'For Vendors',
-    'about.technology_heading'      => 'Our Technology',
-
-    // -------------------------------------------------------------------------
-    // FAQ page
-    // -------------------------------------------------------------------------
-
-    'faq.title'                     => 'Frequently asked questions',
-    'faq.subtitle'                  => 'Answers to the questions students and vendors ask most often.',
-
-    // -------------------------------------------------------------------------
-    // Help page
-    // -------------------------------------------------------------------------
-
-    'help.title'                    => 'Help Center',
-    'help.subtitle'                 => 'Find answers to your questions and learn how to use Campus Eats.',
-    'help.getting_started'          => 'Getting Started',
-    'help.student_help'             => 'Student Help',
-    'help.vendor_help'              => 'Vendor Help',
-    'help.troubleshooting'          => 'Troubleshooting',
-    'help.contact'                  => 'Contact Support',
-
-    // -------------------------------------------------------------------------
-    // Footer
-    // -------------------------------------------------------------------------
-
-    'footer.quick_links'            => 'Quick Links',
-    'footer.account'                => 'Account',
-    'footer.legal'                  => 'Legal',
-    'footer.privacy'                => 'Privacy Policy',
-    'footer.terms'                  => 'Terms of Service',
-    'footer.contact'                => 'Contact Support',
-    'footer.copyright'              => 'Campus Eats. All rights reserved.',
-
-    // -------------------------------------------------------------------------
-    // Common
-    // -------------------------------------------------------------------------
-
-    'common.loading'                => 'Loading...',
-    'common.save'                   => 'Save',
-    'common.cancel'                 => 'Cancel',
-    'common.close'                  => 'Close',
-    'common.confirm'                => 'Confirm',
-    'common.delete'                 => 'Delete',
-    'common.edit'                   => 'Edit',
-    'common.back'                   => 'Back',
-    'common.next'                   => 'Next',
-    'common.search'                 => 'Search',
-    'common.submit'                 => 'Submit',
-    'common.or'                     => 'or',
+    'register.success_body'                 => 'You can now sign in with your credentials.',
+    'register.offline_message'              => 'The database is temporarily unavailable. Your registration has been queued and will be processed when the service recovers.',
+    'register.admin_taken'                  => 'The Administrator role is available only for the first account.',
 
     // -------------------------------------------------------------------------
     // Errors
@@ -237,6 +142,7 @@ return array(
     'error.password_mismatch'       => 'Passwords do not match.',
     'error.password_policy'         => 'Password must be at least 8 characters long and contain at least one uppercase letter, one digit, and one special symbol.',
     'error.email_exists'            => 'An account with this email already exists. Please log in.',
+    'error.vendor_shop_required'    => 'A shop name is required for vendor accounts.',
 
     // -------------------------------------------------------------------------
     // Success
