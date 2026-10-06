@@ -3,25 +3,25 @@
  * Public Header Component
  *
  * Provides consistent navigation across all public-facing pages.
+ * When a valid user is present in the session the header renders
+ * exactly the five links: Home, About, Services, FAQ, Help Center.
  *
- * CORRECTIONS (Version 13.0 - isStandard Fix):
+ * CORRECTIONS (Version 14.0 - Header Links and Logout):
  *
- * - Defined the pure function isStandard() inside this file so the
- *   call on the original line 101 (inside isStudentOrStandardUser)
- *   always resolves. The previous version relied on a definition that
- *   lived only in auth.php; when that include failed or was ordered
- *   after the call, the fatal “Call to undefined function isStandard()”
- *   aborted page render.
- * - The function is pure: it inspects REQUEST_URI only, performs no
- *   I/O, and returns a boolean. It follows Clean Code naming and
- *   single-responsibility rules.
- * - All original markup, helpers, and escape logic are retained
- *   unchanged.
+ * - Added pure helper isUserLoggedIn() that returns true only when a
+ *   non-empty user_id exists in the session.
+ * - When isUserLoggedIn() is true the navigation block contains only
+ *   the five required links. Dashboard / Cart / role-specific items
+ *   are no longer shown in the public header for authenticated users.
+ * - isStandard() is retained (guarded) for compatibility with earlier
+ *   calls that still exist in the include chain.
+ * - All original escape helpers, accessibility attributes and markup
+ *   structure are preserved.
  *
- * SOURCE: SOFTWARE ENGINEER PROMPT – Correct public_header.php.
+ * SOURCE: SOFTWARE ENGINEER PROMPT – Fix Header Links and Logout.
  * SOURCE: Clean Code, Robert C. Martin, Chapters 2–4.
  *
- * @version 13.0
+ * @version 14.0
  */
 
 require_once dirname(__DIR__) . '/config/constants.php';
@@ -61,8 +61,8 @@ if (!function_exists('isActivePublicPage'))
     /**
      * Returns 'active' when the given page is the current page.
      *
-     * @param string $page        The page basename to test
-     * @param string $currentPage The current page basename
+     * @param string      $page        The page basename to test
+     * @param string|null $currentPage The current page basename
      * @return string 'active' or an empty string
      */
     function isActivePublicPage($page, $currentPage = null)
@@ -81,9 +81,9 @@ if (!function_exists('isPublicPageActive'))
     /**
      * Backward-compatible alias for isActivePublicPage().
      *
-     * @param string $page        The page basename to test
-     * @param string $currentPage The current page basename
-     * @return string 'active' or an empty string
+     * @param string      $page
+     * @param string|null $currentPage
+     * @return string
      */
     function isPublicPageActive($page, $currentPage = null)
     {
@@ -92,12 +92,24 @@ if (!function_exists('isPublicPageActive'))
 }
 
 /**
- * Determine whether the current request should use the standard
- * public layout.
+ * Return true when a valid logged-in user exists in the current session.
+ * Pure check: no side effects.
  *
- * Returns true for ordinary visitor pages, false for specialised
- * or authenticated views (admin or dashboard routes).
- * Pure function: no side effects, no I/O.
+ * @return bool
+ */
+if (!function_exists('isUserLoggedIn'))
+{
+    function isUserLoggedIn()
+    {
+        return isset($_SESSION['user_id'])
+            && $_SESSION['user_id'] !== ''
+            && $_SESSION['user_id'] !== null;
+    }
+}
+
+/**
+ * Determine whether the current request should use the standard
+ * public layout. Pure function retained for compatibility.
  *
  * @return bool
  */
@@ -105,8 +117,6 @@ if (!function_exists('isStandard'))
 {
     function isStandard()
     {
-        // Default to standard layout unless a recognised
-        // non-standard route is detected.
         if (isset($_SERVER['REQUEST_URI']))
         {
             $uri = strtolower($_SERVER['REQUEST_URI']);
@@ -133,12 +143,13 @@ if (!function_exists('isStudentOrStandardUser'))
     {
         return function_exists('isLoggedIn')
             && isLoggedIn()
-            && (isStudent() || isStandard());
+            && (function_exists('isStudent') && isStudent()
+                || function_exists('isStandard') && isStandard());
     }
 }
 
 // =============================================================================
-// Current page and CSRF token for the meta tag
+// Current page and CSRF token
 // =============================================================================
 
 $currentPage = basename($_SERVER['PHP_SELF']);
@@ -183,17 +194,13 @@ if (session_status() === PHP_SESSION_ACTIVE && function_exists('getCsrfToken'))
                 <ul>
                     <li>
                         <a href="<?php echo ROOT_URL; ?>/index.php#home"
-                           class="<?php
-                               echo isActivePublicPage('index.php', $currentPage);
-                           ?>">
+                           class="<?php echo isActivePublicPage('index.php', $currentPage); ?>">
                             Home
                         </a>
                     </li>
                     <li>
                         <a href="<?php echo ROOT_URL; ?>/about.php"
-                           class="<?php
-                               echo isActivePublicPage('about.php', $currentPage);
-                           ?>">
+                           class="<?php echo isActivePublicPage('about.php', $currentPage); ?>">
                             About
                         </a>
                     </li>
@@ -204,37 +211,21 @@ if (session_status() === PHP_SESSION_ACTIVE && function_exists('getCsrfToken'))
                     </li>
                     <li>
                         <a href="<?php echo ROOT_URL; ?>/faq.php"
-                           class="<?php
-                               echo isActivePublicPage('faq.php', $currentPage);
-                           ?>">
+                           class="<?php echo isActivePublicPage('faq.php', $currentPage); ?>">
                             FAQ
                         </a>
                     </li>
                     <li>
                         <a href="<?php echo ROOT_URL; ?>/help.php"
-                           class="<?php
-                               echo isActivePublicPage('help.php', $currentPage);
-                           ?>">
+                           class="<?php echo isActivePublicPage('help.php', $currentPage); ?>">
                             Help Center
                         </a>
                     </li>
-                    <?php if (isStudentOrStandardUser()): ?>
-                        <li>
-                            <a href="<?php echo BASE_URL; ?>/modules/student/dashboard.php">
-                                Dashboard
-                            </a>
-                        </li>
-                        <li>
-                            <a href="<?php echo BASE_URL; ?>/modules/student/cart.php">
-                                Cart
-                            </a>
-                        </li>
-                    <?php endif; ?>
                 </ul>
             </nav>
 
             <div class="header-actions">
-                <?php if (function_exists('isLoggedIn') && isLoggedIn()): ?>
+                <?php if (isUserLoggedIn()): ?>
                     <a href="<?php echo BASE_URL; ?>/modules/auth/logout.php"
                        class="btn btn-outline">
                         <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
@@ -265,49 +256,21 @@ if (session_status() === PHP_SESSION_ACTIVE && function_exists('getCsrfToken'))
     <div class="mobile-menu" aria-hidden="true">
         <nav aria-label="Mobile navigation">
             <ul>
-                <li>
-                    <a href="<?php echo ROOT_URL; ?>/index.php#home">Home</a>
-                </li>
-                <li>
-                    <a href="<?php echo ROOT_URL; ?>/about.php">About</a>
-                </li>
-                <li>
-                    <a href="<?php echo ROOT_URL; ?>/index.php#vendors">Services</a>
-                </li>
-                <li>
-                    <a href="<?php echo ROOT_URL; ?>/faq.php">FAQ</a>
-                </li>
-                <li>
-                    <a href="<?php echo ROOT_URL; ?>/help.php">Help Center</a>
-                </li>
-                <?php if (isStudentOrStandardUser()): ?>
+                <li><a href="<?php echo ROOT_URL; ?>/index.php#home">Home</a></li>
+                <li><a href="<?php echo ROOT_URL; ?>/about.php">About</a></li>
+                <li><a href="<?php echo ROOT_URL; ?>/index.php#vendors">Services</a></li>
+                <li><a href="<?php echo ROOT_URL; ?>/faq.php">FAQ</a></li>
+                <li><a href="<?php echo ROOT_URL; ?>/help.php">Help Center</a></li>
+                <?php if (isUserLoggedIn()): ?>
                     <li>
-                        <a href="<?php echo BASE_URL; ?>/modules/student/dashboard.php">
-                            Dashboard
-                        </a>
-                    </li>
-                    <li>
-                        <a href="<?php echo BASE_URL; ?>/modules/student/cart.php">
-                            Cart
-                        </a>
-                    </li>
-                <?php endif; ?>
-                <?php if (!function_exists('isLoggedIn') || !isLoggedIn()): ?>
-                    <li>
-                        <a href="<?php echo BASE_URL; ?>/modules/auth/login.php">
-                            Sign In
-                        </a>
-                    </li>
-                    <li>
-                        <a href="<?php echo BASE_URL; ?>/modules/auth/register.php">
-                            Create account
-                        </a>
+                        <a href="<?php echo BASE_URL; ?>/modules/auth/logout.php">Logout</a>
                     </li>
                 <?php else: ?>
                     <li>
-                        <a href="<?php echo BASE_URL; ?>/modules/auth/logout.php">
-                            Logout
-                        </a>
+                        <a href="<?php echo BASE_URL; ?>/modules/auth/login.php">Sign In</a>
+                    </li>
+                    <li>
+                        <a href="<?php echo BASE_URL; ?>/modules/auth/register.php">Create account</a>
                     </li>
                 <?php endif; ?>
             </ul>
