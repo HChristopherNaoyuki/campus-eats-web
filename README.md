@@ -1093,8 +1093,6 @@ same pull request as the change.
 
 ## 22. Team
 
-### XISD6329 Team
-
 | Name                      | Role                                      | Student Number |
 |---------------------------|-------------------------------------------|----------------|
 | Naoyuki Christopher H.    | Lead Full Stack Engineer, UI/UX Designer  | ST10462415     |
