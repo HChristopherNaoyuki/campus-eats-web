@@ -6,47 +6,51 @@
 2. [System Requirements](#2-system-requirements)
 3. [Installation Instructions](#3-installation-instructions)
 4. [First Administrator Account](#4-first-administrator-account)
-5. [Project Structure](#5-project-structure)
-6. [Technology Stack](#6-technology-stack)
-7. [User Roles and Responsibilities](#7-user-roles-and-responsibilities)
-8. [User Interface Guidelines](#8-user-interface-guidelines)
-9. [Security Overview](#9-security-overview)
-10. [Database Structure](#10-database-structure)
-11. [API Endpoints](#11-api-endpoints)
-12. [Troubleshooting](#12-troubleshooting)
-13. [Development Process](#13-development-process)
-14. [Contributing](#14-contributing)
-15. [Code Style Guidelines](#15-code-style-guidelines)
-16. [Commit Message Format](#16-commit-message-format)
-17. [Testing Requirements](#17-testing-requirements)
-18. [Documentation Standards](#18-documentation-standards)
-19. [Disclaimer](#19-disclaimer)
+5. [Demo Accounts](#5-demo-accounts)
+6. [Sample Coupons](#6-sample-coupons)
+7. [Project Structure](#7-project-structure)
+8. [Technology Stack](#8-technology-stack)
+9. [User Roles and Responsibilities](#9-user-roles-and-responsibilities)
+10. [User Interface Guidelines](#10-user-interface-guidelines)
+11. [Security Overview](#11-security-overview)
+12. [Database Structure](#12-database-structure)
+13. [API Endpoints](#13-api-endpoints)
+14. [Troubleshooting](#14-troubleshooting)
+15. [Development Process](#15-development-process)
+16. [Contributing](#16-contributing)
+17. [AI Usage and Contributions Policy](#17-ai-usage-and-contributions-policy)
+18. [Code Style Guidelines](#18-code-style-guidelines)
+19. [Commit Message Format](#19-commit-message-format)
+20. [Testing Requirements](#20-testing-requirements)
+21. [Documentation Standards](#21-documentation-standards)
+22. [Team](#22-team)
+23. [Disclaimer](#23-disclaimer)
 
 ---
 
 ## 1. Project Overview
 
-Campus Eats is a web-based food ordering and pickup management system for a
-single higher education campus. Students browse vendor menus, place orders,
-and track status in real time. Vendors manage menus and process orders
-through a dedicated portal. Administrators oversee users, vendors, and
-system reporting.
+Campus Eats is a web-based food ordering and pickup management system
+for a single higher education campus. Students browse vendor menus,
+place orders, and track status in real time. Vendors manage menus and
+process orders through a dedicated portal. Administrators oversee
+users, vendors, and system reporting.
 
 ### 1.1 The Problem It Solves
 
-Traditional campus food ordering involves physical queues at vendor stalls,
-long wait times during peak hours, miscommunication of orders, no digital
-tracking, and manual payment handling. There is no integrated system that
-centralizes these operations.
+Traditional campus food ordering involves physical queues at vendor
+stalls, long wait times during peak hours, miscommunication of orders,
+no digital tracking, and manual payment handling. There is no
+integrated system that centralizes these operations.
 
 ### 1.2 The Proposed Solution
 
-Campus Eats provides a single platform where students browse menus, place
-orders, and track their status in real time. Vendors gain a digital
-storefront to manage menus and process orders efficiently. Administrators
-have a central dashboard for overseeing users, vendors, and the entire
-system. The result is reduced congestion, improved operational efficiency,
-and structured data for reporting.
+Campus Eats provides a single platform where students browse menus,
+place orders, and track their status in real time. Vendors gain a
+digital storefront to manage menus and process orders efficiently.
+Administrators have a central dashboard for overseeing users, vendors,
+and the entire system. The result is reduced congestion, improved
+operational efficiency, and structured data for reporting.
 
 ### 1.3 Live Demo
 
@@ -81,20 +85,22 @@ demonstration is the recommended way to review the interface.
 - Web Server: Apache 2.4 or Nginx 1.18 or equivalent.
 - PHP Version: PHP 7.3.12 or higher. PHP 8.3 is recommended.
 - Database: MySQL 8.0.18 or higher.
-- PHP Extensions: PDO, pdo_mysql, MySQLi, JSON, Session, cURL, OpenSSL.
+- PHP Extensions: PDO, pdo_mysql, MySQLi, JSON, Session, cURL,
+  OpenSSL.
 
 ### 2.2 Client Requirements
 
-- Modern browsers including Google Chrome, Mozilla Firefox, Apple Safari,
-  and Microsoft Edge.
+- Modern browsers including Google Chrome, Mozilla Firefox, Apple
+  Safari, and Microsoft Edge.
 - Minimum screen width of 320px for mobile devices.
 - Internet connection for loading Font Awesome icons.
 
 ### 2.3 PHP Configuration Notes
 
-The application calls external HTTPS endpoints. On Windows installations
-of PHP, the CA bundle used for TLS verification is not configured by
-default. Set both of the following directives in `php.ini`:
+The application calls external HTTPS endpoints. On Windows
+installations of PHP, the CA bundle used for TLS verification is not
+configured by default. Set both of the following directives in
+`php.ini`:
 
     curl.cainfo = "C:\path\to\cacert.pem"
     openssl.cafile = "C:\path\to\cacert.pem"
@@ -171,13 +177,15 @@ contents to a folder named `campus-eats-web`.
 5. Wait for the import to report success.
 
 The import creates all required tables. It does not insert any user,
-administrator, demo, or sample account. All accounts are created through
-the registration page. See [Section 4](#4-first-administrator-account).
+administrator, demo, or sample account. All accounts are created
+through the registration page or the optional seed script. See
+[Section 4](#4-first-administrator-account) and
+[Section 5](#5-demo-accounts).
 
-The `install.sql` file must be saved as UTF-8 without a byte order mark.
-If a text editor rewrites the leading hyphens of a comment line, the
-schema installation will fail with a syntax error. See
-[Section 12.5](#125-installation-completes-but-the-users-table-is-missing).
+The `install.sql` file must be saved as UTF-8 without a byte order
+mark. If a text editor rewrites the leading hyphens of a comment line,
+the schema installation will fail with a syntax error. See
+[Section 14.5](#145-installation-completes-but-the-users-table-is-missing).
 
 ### 3.8 Configure Database Connection
 
@@ -236,10 +244,21 @@ available roles for subsequent registrations are Student, Standard, and
 Vendor. Vendor registrations require administrative approval before the
 vendor may log in.
 
-### 3.14 Verify Installation
+### 3.14 Optional Demo Account Seeding
 
-1. Log in with the first account.
-2. Confirm the administrator dashboard appears.
+To populate the database with the demo accounts listed in
+[Section 5](#5-demo-accounts), run the seed script from the command
+line or through a browser once the schema is installed:
+
+    php Solution/sql/seed.php
+
+The script is idempotent. It will not overwrite an existing account
+with the same email address.
+
+### 3.15 Verify Installation
+
+1. Log in with the first account or a demo account.
+2. Confirm the appropriate dashboard or landing page appears.
 3. Confirm the dashboard statistics render.
 4. Navigate through the sections to confirm all links resolve.
 
@@ -248,15 +267,16 @@ vendor may log in.
 ## 4. First Administrator Account
 
 The application does not ship with a default administrator account. No
-account is created during installation. The first account created through
-the registration page may be assigned the Admin role. After that first
-account exists, the Admin role is neither offered nor accepted by the
-registration page.
+account is created during installation. The first account created
+through the registration page may be assigned the Admin role. After
+that first account exists, the Admin role is neither offered nor
+accepted by the registration page.
 
 This behavior ensures that:
 
 - No default username or password exists anywhere in the code-base.
-- No demo account is inserted during installation.
+- No demo account is inserted during installation unless the optional
+  seed script is run.
 - Administrative access is established by the operator on first use.
 
 If the administrator password is lost, it can be reset through the
@@ -266,7 +286,45 @@ updated directly in the database by a person with database access.
 
 ---
 
-## 5. Project Structure
+## 5. Demo Accounts
+
+The optional seed script (`Solution/sql/seed.php`) creates the
+following accounts for local testing. All passwords are the same for
+convenience during development.
+
+| Role | Name | Email | Password |
+| :--- | :--- | :--- | :--- |
+| Administrator | Amara Nkosi | amara.nkosi@campuseats.test | Adm1n#Amara |
+| Administrator | Pieter van Wyk | pieter.vanwyk@campuseats.test | Adm1n#Pieter |
+| Vendor | Thandiwe Mokoena | thandiwe.mokoena@campuseats.test | Vend0r#Thandi |
+| Vendor | Sipho Dlamini | sipho.dlamini@campuseats.test | Vend0r#Sipho |
+| Vendor | Annelie Botha | annelie.botha@campuseats.test | Vend0r#Annelie |
+| Standard | Lerato Khumalo | lerato.khumalo@campuseats.test | Stand@rd#Lerato |
+| Standard | Johan Pretorius | johan.pretorius@campuseats.test | Stand@rd#Johan |
+| Standard | Zanele Ndlovu | zanele.ndlovu@campuseats.test | Stand@rd#Zanele |
+| Standard | Marius Steyn | marius.steyn@campuseats.test | Stand@rd#Marius |
+| Student | Naledi Mahlangu | naledi.mahlangu@campuseats.test | Stud3nt#Naledi |
+
+Additional seeded accounts may appear depending on the version of the
+seed script. Each account also receives a unique 16-character User ID
+that can be used for login and password recovery.
+
+These accounts exist only after the seed script has been executed. They
+are never created by the schema import.
+
+---
+
+## 6. Sample Coupons
+
+Administrators can use the following sample coupons for testing:
+
+- CAMPUS10: 10% Discount
+- EATS20: 20% Discount
+- WELCOME5: 5% Discount
+
+---
+
+## 7. Project Structure
 
 ```
 campus-eats-web/
@@ -339,6 +397,7 @@ campus-eats-web/
     │   └── images/
     │       └── logo.png
     ├── config/
+    │   ├── cacert.pem
     │   ├── constants.php
     │   ├── database.php
     │   ├── demo_accounts.php
@@ -421,43 +480,43 @@ campus-eats-web/
 
 ---
 
-## 6. Technology Stack
+## 8. Technology Stack
 
-### 6.1 Backend
+### 8.1 Backend
 
 - PHP 7.3.12 or higher. PHP 8.3 is recommended.
 - PDO with prepared statements for all database access.
 
-### 6.2 Database
+### 8.2 Database
 
 - MySQL 8.0.18 or higher.
 - Schema normalised to Third Normal Form.
 
-### 6.3 Frontend
+### 8.3 Frontend
 
 - HTML5 with semantic and accessible markup.
 - CSS3 in external files. No inline style blocks.
 - JavaScript ES6.
 
-### 6.4 Icons
+### 8.4 Icons
 
 - Font Awesome 6.4.0.
 
-### 6.5 Styling and Scripting Philosophy
+### 8.5 Styling and Scripting Philosophy
 
-All CSS is in external files under `Solution/assets/css/`. All JavaScript
-is in external files under `Solution/assets/js/`. No inline styles and no
-inline scripts are permitted except where a Content Security Policy nonce
-is present.
+All CSS is in external files under `Solution/assets/css/`. All
+JavaScript is in external files under `Solution/assets/js/`. No inline
+styles and no inline scripts are permitted except where a Content
+Security Policy nonce is present.
 
 ---
 
-## 7. User Roles and Responsibilities
+## 9. User Roles and Responsibilities
 
 The system is designed around four user roles, each with specific
 permissions and interfaces.
 
-### 7.1 Student
+### 9.1 Student
 
 Students are the core customers of the platform.
 
@@ -475,7 +534,7 @@ Primary functions:
 - Submit complaints or compliments through the feedback form.
 - Receive a 2.5 percent student discount on purchases.
 
-### 7.2 Standard
+### 9.2 Standard
 
 Standard users are customers who do not receive the student discount.
 
@@ -493,7 +552,7 @@ Primary functions:
 - Submit complaints or compliments through the feedback form.
 - No discount is applied to purchases.
 
-### 7.3 Vendor
+### 9.3 Vendor
 
 Vendors are campus food stalls or cafeterias that fulfil orders.
 
@@ -509,12 +568,13 @@ Primary functions:
 - Update order status through the workflow.
 - View sales reports and performance summaries.
 
-### 7.4 Administrator
+### 9.4 Administrator
 
 Administrators are system managers responsible for oversight and
 configuration.
 
-Primary responsibilities: manage users, vendors, and platform reporting.
+Primary responsibilities: manage users, vendors, and platform
+reporting.
 
 Primary functions:
 
@@ -527,38 +587,38 @@ Primary functions:
 
 ---
 
-## 8. User Interface Guidelines
+## 10. User Interface Guidelines
 
 All interfaces follow a minimalist design philosophy with a consistent
 orange and gray colour scheme. The aim is a professional, clean, and
 usable experience on desktop and mobile.
 
-### 8.1 Student and Standard Interface
+### 10.1 Student and Standard Interface
 
-- Vendor Listing Dashboard: The main landing page displays all available
-  vendors that are approved and open.
+- Vendor Listing Dashboard: The main landing page displays all
+  available vendors that are approved and open.
 - Menu Browsing Screen: Shows a specific vendor's menu grouped by
-  category. Each item displays its name, price, and description, with an
-  Add to Cart button.
+  category. Each item displays its name, price, and description, with
+  an Add to Cart button.
 - Shopping Cart Interface: Displays selected items, allows quantity
-  updates, and calculates subtotals, fees, and tax. A prominent Checkout
-  button completes the flow.
-- Order Tracking Page: Shows the real-time status of an order through a
-  visual progress bar and a summary of the order.
+  updates, and calculates subtotals, fees, and tax. A prominent
+  Checkout button completes the flow.
+- Order Tracking Page: Shows the real-time status of an order through
+  a visual progress bar and a summary of the order.
 - Order History Page: Lists past orders with receipts and a reorder
   option for completed orders.
 
-### 8.2 Vendor Interface
+### 10.2 Vendor Interface
 
 - Menu Management Dashboard: Provides a central place for the vendor to
   add, edit, or delete menu items. A toggle marks items as available or
   unavailable.
 - Order Management Panel: Displays incoming orders grouped by status.
   The vendor accepts, rejects, or updates each order.
-- Shop Status: A button on the vendor dashboard opens or closes the shop
-  for business.
+- Shop Status: A button on the vendor dashboard opens or closes the
+  shop for business.
 
-### 8.3 Administrator Interface
+### 10.3 Administrator Interface
 
 - User Management Dashboard: Create, approve, suspend, or delete user
   accounts and change roles.
@@ -570,11 +630,11 @@ usable experience on desktop and mobile.
 
 ---
 
-## 9. Security Overview
+## 11. Security Overview
 
 Security is treated as a core component of every feature.
 
-### 9.1 Authentication and Authorisation
+### 11.1 Authentication and Authorisation
 
 - Password hashing with bcrypt at cost factor 12.
 - Role-based access control enforced on every protected page.
@@ -582,7 +642,7 @@ Security is treated as a core component of every feature.
   session name.
 - Rate limiting of five failed login attempts within fifteen minutes.
 
-### 9.2 Data Protection and Integrity
+### 11.2 Data Protection and Integrity
 
 - SQL injection prevention through PDO prepared statements on all
   database queries.
@@ -592,7 +652,7 @@ Security is treated as a core component of every feature.
   state-changing forms.
 - Password hashes are never exposed to browser code.
 
-### 9.3 Security Headers
+### 11.3 Security Headers
 
 - Content Security Policy restricting script sources.
 - X-Frame-Options set to DENY.
@@ -600,9 +660,10 @@ Security is treated as a core component of every feature.
 - Referrer-Policy set to strict-origin-when-cross-origin.
 - Strict-Transport-Security enabled when the request is over HTTPS.
 
-### 9.4 Operational Notes
+### 11.4 Operational Notes
 
-- No default or demo credentials exist in the codebase.
+- No default or demo credentials exist in the codebase unless the
+  optional seed script is run.
 - The first administrator account is created by the operator through
   the registration page.
 - `curl.cainfo` and `openssl.cafile` must be configured for outbound
@@ -610,22 +671,22 @@ Security is treated as a core component of every feature.
 
 ---
 
-## 10. Database Structure
+## 12. Database Structure
 
 The database is normalised to Third Normal Form. All tables use InnoDB
 and the `utf8mb4_unicode_ci` collation.
 
-### 10.1 Core Entities
+### 12.1 Core Entities
 
 1. `users` stores all user accounts. Fields include `user_id`,
    `unique_id` for the 16-character recovery identifier, `full_name`,
    `username`, `email`, `password_hash`, `account_type`, `is_active`,
    and `is_verified`.
-2. `vendors` stores vendor profile information linked to a user account.
-   Fields include `vendor_name`, `description`, `is_open`, and
+2. `vendors` stores vendor profile information linked to a user
+   account. Fields include `vendor_name`, `description`, `is_open`, and
    `is_approved`.
-3. `menu_items` stores menu items offered by each vendor. Fields include
-   `item_name`, `price`, `quantity_available`, `category`, and
+3. `menu_items` stores menu items offered by each vendor. Fields
+   include `item_name`, `price`, `quantity_available`, `category`, and
    `is_available`.
 4. `orders` stores order records. Fields include `order_number`,
    `transaction_id`, `subtotal`, `service_fee`, `student_discount`,
@@ -645,7 +706,7 @@ and the `utf8mb4_unicode_ci` collation.
 10. `user_sessions` stores active session mappings for authenticated
     users.
 
-### 10.2 Key Relationships
+### 12.2 Key Relationships
 
 - A `users` record can be linked to one `vendors` record.
 - A `vendors` record has many `menu_items`.
@@ -656,18 +717,18 @@ and the `utf8mb4_unicode_ci` collation.
 
 ---
 
-## 11. API Endpoints
+## 13. API Endpoints
 
 The system uses a set of API endpoints in `Solution/api/` for dynamic
 data exchange between the frontend and the backend.
 
-### 11.1 Cart Management
+### 13.1 Cart Management
 
 - `get_cart.php` returns the current user's cart contents.
 - `update_cart.php` handles adding, removing, updating quantities, and
   clearing items.
 
-### 11.2 Menu Management
+### 13.2 Menu Management
 
 - `get_menu_items.php` returns menu items for a specific vendor.
 - `get_menu_item.php` returns the details of a single menu item.
@@ -675,26 +736,26 @@ data exchange between the frontend and the backend.
 - `update_menu_item.php` updates an existing menu item.
 - `delete_menu_item.php` deletes an item that has never been ordered.
 
-### 11.3 Order Processing
+### 13.3 Order Processing
 
 - `get_orders.php` returns the current user's order history.
 - `get_order_details.php` returns the full details of a specific order.
 - `get_order_status.php` returns the current status of an order.
 - `process_payment.php` handles order placement and payment. It is not
   invoked by the current checkout page. See
-  [Section 13.4](#134-known-unused-code).
+  [Section 15.4](#154-known-unused-code).
 - `vendor_respond_order.php` allows a vendor to update an order status.
 
-### 11.4 Vendor and User Management
+### 13.4 Vendor and User Management
 
 - `get_vendors.php` returns the list of approved and active vendors.
 - `firebase_config.php` returns the Firebase client configuration.
 
 ---
 
-## 12. Troubleshooting
+## 14. Troubleshooting
 
-### 12.1 Cannot Log In After Registration
+### 14.1 Cannot Log In After Registration
 
 Symptom: a user has registered but cannot log in.
 
@@ -707,7 +768,7 @@ through the registration page is verified automatically. Subsequent
 accounts may require administrative approval, depending on how the
 application is configured.
 
-### 12.2 Vendor Cannot Accept Orders
+### 14.2 Vendor Cannot Accept Orders
 
 Symptom: a vendor is logged in but cannot accept orders.
 
@@ -720,7 +781,7 @@ Resolution: confirm all of the following:
 3. The vendor profile has `vendors.is_approved = 1`.
 4. The vendor profile has `vendors.is_open = 1`.
 
-### 12.3 Missing Menu Items on Student Browsing Page
+### 14.3 Missing Menu Items on Student Browsing Page
 
 Symptom: a student cannot see a vendor's menu items.
 
@@ -733,10 +794,10 @@ Resolution: confirm:
 3. The menu item is `is_available = 1`.
 4. The menu item has `quantity_available` greater than zero.
 
-### 12.4 Error 500 on API Requests
+### 14.4 Error 500 on API Requests
 
-Symptom: AJAX requests to endpoints such as `process_payment.php` return
-HTTP 500.
+Symptom: AJAX requests to endpoints such as `process_payment.php`
+return HTTP 500.
 
 Cause: a fatal PHP error, a database connection failure, or a syntax
 error in a modified file.
@@ -746,7 +807,7 @@ Resolution: read the last 30 lines of
 lines of `C:\wamp64\logs\apache_error.log`. The first file names the
 PHP file and line where the failure occurred.
 
-### 12.5 Installation Completes but the Users Table Is Missing
+### 14.5 Installation Completes but the Users Table Is Missing
 
 Symptom: the log shows `Installation completed but the users table is
 still missing from database 'campus_eats'.`
@@ -757,23 +818,26 @@ expects.
 
 Resolution:
 
-1. Confirm `install.sql` begins with two hyphens followed by a space, not
-   one hyphen followed by a space.
+1. Confirm `install.sql` begins with two hyphens followed by a space,
+   not one hyphen followed by a space.
 2. Confirm `install.sql` is saved as UTF-8 without a byte order mark.
-3. Confirm `database.php` contains a method named `splitSqlStatements`.
-   If it does not, replace `database.php` with the version that includes
-   the comment-aware and string-aware splitter.
+3. Confirm `database.php` contains a method named
+   `splitSqlStatements`. If it does not, replace `database.php` with
+   the version that includes the comment-aware and string-aware
+   splitter.
 
-### 12.6 cURL Error 60 When Loading the Landing Page
+### 14.6 cURL Error 60 When Loading the Landing Page
 
-Symptom: the landing page shows `Unable to load restaurant data. Please
-try again later.`, and the log shows `cURL error 60 (CURLE_SSL_CACERT)`.
+Symptom: the landing page shows `Unable to load restaurant data.
+Please try again later.`, and the log shows
+`cURL error 60 (CURLE_SSL_CACERT)`.
 
 Cause: the PHP CA bundle is not configured on this machine.
 
 Resolution:
 
-1. Download the current CA bundle from https://curl.se/ca/cacert.pem.
+1. Download the current CA bundle from
+   https://curl.se/ca/cacert.pem.
 2. Save it to a path outside the web root, for example
    `C:\wamp64\bin\php\php8.3.28\extras\ssl\cacert.pem`.
 3. Set `curl.cainfo` and `openssl.cafile` in `php.ini` to that path.
@@ -781,9 +845,9 @@ Resolution:
 
 ---
 
-## 13. Development Process
+## 15. Development Process
 
-### 13.1 Version Control and Documentation
+### 15.1 Version Control and Documentation
 
 - Version Control: the source code is managed using Git. Each file
   header contains a version history.
@@ -792,18 +856,18 @@ Resolution:
 - Process Document: development is aligned with the requirements in
   `Documentation/requirements/campus-eats-process-document.pdf`.
 
-### 13.2 Quality Assurance and Testing
+### 15.2 Quality Assurance and Testing
 
 - Error Logging: all system errors and significant events are written
   to `campus-eats-web/Issues/error_log.txt`.
 - Code Reviews: changes are reviewed for adherence to the coding
   standards and the security requirements in
-  [Section 15](#15-code-style-guidelines) and
-  [Section 9](#9-security-overview).
+  [Section 18](#18-code-style-guidelines) and
+  [Section 11](#11-security-overview).
 - Security Audits: the system is analysed for common vulnerabilities,
   with fixes documented in each file's version history.
 
-### 13.3 Key Development Principles
+### 15.3 Key Development Principles
 
 - Security First: security is a core component of every feature.
 - User-Centric Design: interfaces follow a minimalist philosophy for
@@ -811,7 +875,7 @@ Resolution:
 - Maintainability: code is written to be clean, well-commented, and
   modular.
 
-### 13.4 Known Unused Code
+### 15.4 Known Unused Code
 
 The following items are present in the source but are not part of any
 active request path. They are listed here so contributors do not
@@ -821,16 +885,17 @@ mistake them for entry points.
   active checkout flow is the server-rendered form in
   `Solution/modules/student/checkout.php`.
 - `Solution/includes/session.php` is a deprecated compatibility wrapper
-  that includes `auth.php`. New code should include `auth.php` directly.
+  that includes `auth.php`. New code should include `auth.php`
+  directly.
 - The `admin_claims` node and the `users` node in
   `firebase.rules.json` are not written to by any code in the
   application. Only the `feedback` node is used.
 
 ---
 
-## 14. Contributing
+## 16. Contributing
 
-### 14.1 How to Contribute
+### 16.1 How to Contribute
 
 1. Fork the repository.
 2. Clone the fork.
@@ -839,13 +904,13 @@ mistake them for entry points.
 5. Test locally.
 6. Push the branch and open a pull request.
 
-### 14.2 Feature Branch Naming
+### 16.2 Feature Branch Naming
 
 - Feature: `feature/your-feature-name`
 - Bug Fix: `bugfix/issue-number-description`
 - Documentation: `docs/your-doc-update`
 
-### 14.3 Pull Request Requirements
+### 16.3 Pull Request Requirements
 
 - The description must state the problem, the approach, and how the
   change was tested.
@@ -854,7 +919,7 @@ mistake them for entry points.
 - At least one maintainer must approve the change.
 - All review comments must be resolved before merging.
 
-### 14.4 No New Classes or Files
+### 16.4 No New Classes or Files
 
 Do not introduce new classes or files unless the change explicitly
 requires them. Extend the existing structure. Reuse and refinement of
@@ -862,9 +927,26 @@ the current structure are preferred over replacement.
 
 ---
 
-## 15. Code Style Guidelines
+## 17. AI Usage and Contributions Policy
 
-### 15.1 PHP
+We welcome the use of AI tools to assist developers, but we enforce
+strict human accountability:
+
+- No Fully AI-Generated PRs: This project does not accept entirely
+  machine-generated pull requests.
+- Human Oversight: You must personally understand, verify, and take
+  100 percent responsibility for every single line of code you submit.
+- Never Let the LLM Think for You: AI models make logical mistakes and
+  cannot be held accountable for security flaws or bugs.
+- Disclosure: If a significant portion of your contribution was
+  generated by an AI assistant, please explicitly note it in your
+  Pull Request description.
+
+---
+
+## 18. Code Style Guidelines
+
+### 18.1 PHP
 
 - Brace style: Allman. Opening braces go on a new line.
 
@@ -880,7 +962,7 @@ the current structure are preferred over replacement.
 - Every function has a docblock with a purpose, parameters, and return
   value.
 
-### 15.2 JavaScript
+### 18.2 JavaScript
 
 - Indentation: two spaces. Do not use tabs.
 - Every statement terminates with a semicolon.
@@ -889,14 +971,14 @@ the current structure are preferred over replacement.
 - Variable and function names: camelCase.
 - Bind events with `addEventListener`, not with inline handlers.
 
-### 15.3 CSS
+### 18.3 CSS
 
 - All CSS is in external files. No inline style attributes.
 - Class names use kebab-case, for example `.admin-sidebar`.
 - Colours and spacing use CSS custom properties.
 - Keep specificity low and predictable.
 
-### 15.4 HTML
+### 18.4 HTML
 
 - Use semantic elements such as `<header>`, `<nav>`, `<main>`,
   `<section>`, and `<footer>`.
@@ -906,35 +988,40 @@ the current structure are preferred over replacement.
 
 ---
 
-## 16. Commit Message Format
+## 19. Commit Message Format
 
 ```
-    Header line: a single line that explains the commit in the imperative
+Header line: Explain the commit in one line (use the imperative)
 
-    The body of the commit message is a short text that explains what
-    changed and why. Wrap the body at approximately 74 characters. Use
-    the imperative mood in the header and the past tense is acceptable
-    in the body if a narrative form reads more naturally.
+Body of commit message is a few lines of text, explaining things
+in more detail, possibly giving some background about the issue
+being fixed, etc.
 
-    Explain the problem and the reasoning behind the chosen solution.
-    Reviewers can read the patch, but the reasoning behind the patch is
-    not visible in the diff.
+The body of the commit message can be several paragraphs, and
+please do proper word-wrap and keep columns shorter than about
+74 characters or so. That way "git log" will show things
+nicely even when it's indented.
 
-    Reported-by: whoever reported the issue
-    Signed-off-by: Your Name
+Make sure you explain your solution and why you're doing what you're
+doing, as opposed to describing what you're doing. Reviewers and your
+future self can read the patch, but might not understand why a
+particular solution was implemented.
+
+Reported-by: whoever-reported-it
+Signed-off-by: Your Name
 ```
 
 ---
 
-## 17. Testing Requirements
+## 20. Testing Requirements
 
-### 17.1 Local Testing
+### 20.1 Local Testing
 
 Set up the system locally using the instructions in
 [Section 3](#3-installation-instructions). Test every change in a local
 environment before submitting a pull request.
 
-### 17.2 Functional Testing
+### 20.2 Functional Testing
 
 Confirm these flows work as expected:
 
@@ -943,7 +1030,7 @@ Confirm these flows work as expected:
 - Order placement and tracking.
 - Administrator user and vendor management.
 
-### 17.3 Security Testing
+### 20.3 Security Testing
 
 Confirm the following controls are effective:
 
@@ -952,12 +1039,12 @@ Confirm the following controls are effective:
 - XSS attempts are escaped by `escapeOutput()`.
 - Rate limiting blocks repeated failed login attempts.
 
-### 17.4 Cross-Browser Testing
+### 20.4 Cross-Browser Testing
 
 Test in the latest versions of Google Chrome, Mozilla Firefox, Apple
 Safari, and Microsoft Edge.
 
-### 17.5 Mobile Testing
+### 20.5 Mobile Testing
 
 Test at these screen widths:
 
@@ -967,9 +1054,9 @@ Test at these screen widths:
 
 ---
 
-## 18. Documentation Standards
+## 21. Documentation Standards
 
-### 18.1 Code Documentation
+### 21.1 Code Documentation
 
 - File headers: every PHP file has a header comment describing the
   purpose and any corrections.
@@ -977,41 +1064,60 @@ Test at these screen widths:
   parameters, and return value.
 - Inline comments: add a comment wherever the logic is non-obvious.
 
-### 18.2 Visual Media
+### 21.2 Visual Media
 
 All screenshots and images are stored in `Solution/assets/images/`.
 Images are never embedded directly in documentation files. Reference
 them by relative path.
 
-### 18.3 Compliance with the Process Document
+UNDER NO CIRCUMSTANCES SHOULD IMAGES OR EMOJIS BE INCLUDED DIRECTLY
+IN THIS FILE. ALL VISUAL MEDIA, INCLUDING SCREENSHOTS AND IMAGES OF
+THE APPLICATION, MUST BE STORED IN A DEDICATED FOLDER WITHIN THE
+PROJECT DIRECTORY. THIS FOLDER SHOULD BE CLEARLY STRUCTURED AND NAMED
+ACCORDINGLY TO INDICATE THAT IT CONTAINS ALL VISUAL CONTENT RELATED
+TO THE APPLICATION, FOR EXAMPLE A FOLDER NAMED IMAGES, SCREENSHOTS,
+OR MEDIA.
+
+### 21.3 Compliance with the Process Document
 
 Development treats the process document as an integrated whole. Every
 design decision is validated against
 `Documentation/requirements/campus-eats-process-document.pdf`.
 
-### 18.4 Updating This Document
+### 21.4 Updating This Document
 
 When a change affects the documented behavior, update this file in the
 same pull request as the change.
 
 ---
 
-## 19. Disclaimer
+## 22. Team
+
+### XISD6329 Team
+
+| Name                      | Role                                      | Student Number |
+|---------------------------|-------------------------------------------|----------------|
+| Naoyuki Christopher H.    | Lead Full Stack Engineer, UI/UX Designer  | ST10462415     |
+| Makaya G.                 | Tester / QA, Project Manager              | ST10404851     |
+
+---
+
+## 23. Disclaimer
 
 ```
-UNDER NO CIRCUMSTANCES SHOULD IMAGES OR EMOJIS BE INCLUDED DIRECTLY IN
-THIS FILE. ALL VISUAL MEDIA, INCLUDING SCREENSHOTS AND IMAGES OF THE
-APPLICATION, MUST BE STORED IN A DEDICATED FOLDER WITHIN THE PROJECT
-DIRECTORY. THIS FOLDER SHOULD BE CLEARLY STRUCTURED AND NAMED
-ACCORDINGLY TO INDICATE THAT IT CONTAINS ALL VISUAL CONTENT RELATED TO
-THE APPLICATION, FOR EXAMPLE A FOLDER NAMED IMAGES, SCREENSHOTS, OR
-MEDIA. THE AUTHOR IS NOT LIABLE OR RESPONSIBLE FOR ANY MALFUNCTIONS,
-DEFECTS, OR ISSUES THAT MAY OCCUR AS A RESULT OF COPYING, MODIFYING, OR
-USING THIS SOFTWARE. IF ANY PROBLEMS OR ERRORS ARE ENCOUNTERED, PLEASE
-DO NOT ATTEMPT TO FIX THEM SILENTLY OR OUTSIDE THE PROJECT. INSTEAD,
-SUBMIT A PULL REQUEST OR OPEN AN ISSUE ON THE CORRESPONDING GITHUB
-REPOSITORY SO THAT IT CAN BE ADDRESSED APPROPRIATELY BY THE MAINTAINERS
-OR CONTRIBUTORS.
+UNDER NO CIRCUMSTANCES SHOULD IMAGES OR EMOJIS BE INCLUDED DIRECTLY
+IN THIS FILE. ALL VISUAL MEDIA, INCLUDING SCREENSHOTS AND IMAGES OF
+THE APPLICATION, MUST BE STORED IN A DEDICATED FOLDER WITHIN THE
+PROJECT DIRECTORY. THIS FOLDER SHOULD BE CLEARLY STRUCTURED AND NAMED
+ACCORDINGLY TO INDICATE THAT IT CONTAINS ALL VISUAL CONTENT RELATED
+TO THE APPLICATION, FOR EXAMPLE A FOLDER NAMED IMAGES, SCREENSHOTS,
+OR MEDIA. THE AUTHOR IS NOT LIABLE OR RESPONSIBLE FOR ANY
+MALFUNCTIONS, DEFECTS, OR ISSUES THAT MAY OCCUR AS A RESULT OF
+COPYING, MODIFYING, OR USING THIS SOFTWARE. IF ANY PROBLEMS OR ERRORS
+ARE ENCOUNTERED, PLEASE DO NOT ATTEMPT TO FIX THEM SILENTLY OR
+OUTSIDE THE PROJECT. INSTEAD, SUBMIT A PULL REQUEST OR OPEN AN ISSUE
+ON THE CORRESPONDING GITHUB REPOSITORY SO THAT IT CAN BE ADDRESSED
+APPROPRIATELY BY THE MAINTAINERS OR CONTRIBUTORS.
 ```
 
 ---
