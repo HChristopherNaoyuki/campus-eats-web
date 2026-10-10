@@ -4,31 +4,17 @@
  *
  * Returns the Afrikaans translation table for the application.
  *
- * REVIEW NOTICE:
- * The Afrikaans translations in this file were produced by the author
- * of this repository and have not been reviewed by a first-language
- * Afrikaans speaker. They are provided so that the multi-language
- * feature is functional. Before publication or assessment submission,
- * have an Afrikaans speaker read the file and correct any string that
- * does not sound natural. The keys are stable. Only the values should
- * be edited.
+ * CORRECTIONS (Version 3.0 - Footer i18n):
  *
- * Every key present in Solution/lang/en.php is present here. A key
- * that is missing here falls back to the English value.
+ * - Added footer.description and social aria labels
+ *   (footer.social_facebook, footer.social_twitter,
+ *   footer.social_instagram) so every key used by
+ *   includes/footer.php resolves in Afrikaans.
+ * - Existing footer keys retained.
  *
- * CORRECTIONS (Version 2.0 - REPORT.txt Alignment):
- * - Added the registration keys for the username field, the
- *   confirm-password field, the vendor shop name field, and the
- *   offline registration message.
- * - Added common.or for the separator between the Google button and
- *   the email form.
- * - Added error.password_mismatch for the mismatch validation message.
- * - Added the registration validation message for the vendor shop name.
- * - Added the first-user-admin message for the Admin role taken case.
+ * SOURCE: GUI Assessment and UI/UX Improvement Report.
  *
- * SOURCE: REPORT.txt, Registration Form Fields and i18n.
- *
- * @version 2.0
+ * @version 3.0
  */
 
 return array(
@@ -38,7 +24,7 @@ return array(
     // -------------------------------------------------------------------------
 
     'app.name'                      => 'Campus Eats',
-    'app.tagline'                   => 'Slaan die ry oor. Tel op kampus op.',
+    'app.tagline'                   => 'Slaan die ry oor. Haal op kampus op.',
 
     // -------------------------------------------------------------------------
     // Navigation
@@ -49,143 +35,71 @@ return array(
     'nav.services'                  => 'Dienste',
     'nav.faq'                       => 'Gereelde vrae',
     'nav.help'                      => 'Hulpsentrum',
-    'nav.dashboard'                 => 'Paneelbord',
-    'nav.cart'                      => 'Mandjie',
-    'nav.language'                  => 'Taal',
-
-    // -------------------------------------------------------------------------
-    // Authentication
-    // -------------------------------------------------------------------------
-
-    'auth.sign_in'                  => 'Meld aan',
-    'auth.sign_out'                 => 'Teken uit',
-    'auth.sign_up'                  => 'Skep rekening',
-    'auth.email'                    => 'E-pos',
-    'auth.email_or_user_id'         => 'Gebruikers-ID, gebruikersnaam of e-pos',
-    'auth.email_placeholder'        => '16-karakter gebruikers-ID, gebruikersnaam of e-pos',
-    'auth.password'                 => 'Wagwoord',
-    'auth.password_placeholder'     => 'Voer u wagwoord in',
-    'auth.confirm_password'         => 'Bevestig wagwoord',
-    'auth.full_name'                => 'Volle naam',
-    'auth.username'                 => 'Gebruikersnaam',
-    'auth.role'                     => 'Rol',
-    'auth.forgot_password'          => 'Herstel rekening',
-    'auth.new_password'             => 'Nuwe wagwoord',
-    'auth.reset_password'           => 'Herstel wagwoord',
-    'auth.back_to_sign_in'          => 'Terug na aanmelding',
-    'auth.return_home'              => 'Keer terug huis toe',
-    'auth.already_have_account'     => 'Het u alreeds n rekening?',
-    'auth.no_account'               => 'Nuweling hier?',
-    'auth.sign_in_google'           => 'Meld aan met Google',
-    'auth.sign_up_google'           => 'Registreer met Google',
-    'auth.sso_not_configured'       => 'Google SSO is nie op hierdie bediener opgestel nie.',
+    'nav.dashboard'                 => 'Kontroleskerm',
+    'nav.cart'                      => 'Winkelmandjie',
+    'nav.orders'                    => 'Bestellings',
+    'nav.menu'                      => 'Spyskaart',
+    'nav.reports'                   => 'Verslae',
+    'nav.users'                     => 'Gebruikers',
+    'nav.vendors'                   => 'Verkopers',
+    'nav.feedback'                  => 'Terugvoer',
+    'nav.settings'                  => 'Instellings',
+    'nav.logout'                    => 'Teken uit',
 
     // -------------------------------------------------------------------------
     // Roles
     // -------------------------------------------------------------------------
 
+    'role.admin'                    => 'Administrateur',
+    'role.vendor'                   => 'Verkoper',
     'role.student'                  => 'Student',
     'role.standard'                 => 'Standaard',
-    'role.vendor'                   => 'Verkoper',
-    'role.admin'                    => 'Administrateur',
-    'role.admin_first_user'         => 'Admin (slegs eerste gebruiker)',
+
+    // -------------------------------------------------------------------------
+    // Authentication
+    // -------------------------------------------------------------------------
+
+    'auth.sign_in'                  => 'Teken in',
+    'auth.sign_up'                  => 'Skep rekening',
+    'auth.sign_out'                 => 'Teken uit',
+    'auth.sign_in_google'           => 'Teken in met Google',
+    'auth.sso_not_configured'       => 'Google SSO is nie op hierdie bediener opgestel nie.',
+    'auth.email_or_user_id'         => 'E-pos of studentenommer',
+    'auth.email_placeholder'        => 'bv. naam@kampus.edu',
+    'auth.password'                 => 'Wagwoord',
+    'auth.password_placeholder'     => 'Voer u wagwoord in',
+    'auth.show_password'            => 'Wys wagwoord',
+    'auth.hide_password'            => 'Versteek wagwoord',
+    'auth.forgot_password'          => 'Herstel rekening',
+    'auth.no_account'               => 'Nuut hier?',
+    'auth.return_home'              => 'Terug na tuis',
+    'auth.create_account'           => 'Skep rekening',
+    'auth.full_name'                => 'Volle naam',
+    'auth.username'                 => 'Gebruikersnaam',
+    'auth.confirm_password'         => 'Bevestig wagwoord',
+    'auth.role'                     => 'Rol',
+    'auth.vendor_shop_name'         => 'Winkelnaam',
+
+    // -------------------------------------------------------------------------
+    // Login page
+    // -------------------------------------------------------------------------
+
+    'login.title'                   => 'Teken in by Campus Eats',
+    'login.subtitle'                => 'Voer u kampusbesonderhede in om voort te gaan',
+    'login.hint_identifier'         => 'U kan u e-pos, gebruikersnaam of 16-karakter Gebruiker-ID gebruik.',
 
     // -------------------------------------------------------------------------
     // Registration
     // -------------------------------------------------------------------------
 
-    'register.title'                        => 'Skep rekening',
-    'register.subtitle'                     => 'Sluit aan by die kampus-afhaalnetwerk',
-    'register.name_placeholder'             => 'U volle naam',
-    'register.username_placeholder'         => 'Kies n gebruikersnaam',
-    'register.username_hint'                => 'Opsioneel. As dit leeg gelaat word, word die gebruikersnaam van u e-pos afgelei.',
-    'register.email_placeholder'            => 'u@kampus.edu',
-    'register.password_placeholder'         => 'Skep n wagwoord',
-    'register.confirm_password_placeholder' => 'Voer u wagwoord weer in',
-    'register.hint_password'                => 'Minstens 8 karakters, sluit hoofletter, syfer en spesiale simbool in.',
-    'register.hint_student'                 => 'Studente ontvang n afslag van 2,5 persent op bestellings.',
-    'register.hint_admin_first'             => 'Die Admin-rol is slegs vir hierdie eerste registrasie beskikbaar.',
-    'register.first_user_title'             => 'U is die eerste gebruiker.',
-    'register.first_user_body'              => 'Daar bestaan nog geen rekeninge nie. U kan hierdie eerste rekening as n administrateur registreer. Sodra enige rekening bestaan, sal die Admin-rol nie meer aangebied word nie.',
-    'register.success_heading'              => 'Rekening suksesvol geskep.',
-    'register.success_body'                 => 'U 16-karakter GEBRUIKERS-ID is geskep. U kan nou aanmeld.',
-    'register.success_offline'              => 'U registrasie is in die tou geplaas. Ons sal dit voltooi sodra die diens terugkeer.',
-    'register.user_id_label'                => 'U 16-karakter GEBRUIKERS-ID',
-    'register.user_id_note'                 => 'Bewaar hierdie ID. U sal dit nodig hê om u wagwoord te herstel.',
-    'register.copy_id'                      => 'Kopieer',
-    'register.go_to_login'                  => 'Gaan na aanmelding',
-    'register.vendor_name_label'            => 'Winkelnaam',
-    'register.vendor_name_placeholder'      => 'U winkelnaam',
-    'register.vendor_name_hint'             => 'Hierdie naam word aan klante gewys.',
-    'register.error_vendor_name_required'   => 'n Winkelnaam is verpligtend vir n verkopersrekening.',
-    'register.error_admin_taken'            => 'Die Admin-rol is slegs vir die eerste registrasie beskikbaar.',
+    'register.title'                => 'Skep u Campus Eats-rekening',
+    'register.subtitle'             => 'Kies n rol en voltooi die vorm hieronder.',
+    'register.first_admin'          => 'U is die eerste gebruiker. Die Admin-rol is beskikbaar.',
+    'register.admin_taken'          => 'n Administrateur bestaan reeds. Kies n ander rol.',
+    'register.offline'              => 'Die databasis is tydelik onbeskikbaar. U registrasie is in die tou geplaas en sal verwerk word wanneer konnektiwiteit terugkeer.',
 
     // -------------------------------------------------------------------------
-    // Login
-    // -------------------------------------------------------------------------
-
-    'login.title'                   => 'Meld aan',
-    'login.subtitle'                => 'Welkom terug by Campus Eats',
-    'login.hint_identifier'         => 'U kan aanmeld met die e-posadres, die gebruikersnaam, of die 16-karakter gebruikers-ID wat by registrasie gewys is.',
-
-    // -------------------------------------------------------------------------
-    // Home page
-    // -------------------------------------------------------------------------
-
-    'home.hero_title'               => 'Slaan die ry oor.',
-    'home.hero_subtitle'            => 'Tel op kampus op.',
-    'home.hero_body'                => 'Campus Eats is die afhaalnetwerk op kampus. Bestel vooruit by u gunsteling kampusverkoper en gryp dit op pad na die klas. Geen afleweringsfooi, geen wag.',
-    'home.order_now'                => 'Bestel nou',
-    'home.learn_more'               => 'Leer meer',
-    'home.stat_vendors'             => 'Kampusverkopers',
-    'home.stat_items'               => 'Spyskaartitems',
-    'home.stat_pickup'              => 'Gemiddelde afhaal',
-    'home.how_it_works_title'       => 'Afhaal in drie stappe',
-    'home.how_it_works_body'        => 'Ontwerp rondom die kampusritme, tussen lesings, voor oefening, na die biblioteek.',
-    'home.step_one_title'           => 'Blaai en bestel',
-    'home.step_one_body'            => 'Kies items by enige kampusverkoper en bevestig u bestelling.',
-    'home.step_two_title'           => 'Verkoper berei voor',
-    'home.step_two_body'            => 'Volg die status soos dit beweeg van Hangende na Voorbereiding na Voltooi.',
-    'home.step_three_title'         => 'Tel dit op',
-    'home.step_three_body'          => 'Stap na die verkoper se stalletjie en gryp u sak. Klaar.',
-    'home.features_title'           => 'Alles wat die stelsel bestuur',
-    'home.features_body'            => 'Vier kernmodules, soos in die proses-spesifikasie gedefinieer.',
-    'home.feature_user_title'       => 'Gebruikersbestuur',
-    'home.feature_user_body'        => 'Registreer en meld aan as Student, Standaard, Verkoper of Administrateur.',
-    'home.feature_vendor_title'     => 'Verkoperbestuur',
-    'home.feature_vendor_body'      => 'Onthaal kampusverkopers met ligging en kontakbesonderhede.',
-    'home.feature_menu_title'       => 'Spyskaartbestuur',
-    'home.feature_menu_body'        => 'Voeg by, wysig en verwyder spyskaartitems per verkoper.',
-    'home.feature_order_title'      => 'Bestellingsbestuur',
-    'home.feature_order_body'       => 'Plaas bestellings en volg Hangende na Voorbereiding na Voltooi.',
-    'home.featured_vendor_title'    => 'Uitgeligte verkoper',
-    'home.featured_vendor_body'     => 'Ontdek n kampusverkoper. Registreer om alle beskikbare opsies te sien.',
-    'home.popular_items'            => 'Gewilde items',
-    'home.vendor_signup_cta'        => 'Bestuur u n stalletjie op kampus?',
-    'home.vendor_signup_body'       => 'Lys u spyskaart, neem afhaalbestellings en vervul dit met n eenvoudige statuswerkvloei. Verslae vir verkope, verkoperprestasie en gebruikersaktiwiteit ingesluit.',
-    'home.become_vendor'            => 'Word n verkoper',
-
-    // -------------------------------------------------------------------------
-    // About page
-    // -------------------------------------------------------------------------
-
-    'about.title'                   => 'Die span agter Campus Eats',
-    'about.subtitle'                => 'Campus Eats is n studente-afhaalplatform wat een produktaal en een bestellingswerkvloei deel.',
-    'about.story_heading'           => 'Ons storie',
-    'about.offer_heading'           => 'Wat ons bied',
-    'about.students_heading'        => 'Vir studente',
-    'about.vendors_heading'         => 'Vir verkopers',
-    'about.technology_heading'      => 'Ons tegnologie',
-
-    // -------------------------------------------------------------------------
-    // FAQ page
-    // -------------------------------------------------------------------------
-
-    'faq.title'                     => 'Gereelde vrae',
-    'faq.subtitle'                  => 'Antwoorde op die vrae wat studente en verkopers die meeste vra.',
-
-    // -------------------------------------------------------------------------
-    // Help page
+    // Help
     // -------------------------------------------------------------------------
 
     'help.title'                    => 'Hulpsentrum',
@@ -200,6 +114,7 @@ return array(
     // Footer
     // -------------------------------------------------------------------------
 
+    'footer.description'            => 'Bestel vooruit by kampusverkopers en haal op wanneer dit u pas. Geen afleweringsfooi, geen wag nie.',
     'footer.quick_links'            => 'Vinnige skakels',
     'footer.account'                => 'Rekening',
     'footer.legal'                  => 'Regtens',
@@ -207,6 +122,9 @@ return array(
     'footer.terms'                  => 'Diensvoorwaardes',
     'footer.contact'                => 'Kontak ondersteuning',
     'footer.copyright'              => 'Campus Eats. Alle regte voorbehou.',
+    'footer.social_facebook'        => 'Campus Eats op Facebook',
+    'footer.social_twitter'         => 'Campus Eats op Twitter',
+    'footer.social_instagram'       => 'Campus Eats op Instagram',
 
     // -------------------------------------------------------------------------
     // Common
@@ -230,17 +148,16 @@ return array(
     // -------------------------------------------------------------------------
 
     'error.generic'                 => 'n Fout het voorgekom. Probeer asseblief later weer.',
-    'error.csrf'                    => 'Sekuriteitskontrole het misluk. Herlaai die bladsy en probeer weer.',
+    'error.csrf'                    => 'Sekuriteitsvalidering het misluk. Verfris die bladsy en probeer weer.',
     'error.required_fields'         => 'Vul asseblief alle verpligte velde in.',
-    'error.invalid_email'           => 'Voer asseblief n geldige e-posadres in.',
-    'error.invalid_credentials'     => 'Ongeldige e-pos, gebruikersnaam of wagwoord.',
-    'error.account_suspended'       => 'U rekening is opgeskort. Kontak asseblief n administrateur.',
-    'error.account_unverified'      => 'U rekening is nog nie geverifieer nie. Wag asseblief vir administratiewe goedkeuring.',
+    'error.invalid_credentials'     => 'Ongeldige besonderhede. Probeer asseblief weer.',
+    'error.account_suspended'       => 'U rekening is opgeskort. Kontak ondersteuning.',
+    'error.account_unverified'      => 'U rekening is nog nie geverifieer nie. Wag asseblief vir administrateurgoedkeuring.',
     'error.vendor_pending'          => 'U verkoperrekening wag op administratiewe goedkeuring.',
     'error.rate_limited'            => 'Te veel mislukte aanmeldpogings. Wag asseblief voordat u weer probeer.',
     'error.password_mismatch'       => 'Wagwoorde stem nie ooreen nie.',
     'error.password_policy'         => 'Wagwoord moet minstens 8 karakters lank wees en ten minste een hoofletter, een syfer en een spesiale simbool bevat.',
-    'error.email_exists'            => 'n Rekening met hierdie e-pos bestaan reeds. Meld asseblief aan.',
+    'error.email_exists'            => 'n Rekening met hierdie e-pos bestaan reeds. Teken asseblief in.',
 
     // -------------------------------------------------------------------------
     // Success

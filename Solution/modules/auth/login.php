@@ -7,25 +7,23 @@
  * have been configured. All user-facing strings are translated
  * through the shared __() helper.
  *
- * CORRECTIONS (Version 25.0 - Admin Redirect 404 Fix):
+ * CORRECTIONS (Version 26.0 - GUI / UX):
  *
- * - The post-authentication redirect for the admin role no longer
- *   targets the non-existent path /modules/admin/dashboard.php.
- *   Admin users are sent to the existing landing page
- *   ROOT_URL/index.php, eliminating the Apache 404.
- * - The helper redirectToDashboardAfterLogin() remains the single
- *   point of truth for every role. Student, standard and vendor
- *   destinations are unchanged. The default case also points to the
- *   landing page.
- * - Absolute URLs built from ROOT_URL / BASE_URL prevent relative-path
- *   surprises under different base installations.
- * - All previous corrections (password visibility, CSRF, localisation,
- *   absolute redirects, session safety) are retained.
+ * - When Google SSO is not configured the Google button, the
+ *   “not configured” notice, and the “or” divider are all omitted.
+ *   The email/password form is the sole focus.
+ * - When SSO is configured the Google button appears, followed by
+ *   the “or” divider, then the form.
+ * - Password row uses form-label-row so the recover link sits cleanly
+ *   on the right of the label.
+ * - Email and password labels both use the form-label class for
+ *   consistent weight and spacing.
+ * - Admin redirect continues to target the landing page (no 404).
  *
- * SOURCE: SOFTWARE ENGINEER PROMPT – Fix Admin Redirect 404.
+ * SOURCE: GUI Assessment and UI/UX Improvement Report.
  * SOURCE: Clean Code, Robert C. Martin, Chapters 2–4.
  *
- * @version 25.0
+ * @version 26.0
  */
 
 require_once dirname(__DIR__, 2) . '/config/constants.php';
@@ -40,21 +38,13 @@ setSecurityHeaders();
 // =============================================================================
 // Redirect Helper
 // =============================================================================
-//
-// Defined before every call site and guarded by function_exists so that
-// a second include does not produce a redeclaration fatal. The helper
-// always constructs an absolute URL. Admin users are sent to the
-// existing landing page so a 404 never occurs.
 
 if (!function_exists('redirectToDashboardAfterLogin'))
 {
     /**
      * Redirects the authenticated user to the correct existing page
-     * for their role.
-     *
-     * Admin users are deliberately sent to the public landing page
-     * because the path modules/admin/dashboard.php does not exist.
-     * Student, standard and vendor destinations remain unchanged.
+     * for their role. Admin users are sent to the landing page because
+     * the admin dashboard path is not present in all deployments.
      *
      * @return void
      */
@@ -69,8 +59,6 @@ if (!function_exists('redirectToDashboardAfterLogin'))
         switch ($accountType)
         {
             case 'admin':
-                // Admin dashboard file does not exist. Send the user
-                // to the existing landing page to avoid a 404.
                 $destination = ROOT_URL . '/index.php';
                 break;
 
@@ -100,7 +88,6 @@ if (!function_exists('redirectToDashboardAfterLogin'))
     }
 }
 
-// Redirect authenticated users before rendering the form.
 if (function_exists('isLoggedIn') && isLoggedIn())
 {
     redirectToDashboardAfterLogin();
@@ -179,7 +166,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
         }
     }
 
-    // Refresh the token after a failed attempt so the form stays protected.
     $csrfToken = function_exists('getCsrfToken') ? getCsrfToken() : '';
 }
 
@@ -191,7 +177,7 @@ $pageTitle = function_exists('__') ? __('login.title') : 'Sign in to Campus Eats
     : 'en'; ?>">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="csrf-token" content="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
     <title><?php echo htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8'); ?> - Campus Eats</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -233,28 +219,20 @@ $pageTitle = function_exists('__') ? __('login.title') : 'Sign in to Campus Eats
                                 : 'Sign in with Google';
                         ?></span>
                     </a>
-                <?php else: ?>
-                    <p class="sso-disabled">
-                        <?php
-                            echo function_exists('__e')
-                                ? __e('auth.sso_not_configured')
-                                : 'Google SSO is not configured on this server.';
-                        ?>
-                    </p>
-                <?php endif; ?>
 
-                <div class="auth-divider">
-                    <span><?php
-                        echo function_exists('__e') ? __e('common.or') : 'or';
-                    ?></span>
-                </div>
+                    <div class="auth-divider">
+                        <span><?php
+                            echo function_exists('__e') ? __e('common.or') : 'or';
+                        ?></span>
+                    </div>
+                <?php endif; ?>
 
                 <form method="post" action="" id="login-form" novalidate>
                     <input type="hidden" name="csrf_token"
                            value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
 
                     <div class="form-group">
-                        <label for="email">
+                        <label class="form-label" for="email">
                             <?php
                                 echo function_exists('__e')
                                     ? __e('auth.email_or_user_id')
@@ -286,8 +264,8 @@ $pageTitle = function_exists('__') ? __('login.title') : 'Sign in to Campus Eats
                     </div>
 
                     <div class="form-group">
-                        <div class="label-row">
-                            <label for="password">
+                        <div class="form-label-row">
+                            <label class="form-label" for="password">
                                 <?php
                                     echo function_exists('__e')
                                         ? __e('auth.password')
