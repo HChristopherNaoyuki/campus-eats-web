@@ -2,28 +2,20 @@
 /**
  * Campus Eats - Landing Page (Entry Point)
  *
- * Serves as the landing page for unauthenticated users and for
- * authenticated admin users. Displays real API data from the Fake
- * Restaurant API when reachable; otherwise the bundled fallback.
+ * Serves as the landing page for unauthenticated users. Authenticated
+ * users of every role are redirected to their role dashboard.
  *
- * CORRECTIONS (Version 17.0 - Admin Redirect Loop Fix):
+ * CORRECTIONS (Version 18.0 - Post-Login Role Dashboard Redirect):
  *
- * - Authenticated admin users are no longer redirected away from
- *   the landing page. The previous version sent them to the
- *   non-existent path modules/admin/dashboard.php (or, after an
- *   intermediate change, back to index.php itself), producing an
- *   infinite redirect loop visible in the error log.
- * - Student, standard and vendor users continue to be redirected to
- *   their existing role dashboards.
- * - performLogout() remains the single, complete session-destruction
- *   path for the ?logout= query parameter.
- * - All other landing-page behaviour (API fallback, stats, featured
- *   vendors, accessibility) is retained.
+ * - Admin users are redirected to modules/admin/dashboard.php.
+ *   The previous “admin stays on landing page” branch was removed
+ *   because the admin dashboard file exists.
+ * - Vendor, student, and standard users continue to their dashboards.
+ * - performLogout() remains the complete session-destruction path.
  *
- * SOURCE: Technical Audit Report + ERROR LOG (admin redirect loop).
- * SOURCE: Clean Code, Robert C. Martin, Chapters 2–4.
+ * SOURCE: Fix – Post-Login Role Dashboard Redirect.
  *
- * @version 17.0
+ * @version 18.0
  */
 
 require_once 'solution/config/constants.php';
@@ -36,17 +28,13 @@ setSecurityHeaders();
 // Complete Logout Helper
 // =============================================================================
 
-/**
- * Perform a complete logout.
- *
- * Clears every session variable, expires the session cookie,
- * destroys the session, starts a fresh guest session and
- * regenerates the session identifier.
- *
- * @return void
- */
 if (!function_exists('performLogout'))
 {
+    /**
+     * Perform a complete logout.
+     *
+     * @return void
+     */
     function performLogout()
     {
         $_SESSION = array();
@@ -99,13 +87,8 @@ if (session_status() !== PHP_SESSION_ACTIVE)
 }
 
 // =============================================================================
-// Redirect Authenticated Non-Admin Users
+// Redirect Authenticated Users to Role Dashboard
 // =============================================================================
-//
-// Admin users stay on the landing page (the admin dashboard file does
-// not exist). Student, standard and vendor users are sent to their
-// role-specific dashboards. This eliminates the infinite redirect
-// loop that previously occurred for the admin role.
 
 if (isset($_SESSION['user_id'])
     && !empty($_SESSION['user_id'])
@@ -117,18 +100,14 @@ if (isset($_SESSION['user_id'])
         : '';
 
     writeLog(
-        'User already logged in. Role: ' . $accountType,
+        'User already logged in, redirecting to dashboard. Role: ' . $accountType,
         'AUTH'
     );
 
     if ($accountType === 'admin')
     {
-        // Admin stays on the landing page – no redirect.
-        // The modules/admin/dashboard.php path does not exist.
-        writeLog(
-            'Admin user remains on landing page (no admin dashboard file)',
-            'AUTH'
-        );
+        header('Location: ' . BASE_URL . '/modules/admin/dashboard.php');
+        exit();
     }
     elseif ($accountType === 'vendor')
     {
@@ -217,12 +196,6 @@ $pageTitle = 'Skip the line. Pick up on campus.';
 
 if (!function_exists('escapeOutput'))
 {
-    /**
-     * Escapes a value for safe HTML output.
-     *
-     * @param mixed $value
-     * @return string
-     */
     function escapeOutput($value)
     {
         if ($value === null)
@@ -236,12 +209,6 @@ if (!function_exists('escapeOutput'))
 
 if (!function_exists('campusEatsIndexEscape'))
 {
-    /**
-     * Local alias for the escape helper.
-     *
-     * @param mixed $value
-     * @return string
-     */
     function campusEatsIndexEscape($value)
     {
         return escapeOutput($value);
@@ -286,7 +253,6 @@ if (!empty($restaurants))
     <?php include_once 'solution/includes/public_header.php'; ?>
 
     <main id="main-content">
-        <!-- Hero -->
         <section id="home" class="hero" aria-labelledby="hero-heading">
             <div class="container">
                 <h1 id="hero-heading">
@@ -312,7 +278,6 @@ if (!empty($restaurants))
             </div>
         </section>
 
-        <!-- Stats -->
         <section class="stats" aria-label="Platform statistics">
             <div class="container">
                 <div class="stats-grid">
@@ -332,7 +297,6 @@ if (!empty($restaurants))
             </div>
         </section>
 
-        <!-- How it works -->
         <section id="how-it-works"
                  class="how-it-works"
                  aria-labelledby="how-it-works-heading">
@@ -364,7 +328,6 @@ if (!empty($restaurants))
             </div>
         </section>
 
-        <!-- Featured vendors -->
         <section id="vendors"
                  class="vendors"
                  aria-labelledby="vendors-heading">
@@ -442,7 +405,6 @@ if (!empty($restaurants))
             </div>
         </section>
 
-        <!-- Features -->
         <section class="features" aria-labelledby="features-heading">
             <div class="container">
                 <div class="section-title">

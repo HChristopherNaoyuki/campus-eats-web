@@ -7,23 +7,21 @@
  * have been configured. All user-facing strings are translated
  * through the shared __() helper.
  *
- * CORRECTIONS (Version 26.0 - GUI / UX):
+ * CORRECTIONS (Version 27.0 - Post-Login Role Dashboard Redirect):
  *
- * - When Google SSO is not configured the Google button, the
- *   “not configured” notice, and the “or” divider are all omitted.
- *   The email/password form is the sole focus.
- * - When SSO is configured the Google button appears, followed by
- *   the “or” divider, then the form.
- * - Password row uses form-label-row so the recover link sits cleanly
- *   on the right of the label.
- * - Email and password labels both use the form-label class for
- *   consistent weight and spacing.
- * - Admin redirect continues to target the landing page (no 404).
+ * - Admin users are redirected to the real admin dashboard at
+ *   BASE_URL/modules/admin/dashboard.php. The previous version
+ *   incorrectly sent them to the public landing page because it
+ *   assumed the admin dashboard file did not exist.
+ * - Vendor, student, and standard destinations are unchanged.
+ * - Unknown roles fall back to the landing page only.
+ * - SSO presentation, form-label classes, and password-row layout
+ *   from Version 26.0 are retained.
  *
- * SOURCE: GUI Assessment and UI/UX Improvement Report.
+ * SOURCE: Fix – Post-Login Role Dashboard Redirect.
  * SOURCE: Clean Code, Robert C. Martin, Chapters 2–4.
  *
- * @version 26.0
+ * @version 27.0
  */
 
 require_once dirname(__DIR__, 2) . '/config/constants.php';
@@ -42,9 +40,10 @@ setSecurityHeaders();
 if (!function_exists('redirectToDashboardAfterLogin'))
 {
     /**
-     * Redirects the authenticated user to the correct existing page
-     * for their role. Admin users are sent to the landing page because
-     * the admin dashboard path is not present in all deployments.
+     * Redirects the authenticated user to the dashboard for their role.
+     *
+     * Every known role is sent to an existing module dashboard.
+     * Admin is no longer forced onto the public landing page.
      *
      * @return void
      */
@@ -59,7 +58,7 @@ if (!function_exists('redirectToDashboardAfterLogin'))
         switch ($accountType)
         {
             case 'admin':
-                $destination = ROOT_URL . '/index.php';
+                $destination = BASE_URL . '/modules/admin/dashboard.php';
                 break;
 
             case 'vendor':
