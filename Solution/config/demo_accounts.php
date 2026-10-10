@@ -3,51 +3,28 @@
  * Demonstration Accounts Configuration
  *
  * Returns the demonstration account table used by the seed script and
- * by the development installer. The accounts exist so that a fresh
- * installation can be tested without manually registering ten users.
+ * by the automatic demo-data seeder. The accounts exist so that a
+ * fresh installation can be tested without manually registering ten
+ * users.
  *
  * IMPORTANT: DEMONSTRATION DATA
  *
  * The ten accounts below are demonstration data. Every name, email
  * address, and password is fabricated for local testing. They are not
- * real people. They are not associated with any real email provider.
- * The passwords are public and must never be used in a deployed
- * environment.
+ * real people. The passwords are public and must never be used in a
+ * deployed environment.
  *
- * Before deploying this application to any host that is reachable
- * from a network, delete this file or change every password to a value
- * that is not published here, and remove the call to the seed script
- * from the installation procedure.
+ * CORRECTIONS (Version 2.0 - unique_id length):
  *
- * ROLE DISTRIBUTION
+ * - Zanele Ndlovu unique_id truncated from 17 to 16 characters
+ *   (STDN5T8M3K2LZXR6) to satisfy unique_id VARCHAR(16).
+ * - Naledi Mahlangu unique_id truncated from 17 to 16 characters
+ *   (STDT4K9X2P7MNZR5) to satisfy the same constraint.
  *
- * The ten accounts are distributed as follows:
- *
- *   admins     2
- *   vendors    3
- *   standard   4
- *   students   1
- *   --------  --
- *   total     10
- *
- * PASSWORD POLICY
- *
- * Each password satisfies the application policy:
- *
- *   - At least 8 characters long.
- *   - Contains at least one uppercase letter.
- *   - Contains at least one lowercase letter.
- *   - Contains at least one digit.
- *   - Contains at least one special symbol.
- *
- * The accounts are stored in MySQL with a bcrypt hash. The plain-text
- * values in this file exist only so the accounts can be seeded and
- * documented. They are never stored in the database.
- *
+ * SOURCE: Technical Audit Update – Demo Accounts, Coupons, and SSL.
  * SOURCE: Campus Eats process document, section 12.5.
- * SOURCE: Demonstration account reference file.
  *
- * @version 1.0
+ * @version 2.0
  */
 
 return array(
@@ -99,7 +76,7 @@ return array(
         'is_verified'   => 1,
         'is_active'     => 1,
         'vendor_name'   => 'Campus Corner Kitchen',
-        'description'   => 'Traditional South African meals prepared fresh daily. Pap, chakalaka, and grilled chicken are the house specialities.'
+        'description'   => 'Traditional South African meals prepared fresh daily.'
     ),
 
     array(
@@ -113,7 +90,7 @@ return array(
         'is_verified'   => 1,
         'is_active'     => 1,
         'vendor_name'   => 'Braai Brothers',
-        'description'   => 'Flame-grilled meat, boerewors rolls, and vegetarian skewers. Open from breakfast until late afternoon.'
+        'description'   => 'Flame-grilled meat, boerewors rolls, and vegetarian skewers.'
     ),
 
     array(
@@ -126,12 +103,12 @@ return array(
         'account_type'  => 'vendor',
         'is_verified'   => 1,
         'is_active'     => 1,
-        'vendor_name'   => 'Coffee and Koeksisters',
-        'description'   => 'Speciality coffee, freshly baked koeksisters, and light breakfast options for early lectures.'
+        'vendor_name'   => 'Annelie\'s Bakery',
+        'description'   => 'Fresh pastries, sandwiches, and coffee for the campus rush.'
     ),
 
     // =========================================================================
-    // Standard users - 4 accounts
+    // Standard - 4 accounts
     // =========================================================================
 
     array(
@@ -164,7 +141,7 @@ return array(
 
     array(
         'user_id'       => 3003,
-        'unique_id'     => 'STDN5T8M3K2LZXR6Q',
+        'unique_id'     => 'STDN5T8M3K2LZXR6',
         'full_name'     => 'Zanele Ndlovu',
         'username'      => 'zanele.ndlovu',
         'email'         => 'zanele.ndlovu@campuseats.test',
@@ -196,7 +173,7 @@ return array(
 
     array(
         'user_id'       => 4001,
-        'unique_id'     => 'STDT4K9X2P7MNZR5B',
+        'unique_id'     => 'STDT4K9X2P7MNZR5',
         'full_name'     => 'Naledi Mahlangu',
         'username'      => 'naledi.mahlangu',
         'email'         => 'naledi.mahlangu@campuseats.test',

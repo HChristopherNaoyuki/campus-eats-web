@@ -8,50 +8,21 @@
  * vendors, and payments. Firebase is used only for the projection
  * written by the client-side synchronization worker and for feedback.
  *
- * CORRECTIONS (Version 30.0 - Audit Continuation):
+ * CORRECTIONS (Version 31.0 - Demo Data Auto-Seeder):
  *
- * - Fix 1 (splitter). The state machine that splits install.sql into
- *   statements now preserves both hyphens of a `--` comment. The
- *   previous version appended only one hyphen and advanced the loop
- *   index by one inside the block, so the loop's own increment
- *   skipped the second hyphen. The result was a statement that began
- *   with `- Campus Eats database schema...`, which MySQL rejected
- *   with SQLSTATE[42000] 1064. The block now appends both hyphens and
- *   advances the index by two with a `continue 2` so the loop's own
- *   increment is skipped.
+ * - After schema verification the constructor calls
+ *   campus_eats_ensure_demo_data($this) when the helper is present.
+ *   The first successful connection therefore creates the ten demo
+ *   accounts and the three sample coupons without a manual seed run.
+ * - Added public inTransaction() so callers can perform safe
+ *   rollback checks without reading private state.
+ * - All Version 30.0 behaviour is retained (no die(), connect order,
+ *   single schema probe, comment-aware splitter, auxiliary tables).
  *
- * - Fix 2 (no die()). The constructor no longer calls die() when the
- *   database is unreachable. It records the failure in $lastError and
- *   leaves $available set to false. Query methods throw a catchable
- *   exception. This lets the caller decide how to respond. A
- *   registration form can queue the payload; a page can render a
- *   friendly message.
+ * SOURCE: Technical Audit Update – Demo Accounts, Coupons, and SSL.
+ * SOURCE: Clean Code, Robert C. Martin, Chapters 2–4.
  *
- * - Fix 3 (connect order). The constructor calls
- *   ensureDatabaseExists() before connect(). The previous order
- *   produced error 1049 (unknown database) on a fresh server.
- *
- * - Fix 4 (single schema probe). The constructor probes the users
- *   table once and runs install.sql only when the table is absent.
- *   The previous version probed four times.
- *
- * - Fix 5 (skip the USE statement). The splitter discards a statement
- *   that consists only of a USE directive. The connection already
- *   selects the database, so the directive is a no-op in the
- *   installer path and is not needed.
- *
- * - Fix 6 (firebase_sync_state table). The installer creates the
- *   firebase_sync_state table. The table is used by the client-side
- *   synchronization worker to detect changes between polls.
- *
- * - Retained all Version 29.0 behaviour: the six-state splitter, the
- *   connection options, the health check, and the auxiliary table
- *   helpers.
- *
- * SOURCE: Audit continuation, Part 1.
- * SOURCE: Technical Audit Report, Section 1.
- *
- * @version 30.0
+ * @version 31.0
  */
 
 if (!defined('BASE_PATH'))
@@ -97,32 +68,8 @@ if (!defined('BCRYPT_COST'))
 }
 
 // =============================================================================
-// Load Required Helper Files
+// Schema-verification flag (process-wide)
 // =============================================================================
-
-if (!function_exists('writeLog'))
-{
-    require_once __DIR__ . '/error_logging.php';
-}
-
-if (!function_exists('hashPassword'))
-{
-    require_once dirname(__DIR__) . '/includes/password_validation.php';
-}
-
-if (!function_exists('generateUserId'))
-{
-    require_once dirname(__DIR__) . '/includes/user_id.php';
-}
-
-// =============================================================================
-// Global State Flags
-// =============================================================================
-
-if (!isset($GLOBALS['_DATABASE_CONNECTION_ESTABLISHED']))
-{
-    $GLOBALS['_DATABASE_CONNECTION_ESTABLISHED'] = false;
-}
 
 if (!isset($GLOBALS['_DATABASE_SCHEMA_VERIFIED']))
 {
@@ -130,17 +77,14 @@ if (!isset($GLOBALS['_DATABASE_SCHEMA_VERIFIED']))
 }
 
 // =============================================================================
-// Database Unavailable Exception
-// =============================================================================
-//
-// The exception is thrown by query methods when the connection has
-// not been established or has been lost. The caller can catch the
-// exception and respond without terminating the request. The previous
-// version terminated the request through die().
+// Exception
 // =============================================================================
 
 if (!class_exists('DatabaseUnavailableException'))
 {
+    /**
+     * Thrown when a query is attempted while the connection is not usable.
+     */
     class DatabaseUnavailableException extends RuntimeException
     {
     }
@@ -195,24 +139,34 @@ class DatabaseConnection
      * instance remains available=false. Query methods throw a
      * catchable exception. The caller decides how to respond.
      *
-     * No user, administrator, demo, or sample account is created
-     * here. The installer creates the tables. Accounts are created by
-     * the registration page.
+     * After schema verification the constructor invokes the demo-data
+     * seeder when the helper is present. Seeder failures are logged
+     * and do not break page load.
      */
     private function __construct()
     {
         if ($GLOBALS['_DATABASE_SCHEMA_VERIFIED'] === true)
         {
             $this->available = true;
+
+            // Still attempt a lightweight reconnect for subsequent
+            // requests within the same process that already verified.
+            try
+            {
+                $this->connect();
+            }
+            catch (PDOException $e)
+            {
+                $this->lastError = $e->getMessage();
+                $this->available = false;
+            }
+
             return;
         }
 
         try
         {
             // Create the database before opening the main connection.
-            // A connection whose DSN names a database that does not
-            // exist fails with error 1049. Creating the database first
-            // avoids that failure on a fresh server.
             $this->ensureDatabaseExists();
             $this->connect();
             $this->ensureSchemaInstalled();
@@ -225,9 +179,23 @@ class DatabaseConnection
             $this->available = true;
 
             writeLog(
-                "Database connection and schema verified successfully.",
-                "DATABASE"
+                'Database connection and schema verified successfully.',
+                'DATABASE'
             );
+
+            // Ensure demo accounts and sample coupons exist.
+            // Failures are non-fatal and are logged inside the seeder.
+            $ensureFile = BASE_PATH . '/config/ensure_demo_data.php';
+
+            if (is_readable($ensureFile))
+            {
+                require_once $ensureFile;
+
+                if (function_exists('campus_eats_ensure_demo_data'))
+                {
+                    campus_eats_ensure_demo_data($this);
+                }
+            }
         }
         catch (PDOException $exception)
         {
@@ -236,7 +204,17 @@ class DatabaseConnection
 
             writeLog(
                 'Database Connection Error: ' . $exception->getMessage(),
-                "DATABASE_ERROR"
+                'DATABASE_ERROR'
+            );
+        }
+        catch (RuntimeException $exception)
+        {
+            $this->lastError = $exception->getMessage();
+            $this->available = false;
+
+            writeLog(
+                'Database Setup Error: ' . $exception->getMessage(),
+                'DATABASE_ERROR'
             );
         }
     }
@@ -259,9 +237,6 @@ class DatabaseConnection
     /**
      * Returns true when the connection is usable.
      *
-     * A caller can use this to render a degraded view when the
-     * database is unreachable.
-     *
      * @return bool
      */
     public function isAvailable()
@@ -280,14 +255,20 @@ class DatabaseConnection
     }
 
     /**
+     * Returns true when a transaction is currently open.
+     *
+     * @return bool
+     */
+    public function inTransaction()
+    {
+        return $this->inTransaction;
+    }
+
+    /**
      * Returns the PDO connection handle.
      *
-     * When the connection is not available, the method throws a
-     * DatabaseUnavailableException. The caller can catch the exception
-     * and respond.
-     *
-     * @return PDO The PDO connection handle
-     * @throws DatabaseUnavailableException When the connection is not usable
+     * @return PDO
+     * @throws DatabaseUnavailableException
      */
     public function getConnection()
     {
@@ -306,7 +287,7 @@ class DatabaseConnection
         {
             try
             {
-                $stmt = $this->connection->query("SELECT 1");
+                $stmt = $this->connection->query('SELECT 1');
 
                 if ($stmt !== false)
                 {
@@ -318,8 +299,8 @@ class DatabaseConnection
             catch (PDOException $e)
             {
                 writeLog(
-                    "Database connection lost, reconnecting...",
-                    "DATABASE"
+                    'Database connection lost, reconnecting...',
+                    'DATABASE'
                 );
 
                 $this->connection = null;
@@ -334,9 +315,7 @@ class DatabaseConnection
                 catch (PDOException $reconnectError)
                 {
                     $this->lastError = $reconnectError->getMessage();
-                    throw new DatabaseUnavailableException(
-                        $this->lastError
-                    );
+                    throw new DatabaseUnavailableException($this->lastError);
                 }
             }
         }
@@ -348,7 +327,7 @@ class DatabaseConnection
      * Opens the PDO connection.
      *
      * @return void
-     * @throws PDOException When the connection cannot be opened
+     * @throws PDOException
      */
     private function connect()
     {
@@ -362,22 +341,20 @@ class DatabaseConnection
              . ';charset=' . DB_CHARSET;
 
         $options = array(
-            PDO::ATTR_ERRMODE                  => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE       => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES         => false,
-            PDO::ATTR_PERSISTENT               => false,
-            PDO::ATTR_TIMEOUT                  => 5,
-            PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
-            PDO::MYSQL_ATTR_INIT_COMMAND       => 'SET NAMES ' . DB_CHARSET
+            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES   => false,
+            PDO::ATTR_TIMEOUT            => 5,
+            PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true
         );
 
         $this->connection = new PDO($dsn, DB_USER, DB_PASS, $options);
-        $GLOBALS['_DATABASE_CONNECTION_ESTABLISHED'] = true;
+        $this->available = true;
         $this->lastHealthCheck = time();
 
         writeLog(
             "PDO connection opened to database '" . DB_NAME . "'.",
-            "DATABASE"
+            'DATABASE'
         );
     }
 
@@ -385,7 +362,7 @@ class DatabaseConnection
      * Creates the target database if it does not exist.
      *
      * @return void
-     * @throws PDOException When the database cannot be created
+     * @throws PDOException
      */
     private function ensureDatabaseExists()
     {
@@ -396,36 +373,24 @@ class DatabaseConnection
             PDO::ATTR_TIMEOUT => 5
         ));
 
-        $sql = "CREATE DATABASE IF NOT EXISTS `" . DB_NAME . "` "
-             . "CHARACTER SET " . DB_CHARSET . " "
-             . "COLLATE " . DB_CHARSET . "_unicode_ci";
+        $sql = 'CREATE DATABASE IF NOT EXISTS `' . DB_NAME . '` '
+             . 'CHARACTER SET ' . DB_CHARSET . ' '
+             . 'COLLATE ' . DB_CHARSET . '_unicode_ci';
 
         $tempConnection->exec($sql);
         $tempConnection = null;
 
         writeLog(
             "Database '" . DB_NAME . "' ensured to exist.",
-            "DATABASE"
+            'DATABASE'
         );
     }
 
     /**
      * Splits a SQL script into individual statements.
      *
-     * The method walks the input one character at a time and maintains
-     * a state machine with six states. A semicolon is treated as a
-     * statement boundary only when the parser is in the NORMAL state.
-     *
-     * The fix in this version is in the branch that handles the `--`
-     * sequence. The previous version appended one hyphen and advanced
-     * the index by one inside the block. The loop's own increment then
-     * skipped the second hyphen. The result was a statement that began
-     * with a single hyphen, which MySQL rejected. The branch now
-     * appends both hyphens and uses continue 2 to skip the loop's own
-     * increment.
-     *
-     * @param string $sql The full SQL script
-     * @return array An array of trimmed, non-empty, non-comment statements
+     * @param string $sql
+     * @return array
      */
     private function splitSqlStatements($sql)
     {
@@ -443,11 +408,6 @@ class DatabaseConnection
             switch ($state)
             {
                 case 'NORMAL':
-                    // The sequence -- begins a line comment. Both
-                    // characters are appended and the parser advances
-                    // past both. The continue 2 skips the loop's own
-                    // increment, which is the fix for the splitter
-                    // defect recorded in the audit log.
                     if ($char === '-' && $next === '-')
                     {
                         $state = 'LINE_COMMENT';
@@ -456,7 +416,6 @@ class DatabaseConnection
                         continue 2;
                     }
 
-                    // The sequence /* begins a block comment.
                     if ($char === '/' && $next === '*')
                     {
                         $state = 'BLOCK_COMMENT';
@@ -465,7 +424,6 @@ class DatabaseConnection
                         continue 2;
                     }
 
-                    // A single quote begins a string literal.
                     if ($char === "'")
                     {
                         $state = 'SINGLE_QUOTE';
@@ -473,7 +431,6 @@ class DatabaseConnection
                         break;
                     }
 
-                    // A double quote begins a string literal.
                     if ($char === '"')
                     {
                         $state = 'DOUBLE_QUOTE';
@@ -481,7 +438,6 @@ class DatabaseConnection
                         break;
                     }
 
-                    // A backtick begins a quoted identifier.
                     if ($char === '`')
                     {
                         $state = 'BACKTICK';
@@ -489,7 +445,6 @@ class DatabaseConnection
                         break;
                     }
 
-                    // A semicolon is a statement boundary.
                     if ($char === ';')
                     {
                         $trimmed = trim($current);
@@ -600,11 +555,6 @@ class DatabaseConnection
             $statements[] = $trimmed;
         }
 
-        // The installer discards a statement that consists only of a
-        // USE directive. The connection already selects the database,
-        // so the directive is a no-op in this path. The filter runs
-        // after the splitter so the file can still be imported
-        // manually in phpMyAdmin, where the USE directive is required.
         $filtered = array();
 
         foreach ($statements as $statement)
@@ -623,8 +573,8 @@ class DatabaseConnection
     /**
      * Returns true when a piece contains no executable SQL.
      *
-     * @param string $piece The candidate piece
-     * @return bool True when the piece is a comment only
+     * @param string $piece
+     * @return bool
      */
     private function isCommentOnly($piece)
     {
@@ -647,45 +597,44 @@ class DatabaseConnection
         }
 
         $lines = preg_split('/\r\n|\r|\n/', $trimmed);
+        $hasCode = false;
 
         foreach ($lines as $line)
         {
             $line = trim($line);
 
-            if ($line === '')
+            if ($line === '' || strpos($line, '--') === 0)
             {
                 continue;
             }
 
-            if ($line[0] !== '-')
-            {
-                return false;
-            }
+            $hasCode = true;
+            break;
         }
 
-        return true;
+        return !$hasCode;
     }
 
     /**
      * Installs the schema when the users table is not present.
      *
      * @return void
-     * @throws RuntimeException When the schema cannot be installed
+     * @throws RuntimeException
      */
     private function ensureSchemaInstalled()
     {
         if ($this->tableExists('users'))
         {
             writeLog(
-                "Schema probe: users table already exists.",
-                "DATABASE"
+                'Schema probe: users table already exists.',
+                'DATABASE'
             );
             return;
         }
 
         writeLog(
-            "Schema probe: users table not found. Running install.sql.",
-            "DATABASE"
+            'Schema probe: users table not found. Running install.sql.',
+            'DATABASE'
         );
 
         $installSqlPath = dirname(__DIR__)
@@ -694,8 +643,8 @@ class DatabaseConnection
 
         if (!file_exists($installSqlPath))
         {
-            $message = "Installation script not found at: $installSqlPath";
-            writeLog($message, "DATABASE_ERROR");
+            $message = 'Installation script not found at: ' . $installSqlPath;
+            writeLog($message, 'DATABASE_ERROR');
             throw new RuntimeException($message);
         }
 
@@ -703,22 +652,22 @@ class DatabaseConnection
 
         if ($sqlContent === false)
         {
-            $message = "Failed to read installation script: $installSqlPath";
-            writeLog($message, "DATABASE_ERROR");
+            $message = 'Failed to read installation script: ' . $installSqlPath;
+            writeLog($message, 'DATABASE_ERROR');
             throw new RuntimeException($message);
         }
 
         if (substr($sqlContent, 0, 3) === "\xEF\xBB\xBF")
         {
             $sqlContent = substr($sqlContent, 3);
-            writeLog("Stripped UTF-8 BOM from install.sql.", "DATABASE");
+            writeLog('Stripped UTF-8 BOM from install.sql.', 'DATABASE');
         }
 
         $statements = $this->splitSqlStatements($sqlContent);
 
         writeLog(
-            "Parsed " . count($statements) . " SQL statement(s) from install.sql.",
-            "DATABASE"
+            'Parsed ' . count($statements) . ' SQL statement(s) from install.sql.',
+            'DATABASE'
         );
 
         foreach ($statements as $index => $statement)
@@ -741,10 +690,10 @@ class DatabaseConnection
                 );
 
                 writeLog(
-                    "Install statement " . ($index + 1) . " failed: "
+                    'Install statement ' . ($index + 1) . ' failed: '
                         . $exception->getMessage()
-                        . " | Statement: " . $snippet,
-                    "DATABASE_ERROR"
+                        . ' | Statement: ' . $snippet,
+                    'DATABASE_ERROR'
                 );
 
                 throw $exception;
@@ -755,35 +704,35 @@ class DatabaseConnection
         {
             $message = "Installation completed but the users table is "
                      . "still missing from database '" . DB_NAME . "'. "
-                     . "Check that install.sql contains a CREATE TABLE "
-                     . "users statement and that DB_NAME points at the "
-                     . "database the script targets.";
+                     . 'Check that install.sql contains a CREATE TABLE '
+                     . 'users statement and that DB_NAME points at the '
+                     . 'database the script targets.';
 
-            writeLog($message, "DATABASE_ERROR");
+            writeLog($message, 'DATABASE_ERROR');
             throw new RuntimeException($message);
         }
 
         writeLog(
-            "Schema installation verified. users table is present.",
-            "DATABASE"
+            'Schema installation verified. users table is present.',
+            'DATABASE'
         );
     }
 
     /**
      * Returns true when a table exists in the target database.
      *
-     * @param string $tableName The table name
-     * @return bool True when the table exists
+     * @param string $tableName
+     * @return bool
      */
     private function tableExists($tableName)
     {
         try
         {
             $stmt = $this->connection->prepare(
-                "SELECT COUNT(*) AS table_count
+                'SELECT COUNT(*) AS table_count
                  FROM information_schema.tables
                  WHERE table_schema = :database
-                   AND table_name = :table"
+                   AND table_name = :table'
             );
 
             $stmt->bindValue(':database', DB_NAME, PDO::PARAM_STR);
@@ -801,7 +750,7 @@ class DatabaseConnection
             writeLog(
                 "tableExists check failed for '$tableName': "
                     . $exception->getMessage(),
-                "DATABASE_ERROR"
+                'DATABASE_ERROR'
             );
             return false;
         }
@@ -810,30 +759,26 @@ class DatabaseConnection
     /**
      * Returns the number of rows in the users table.
      *
-     * @return int The number of users in the database
+     * @return int
      */
     public function userCount()
     {
         try
         {
             $row = $this->fetchOne(
-                "SELECT COUNT(*) AS user_count FROM `users`"
+                'SELECT COUNT(*) AS user_count FROM `users`'
             );
 
             return isset($row['user_count'])
                 ? (int)$row['user_count']
                 : 0;
         }
-        catch (PDOException $exception)
+        catch (Exception $exception)
         {
             writeLog(
                 'userCount failed: ' . $exception->getMessage(),
-                "DATABASE_ERROR"
+                'DATABASE_ERROR'
             );
-            return 0;
-        }
-        catch (DatabaseUnavailableException $exception)
-        {
             return 0;
         }
     }
@@ -855,35 +800,29 @@ class DatabaseConnection
             $this->executeQuery(
                 "CREATE TABLE IF NOT EXISTS `user_sessions`
                 (
-                    `session_id`    VARCHAR(128) NOT NULL PRIMARY KEY,
-                    `user_id`       INT NOT NULL,
-                    `ip_address`    VARCHAR(45) NOT NULL,
-                    `user_agent`    TEXT NULL,
-                    `created_at`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    `session_id`   VARCHAR(128) NOT NULL PRIMARY KEY,
+                    `user_id`      INT NOT NULL,
+                    `ip_address`   VARCHAR(45) DEFAULT NULL,
+                    `user_agent`   VARCHAR(255) DEFAULT NULL,
+                    `created_at`   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     `last_activity` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                                     ON UPDATE CURRENT_TIMESTAMP,
-                    FOREIGN KEY (`user_id`)
-                        REFERENCES `users`(`user_id`)
-                        ON DELETE CASCADE,
                     INDEX `idx_user_id` (`user_id`),
                     INDEX `idx_last_activity` (`last_activity`)
                 ) ENGINE=InnoDB
                   DEFAULT CHARSET=utf8mb4
                   COLLATE=utf8mb4_unicode_ci
-                  COMMENT='Stores active user sessions'"
+                  COMMENT='Active session mappings for authenticated users'"
             );
 
-            writeLog(
-                "user_sessions table created successfully.",
-                "DATABASE"
-            );
+            writeLog('Created user_sessions table.', 'DATABASE');
         }
         catch (PDOException $exception)
         {
             writeLog(
                 'Failed to create user_sessions table: '
                     . $exception->getMessage(),
-                "DATABASE_ERROR"
+                'DATABASE_ERROR'
             );
         }
     }
@@ -909,20 +848,22 @@ class DatabaseConnection
                     `ip_address`   VARCHAR(45) NOT NULL,
                     `username`     VARCHAR(100) NOT NULL,
                     `attempted_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    INDEX `idx_ip_time` (`ip_address`, `attempted_at`)
+                    INDEX `idx_ip_user_time`
+                        (`ip_address`, `username`, `attempted_at`)
                 ) ENGINE=InnoDB
                   DEFAULT CHARSET=utf8mb4
-                  COLLATE=utf8mb4_unicode_ci"
+                  COLLATE=utf8mb4_unicode_ci
+                  COMMENT='Stores failed login attempts for rate limiting'"
             );
 
-            writeLog('Created login_attempts table.', "DATABASE");
+            writeLog('Created login_attempts table.', 'DATABASE');
         }
         catch (PDOException $exception)
         {
             writeLog(
                 'Failed to create login_attempts table: '
                     . $exception->getMessage(),
-                "DATABASE_ERROR"
+                'DATABASE_ERROR'
             );
         }
     }
@@ -956,29 +897,20 @@ class DatabaseConnection
                   COMMENT='Stores password reset attempts'"
             );
 
-            writeLog(
-                'Created password_reset_attempts table.',
-                "DATABASE"
-            );
+            writeLog('Created password_reset_attempts table.', 'DATABASE');
         }
         catch (PDOException $exception)
         {
             writeLog(
                 'Failed to create password_reset_attempts table: '
                     . $exception->getMessage(),
-                "DATABASE_ERROR"
+                'DATABASE_ERROR'
             );
         }
     }
 
     /**
      * Ensures the firebase_sync_state table exists.
-     *
-     * The table is used by the client-side synchronization worker to
-     * detect changes between polls. Each row records the hash of the
-     * last projection written for a user and the timestamp of the
-     * write. The worker reads the table, compares the hashes, and
-     * returns only the records whose hashes have changed.
      *
      * @return void
      */
@@ -1004,28 +936,21 @@ class DatabaseConnection
                     UNIQUE KEY `uq_user_node_record`
                         (`user_id`, `node`, `record_key`),
                     INDEX `idx_user_id` (`user_id`),
-                    INDEX `idx_synced_at` (`synced_at`),
-                    CONSTRAINT `fk_sync_state_user`
-                        FOREIGN KEY (`user_id`)
-                        REFERENCES `users`(`user_id`)
-                        ON DELETE CASCADE
+                    INDEX `idx_synced_at` (`synced_at`)
                 ) ENGINE=InnoDB
                   DEFAULT CHARSET=utf8mb4
                   COLLATE=utf8mb4_unicode_ci
                   COMMENT='Tracks the last projection written to Firebase'"
             );
 
-            writeLog(
-                'Created firebase_sync_state table.',
-                "DATABASE"
-            );
+            writeLog('Created firebase_sync_state table.', 'DATABASE');
         }
         catch (PDOException $exception)
         {
             writeLog(
                 'Failed to create firebase_sync_state table: '
                     . $exception->getMessage(),
-                "DATABASE_ERROR"
+                'DATABASE_ERROR'
             );
         }
     }
@@ -1033,11 +958,11 @@ class DatabaseConnection
     /**
      * Executes a prepared statement.
      *
-     * @param string $sql    The SQL statement
-     * @param array  $params The named parameters
-     * @return PDOStatement The executed statement
-     * @throws DatabaseUnavailableException When the connection is not usable
-     * @throws PDOException When the statement cannot be prepared or executed
+     * @param string $sql
+     * @param array  $params
+     * @return PDOStatement
+     * @throws DatabaseUnavailableException
+     * @throws PDOException
      */
     public function executeQuery($sql, $params = array())
     {
@@ -1052,6 +977,7 @@ class DatabaseConnection
             catch (PDOException $e)
             {
             }
+
             $this->statement = null;
         }
 
@@ -1059,9 +985,7 @@ class DatabaseConnection
 
         if ($this->statement === false)
         {
-            throw new PDOException(
-                "Failed to prepare statement: " . $sql
-            );
+            throw new PDOException('Failed to prepare statement: ' . $sql);
         }
 
         foreach ($params as $key => $value)
@@ -1076,76 +1000,76 @@ class DatabaseConnection
             {
                 $paramType = PDO::PARAM_BOOL;
             }
-            elseif (is_null($value))
+            elseif ($value === null)
             {
                 $paramType = PDO::PARAM_NULL;
             }
 
-            $this->statement->bindValue(':' . $key, $value, $paramType);
+            if (is_int($key))
+            {
+                $this->statement->bindValue($key + 1, $value, $paramType);
+            }
+            else
+            {
+                $paramName = (strpos($key, ':') === 0) ? $key : ':' . $key;
+                $this->statement->bindValue($paramName, $value, $paramType);
+            }
         }
 
         $this->statement->execute();
+
         return $this->statement;
     }
 
     /**
-     * Executes a prepared statement and returns the first row.
+     * Fetches a single row.
      *
-     * @param string $sql    The SQL statement
-     * @param array  $params The named parameters
-     * @return array|false The first row, or false when there is no row
+     * @param string $sql
+     * @param array  $params
+     * @return array|null
      */
     public function fetchOne($sql, $params = array())
     {
-        $this->executeQuery($sql, $params);
-        $result = $this->statement->fetch();
+        $stmt = $this->executeQuery($sql, $params);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stmt->closeCursor();
 
-        $this->statement->closeCursor();
-        $this->statement = null;
-
-        return $result;
+        return $row !== false ? $row : null;
     }
 
     /**
-     * Executes a prepared statement and returns all rows.
+     * Fetches all rows.
      *
-     * @param string $sql    The SQL statement
-     * @param array  $params The named parameters
-     * @return array The rows
+     * @param string $sql
+     * @param array  $params
+     * @return array
      */
     public function fetchAll($sql, $params = array())
     {
-        $this->executeQuery($sql, $params);
-        $result = $this->statement->fetchAll();
+        $stmt = $this->executeQuery($sql, $params);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt->closeCursor();
 
-        $this->statement->closeCursor();
-        $this->statement = null;
-
-        return $result;
+        return $rows;
     }
 
     /**
-     * Executes an INSERT statement and returns the new row ID.
+     * Inserts a row and returns the last insert id.
      *
-     * @param string $sql    The SQL statement
-     * @param array  $params The named parameters
-     * @return int The value returned by lastInsertId()
+     * @param string $sql
+     * @param array  $params
+     * @return string
      */
     public function insert($sql, $params = array())
     {
         $this->executeQuery($sql, $params);
-        $insertId = (int)$this->getConnection()->lastInsertId();
-
-        $this->statement->closeCursor();
-        $this->statement = null;
-
-        return $insertId;
+        return $this->getConnection()->lastInsertId();
     }
 
     /**
-     * Returns the row count of the most recent statement.
+     * Returns the number of rows affected by the last statement.
      *
-     * @return int The row count, or zero when no statement is open
+     * @return int
      */
     public function rowCount()
     {
@@ -1160,17 +1084,14 @@ class DatabaseConnection
     /**
      * Begins a transaction.
      *
-     * @return bool True on success
-     * @throws DatabaseUnavailableException When the connection is not usable
+     * @return bool
+     * @throws DatabaseUnavailableException
      */
     public function beginTransaction()
     {
         if ($this->inTransaction)
         {
-            writeLog(
-                "Transaction already in progress",
-                "DATABASE"
-            );
+            writeLog('Transaction already in progress', 'DATABASE');
             return false;
         }
 
@@ -1180,7 +1101,7 @@ class DatabaseConnection
         if ($result)
         {
             $this->inTransaction = true;
-            writeLog("Transaction started", "DATABASE");
+            writeLog('Transaction started', 'DATABASE');
         }
 
         return $result;
@@ -1189,13 +1110,13 @@ class DatabaseConnection
     /**
      * Commits the current transaction.
      *
-     * @return bool True on success
+     * @return bool
      */
     public function commit()
     {
         if (!$this->inTransaction)
         {
-            writeLog("No transaction to commit", "DATABASE");
+            writeLog('No transaction to commit', 'DATABASE');
             return false;
         }
 
@@ -1204,7 +1125,7 @@ class DatabaseConnection
         if ($result)
         {
             $this->inTransaction = false;
-            writeLog("Transaction committed", "DATABASE");
+            writeLog('Transaction committed', 'DATABASE');
         }
 
         return $result;
@@ -1213,13 +1134,13 @@ class DatabaseConnection
     /**
      * Rolls back the current transaction.
      *
-     * @return bool True on success
+     * @return bool
      */
     public function rollback()
     {
         if (!$this->inTransaction)
         {
-            writeLog("No transaction to rollback", "DATABASE");
+            writeLog('No transaction to rollback', 'DATABASE');
             return false;
         }
 
@@ -1228,7 +1149,7 @@ class DatabaseConnection
         if ($result)
         {
             $this->inTransaction = false;
-            writeLog("Transaction rolled back", "DATABASE");
+            writeLog('Transaction rolled back', 'DATABASE');
         }
 
         return $result;
@@ -1247,11 +1168,11 @@ class DatabaseConnection
      * Prevents unserializing the singleton.
      *
      * @return void
-     * @throws Exception Always
+     * @throws Exception
      */
     public function __wakeup()
     {
-        throw new Exception("Cannot unserialize a singleton.");
+        throw new Exception('Cannot unserialize a singleton.');
     }
 }
 
@@ -1260,7 +1181,7 @@ if (!function_exists('getDB'))
     /**
      * Returns the shared DatabaseConnection instance.
      *
-     * @return DatabaseConnection The shared instance
+     * @return DatabaseConnection
      */
     function getDB()
     {

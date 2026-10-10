@@ -1,0 +1,22 @@
+[2026-10-10 12:50:18] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: g0q3aivrfk22g2k9886ksoqqbr] API request: GET /api/Restaurant (Attempt 1)
+[2026-10-10 12:50:19] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: g0q3aivrfk22g2k9886ksoqqbr] cURL error 77 (CURLE_SSL_CACERT_BADFILE): error setting certificate file: C:\wamp64\www\campus-eats-web\Solution/config/cacert.pem (url: https://fakerestaurantapi.runasp.net/api/Restaurant)
+[2026-10-10 12:50:20] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: g0q3aivrfk22g2k9886ksoqqbr] API request: GET /api/Restaurant (Attempt 2)
+[2026-10-10 12:50:20] [API_ERROR] [INFO] [IP: 127.0.0.1] [User: guest] [Session: g0q3aivrfk22g2k9886ksoqqbr] cURL error 77 (CURLE_SSL_CACERT_BADFILE): error setting certificate file: C:\wamp64\www\campus-eats-web\Solution/config/cacert.pem (url: https://fakerestaurantapi.runasp.net/api/Restaurant)
+[2026-10-10 12:50:20] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: g0q3aivrfk22g2k9886ksoqqbr] API request failed. Serving bundled fallback for /api/Restaurant
+[2026-10-10 12:50:20] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: g0q3aivrfk22g2k9886ksoqqbr] Fetched 3 restaurants from API
+[2026-10-10 12:50:28] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: g0q3aivrfk22g2k9886ksoqqbr] API in failure pause. Serving bundled fallback for /api/Restaurant
+[2026-10-10 12:50:28] [API] [INFO] [IP: 127.0.0.1] [User: guest] [Session: g0q3aivrfk22g2k9886ksoqqbr] Fetched 3 restaurants from API
+[2026-10-10 12:50:44] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: g0q3aivrfk22g2k9886ksoqqbr] Database 'campus_eats' ensured to exist.
+[2026-10-10 12:50:44] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: g0q3aivrfk22g2k9886ksoqqbr] PDO connection opened to database 'campus_eats'.
+[2026-10-10 12:50:44] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: g0q3aivrfk22g2k9886ksoqqbr] Schema probe: users table already exists.
+[2026-10-10 12:50:44] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: g0q3aivrfk22g2k9886ksoqqbr] Database connection and schema verified successfully.
+[2026-10-10 12:51:40] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: g0q3aivrfk22g2k9886ksoqqbr] Database 'campus_eats' ensured to exist.
+[2026-10-10 12:51:40] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: g0q3aivrfk22g2k9886ksoqqbr] PDO connection opened to database 'campus_eats'.
+[2026-10-10 12:51:40] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: g0q3aivrfk22g2k9886ksoqqbr] Schema probe: users table already exists.
+[2026-10-10 12:51:40] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: g0q3aivrfk22g2k9886ksoqqbr] Database connection and schema verified successfully.
+[2026-10-10 12:51:40] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: g0q3aivrfk22g2k9886ksoqqbr] Authentication failed: user not found for identifier type email
+[2026-10-10 12:51:45] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: g0q3aivrfk22g2k9886ksoqqbr] Database 'campus_eats' ensured to exist.
+[2026-10-10 12:51:45] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: g0q3aivrfk22g2k9886ksoqqbr] PDO connection opened to database 'campus_eats'.
+[2026-10-10 12:51:45] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: g0q3aivrfk22g2k9886ksoqqbr] Schema probe: users table already exists.
+[2026-10-10 12:51:45] [DATABASE] [INFO] [IP: 127.0.0.1] [User: guest] [Session: g0q3aivrfk22g2k9886ksoqqbr] Database connection and schema verified successfully.
+[2026-10-10 12:51:45] [AUTH] [INFO] [IP: 127.0.0.1] [User: guest] [Session: g0q3aivrfk22g2k9886ksoqqbr] Authentication failed: user not found for identifier type email
