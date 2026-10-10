@@ -2,150 +2,73 @@
   "rules": {
     ".read": false,
     ".write": false,
-    "admin_claims": {
-      ".read": "auth != null && auth.token.admin === true",
-      ".write": "auth != null && auth.token.admin === true"
-    },
+
     "users": {
-      ".indexOn": ["email", "role", "status"],
       "$campus_user_id": {
-        ".read": "auth != null && (auth.token.admin === true || auth.token.email === data.child('email').val() || data.child('userId').val() === auth.uid)",
-        ".write": "auth != null && (auth.token.admin === true || (!data.exists() && (auth.token.email === newData.child('email').val() || newData.child('userId').val() === auth.uid)) || (data.exists() && (auth.token.email === data.child('email').val() || data.child('userId').val() === auth.uid)))",
-        ".validate": "newData.hasChildren(['userId', 'fullName', 'email', 'role'])",
-        "userId": {
-          ".validate": "newData.val() === $campus_user_id && (newData.val().length === 16 || newData.val().length === 19)"
-        },
-        "fullName": {
-          ".validate": "newData.isString()"
-        },
-        "username": {
-          ".validate": "newData.isString()"
-        },
+        ".read": "auth != null && (auth.uid === $campus_user_id || root.child('users').child(auth.uid).child('role').val() === 'ADMIN')",
+        ".write": "auth != null && (auth.uid === $campus_user_id || root.child('users').child(auth.uid).child('role').val() === 'ADMIN')",
+        ".validate": "newData.hasChildren(['email', 'role', 'passwordHash'])",
         "email": {
-          ".validate": "!data.exists() || data.val() === newData.val()"
+          ".validate": "newData.isString() && newData.val().length > 0 && (!data.exists() || data.val() === newData.val())"
         },
         "role": {
-          ".validate": "(newData.val() === 'STUDENT' || newData.val() === 'VENDOR' || newData.val() === 'STANDARD' || newData.val() === 'ADMIN') && (data.val() === newData.val() || auth.token.admin === true)"
+          ".validate": "newData.isString() && (newData.val() === 'STUDENT' || newData.val() === 'STANDARD' || newData.val() === 'VENDOR' || newData.val() === 'ADMIN') && (!data.exists() || data.val() === newData.val() || root.child('users').child(auth.uid).child('role').val() === 'ADMIN')"
         },
         "passwordHash": {
-          ".validate": "newData.val() === '[FIREBASE_SSO]'"
+          ".validate": "newData.isString() && newData.val() === '[FIREBASE_SSO]'"
         },
-        "walletBalance": {
-          ".validate": "newData.isNumber() && newData.val() >= 0"
+        "fullName": {
+          ".validate": "!newData.exists() || newData.isString()"
         },
-        "status": {
-          ".validate": "!data.exists() || data.val() === newData.val() || auth.token.admin === true"
-        },
-        "shopName": {
-          ".validate": "!newData.exists() || newData.val() == null || newData.isString()"
-        },
-        "shopStatus": {
-          ".validate": "!newData.exists() || newData.val() == null || newData.isString()"
-        },
-        "bankAccountInfo": {
-          ".validate": "!newData.exists() || newData.val() == null || newData.isString()"
-        },
-        "registrationDate": {
-          ".validate": "!newData.exists() || newData.val() == null || newData.isNumber()"
-        },
-        "usercode": {
-          ".validate": "!newData.exists() || newData.val() == null || newData.isString()"
+        "uniqueId": {
+          ".validate": "!newData.exists() || newData.isString()"
         }
       }
     },
+
     "orders": {
-      ".indexOn": ["customerId", "vendorId", "status", "timestamp"],
       "$order_id": {
-        ".read": "auth != null",
-        ".write": "auth != null",
-        ".validate": "newData.hasChildren(['orderId', 'customerId', 'vendorId', 'totalAmount', 'status'])",
-        "orderId": {
-          ".validate": "newData.val() === $order_id"
-        },
-        "customerId": {
-          ".validate": "newData.isString()"
-        },
-        "vendorId": {
-          ".validate": "newData.isString()"
-        },
-        "itemsJson": {
-          ".validate": "!newData.exists() || newData.isString()"
-        },
-        "totalAmount": {
-          ".validate": "newData.isNumber() && newData.val() >= 0"
-        },
-        "status": {
-          ".validate": "newData.isString()"
-        },
-        "paymentMethod": {
-          ".validate": "!newData.exists() || newData.isString()"
-        },
-        "pickupTime": {
-          ".validate": "!newData.exists() || newData.val() == null || newData.isString() || newData.isNumber()"
-        },
-        "specialRequests": {
-          ".validate": "!newData.exists() || newData.val() == null || newData.isString()"
-        },
-        "timestamp": {
-          ".validate": "!newData.exists() || newData.isNumber()"
-        }
+        ".read": "auth != null && (data.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'ADMIN' || root.child('users').child(auth.uid).child('role').val() === 'VENDOR')",
+        ".write": "auth != null && (newData.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'ADMIN' || root.child('users').child(auth.uid).child('role').val() === 'VENDOR')",
+        ".indexOn": ["userId", "vendorId", "status"]
       }
     },
+
     "feedback": {
-      ".indexOn": ["userId", "type", "status", "createdAt"],
       "$feedback_id": {
         ".read": "auth != null",
-        ".write": "auth != null",
-        ".validate": "newData.hasChildren(['userId', 'type', 'subject', 'message', 'userName', 'userEmail', 'status', 'createdAt', 'updatedAt'])",
-        "userId": {
-          ".validate": "newData.isString()"
-        },
-        "type": {
-          ".validate": "newData.val() === 'complaint' || newData.val() === 'compliment'"
-        },
-        "subject": {
-          ".validate": "newData.isString()"
-        },
-        "message": {
-          ".validate": "newData.isString()"
-        },
-        "userName": {
-          ".validate": "newData.isString()"
-        },
-        "userEmail": {
-          ".validate": "newData.isString()"
-        },
-        "status": {
-          ".validate": "newData.val() === 'pending' || newData.val() === 'resolved'"
-        },
-        "createdAt": {
-          ".validate": "newData.isString() && newData.val().length > 0"
-        },
-        "updatedAt": {
-          ".validate": "newData.isString() && newData.val().length > 0"
-        }
+        ".write": "auth != null && (!data.exists() || data.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'ADMIN')",
+        ".indexOn": ["userId", "createdAt"]
       }
     },
+
     "coupons": {
-      ".indexOn": ["isActive"],
-      "$code": {
+      "$coupon_code": {
         ".read": "auth != null",
-        ".write": "auth != null",
-        ".validate": "newData.hasChildren(['code', 'discountPercent', 'isActive'])",
-        "code": {
-          ".validate": "newData.val() === $code"
+        ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'ADMIN'",
+        ".validate": "newData.hasChildren(['discountPercent', 'isActive'])"
+      }
+    },
+
+    "sync": {
+      "$firebase_uid": {
+        ".read": "auth != null && auth.uid === $firebase_uid",
+        ".write": "auth != null && auth.uid === $firebase_uid",
+        ".validate": "newData.hasChildren(['lastSyncAt'])",
+        "lastPage": {
+          ".validate": "!newData.exists() || newData.isString()"
         },
-        "discountPercent": {
-          ".validate": "newData.isNumber() && newData.val() >= 0"
+        "lastSyncAt": {
+          ".validate": "newData.isString() && newData.val().length > 0"
         },
-        "isActive": {
-          ".validate": "newData.isBoolean()"
+        "cartItemCount": {
+          ".validate": "!newData.exists() || (newData.isNumber() && newData.val() >= 0)"
         },
-        "expiryDate": {
-          ".validate": "!newData.exists() || newData.val() == null || newData.isNumber() || newData.isString()"
+        "currentOrderId": {
+          ".validate": "!newData.exists() || newData.isString()"
         },
-        "assignedUserId": {
-          ".validate": "!newData.exists() || newData.val() == null || newData.isString()"
+        "currentOrderStatus": {
+          ".validate": "!newData.exists() || newData.isString()"
         }
       }
     }
