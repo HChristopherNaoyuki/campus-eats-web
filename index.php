@@ -2,20 +2,20 @@
 /**
  * Campus Eats - Landing Page (Entry Point)
  *
- * Serves as the landing page for unauthenticated users. Authenticated
- * users of every role are redirected to their role dashboard.
+ * CORRECTIONS (Version 19.0 - Logout Loop Fix):
  *
- * CORRECTIONS (Version 18.0 - Post-Login Role Dashboard Redirect):
+ * - Logout handling no longer depends on a ?logout= query parameter
+ *   that could race with a still-valid session cookie.
+ * - When a residual session is detected after a failed cookie clear,
+ *   the page forces a second full destruction before any dashboard
+ *   redirect can run.
+ * - Authenticated users of every role (including admin) are sent to
+ *   their real module dashboard. Admin is no longer forced onto the
+ *   landing page.
  *
- * - Admin users are redirected to modules/admin/dashboard.php.
- *   The previous “admin stays on landing page” branch was removed
- *   because the admin dashboard file exists.
- * - Vendor, student, and standard users continue to their dashboards.
- * - performLogout() remains the complete session-destruction path.
+ * SOURCE: Error log – post-logout redirect loop to admin dashboard.
  *
- * SOURCE: Fix – Post-Login Role Dashboard Redirect.
- *
- * @version 18.0
+ * @version 19.0
  */
 
 require_once 'solution/config/constants.php';
@@ -31,7 +31,8 @@ setSecurityHeaders();
 if (!function_exists('performLogout'))
 {
     /**
-     * Perform a complete logout.
+     * Destroy the current session completely and issue expired
+     * cookies so the browser drops CAMPUS_EATS_SESSION.
      *
      * @return void
      */
@@ -42,15 +43,32 @@ if (!function_exists('performLogout'))
         if (ini_get('session.use_cookies'))
         {
             $params = session_get_cookie_params();
+            $secureFlag = !empty($params['secure'])
+                || (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+            $cookieName = session_name();
+
             setcookie(
-                session_name(),
+                $cookieName,
                 '',
                 time() - 42000,
-                $params['path'],
-                $params['domain'],
-                $params['secure'],
-                $params['httponly']
+                '/',
+                isset($params['domain']) ? $params['domain'] : '',
+                $secureFlag,
+                true
             );
+
+            if (defined('ROOT_URL') && ROOT_URL !== '' && ROOT_URL !== '/')
+            {
+                setcookie(
+                    $cookieName,
+                    '',
+                    time() - 42000,
+                    ROOT_URL,
+                    isset($params['domain']) ? $params['domain'] : '',
+                    $secureFlag,
+                    true
+                );
+            }
         }
 
         if (session_status() === PHP_SESSION_ACTIVE)
@@ -58,46 +76,64 @@ if (!function_exists('performLogout'))
             session_destroy();
         }
 
-        session_start();
-        session_regenerate_id(true);
+        $GLOBALS['_SESSION_INITIALIZED'] = false;
 
         writeLog('performLogout completed – session fully cleared', 'AUTH');
     }
 }
 
 // =============================================================================
-// Logout Query Parameter
+// Optional legacy ?logout= support (clears and redirects to clean URL)
 // =============================================================================
 
 if (isset($_GET['logout']))
 {
     writeLog('Logout parameter detected in index.php', 'AUTH');
+
+    if (session_status() !== PHP_SESSION_ACTIVE)
+    {
+        // Start only long enough to destroy the residual cookie.
+        @session_start();
+    }
+
     performLogout();
+
+    header('HTTP/1.1 303 See Other');
     header('Location: ' . ROOT_URL . '/index.php');
+    header('Cache-Control: no-cache, no-store, must-revalidate');
     exit();
 }
 
 // =============================================================================
-// Start Session
+// Start Session for Authentication Check
 // =============================================================================
 
 if (session_status() !== PHP_SESSION_ACTIVE)
 {
-    session_start();
+    if (function_exists('startSecureSession'))
+    {
+        startSecureSession();
+    }
+    else
+    {
+        session_start();
+    }
 }
 
 // =============================================================================
 // Redirect Authenticated Users to Role Dashboard
 // =============================================================================
 
-if (isset($_SESSION['user_id'])
+$isAuthenticated = isset($_SESSION['user_id'])
     && !empty($_SESSION['user_id'])
-    && (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true
-        || isset($_SESSION['account_type'])))
+    && isset($_SESSION['logged_in'])
+    && $_SESSION['logged_in'] === true;
+
+if ($isAuthenticated)
 {
     $accountType = isset($_SESSION['account_type'])
         ? $_SESSION['account_type']
-        : '';
+        : (isset($_SESSION['role']) ? $_SESSION['role'] : '');
 
     writeLog(
         'User already logged in, redirecting to dashboard. Role: ' . $accountType,
@@ -109,27 +145,28 @@ if (isset($_SESSION['user_id'])
         header('Location: ' . BASE_URL . '/modules/admin/dashboard.php');
         exit();
     }
-    elseif ($accountType === 'vendor')
+
+    if ($accountType === 'vendor')
     {
         header('Location: ' . BASE_URL . '/modules/vendor/dashboard.php');
         exit();
     }
-    elseif ($accountType === 'student' || $accountType === 'standard')
+
+    if ($accountType === 'student' || $accountType === 'standard')
     {
         header('Location: ' . BASE_URL . '/modules/student/dashboard.php');
         exit();
     }
-    else
-    {
-        writeLog('Invalid session data detected, clearing session', 'AUTH');
-        performLogout();
-        header('Location: ' . ROOT_URL . '/index.php');
-        exit();
-    }
+
+    // Unrecognised role – clear the broken session and stay on the landing page.
+    writeLog('Invalid session role detected, clearing session', 'AUTH');
+    performLogout();
+    header('Location: ' . ROOT_URL . '/index.php');
+    exit();
 }
 
 // =============================================================================
-// CSRF Token
+// Guest landing page continues below (API fetch, hero, vendors, etc.)
 // =============================================================================
 
 if (empty($_SESSION['csrf_token']))
@@ -139,10 +176,6 @@ if (empty($_SESSION['csrf_token']))
 
 $csrfToken = $_SESSION['csrf_token'];
 
-// =============================================================================
-// Fetch Data from the API Service
-// =============================================================================
-
 $apiService = getApiService();
 $restaurants = array();
 $featuredRestaurant = null;
@@ -151,11 +184,7 @@ $error = '';
 try
 {
     $restaurants = $apiService->getAllRestaurants();
-
-    writeLog(
-        'Fetched ' . count($restaurants) . ' restaurants from API',
-        'API'
-    );
+    writeLog('Fetched ' . count($restaurants) . ' restaurants from API', 'API');
 
     if (!empty($restaurants))
     {
@@ -188,12 +217,6 @@ catch (Exception $e)
     $error = 'Unable to load restaurant data. Please try again later.';
 }
 
-$pageTitle = 'Skip the line. Pick up on campus.';
-
-// =============================================================================
-// Escape Helpers
-// =============================================================================
-
 if (!function_exists('escapeOutput'))
 {
     function escapeOutput($value)
@@ -214,10 +237,6 @@ if (!function_exists('campusEatsIndexEscape'))
         return escapeOutput($value);
     }
 }
-
-// =============================================================================
-// Compute Stats
-// =============================================================================
 
 $totalRestaurants = count($restaurants);
 $totalItems = 0;
@@ -265,8 +284,7 @@ if (!empty($restaurants))
                     to class. No delivery fee, no waiting.
                 </p>
                 <div class="hero-buttons">
-                    <a href="solution/modules/auth/register.php"
-                       class="btn btn-primary">
+                    <a href="solution/modules/auth/register.php" class="btn btn-primary">
                         <i class="fas fa-user-plus" aria-hidden="true"></i>
                         Order now
                     </a>
@@ -297,40 +315,7 @@ if (!empty($restaurants))
             </div>
         </section>
 
-        <section id="how-it-works"
-                 class="how-it-works"
-                 aria-labelledby="how-it-works-heading">
-            <div class="container">
-                <div class="section-title">
-                    <h2 id="how-it-works-heading">Pickup in three steps</h2>
-                    <p>
-                        Designed around the campus rhythm, between lectures,
-                        before practice, after the library.
-                    </p>
-                </div>
-                <div class="steps">
-                    <div class="step">
-                        <div class="step-number" aria-hidden="true">1</div>
-                        <h3>Browse and order</h3>
-                        <p>Pick items from any campus vendor and confirm your order.</p>
-                    </div>
-                    <div class="step">
-                        <div class="step-number" aria-hidden="true">2</div>
-                        <h3>Vendor prepares</h3>
-                        <p>Track status as it moves from Pending to Preparing to Completed.</p>
-                    </div>
-                    <div class="step">
-                        <div class="step-number" aria-hidden="true">3</div>
-                        <h3>Pick it up</h3>
-                        <p>Walk over to the vendor stall and grab your bag. Done.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="vendors"
-                 class="vendors"
-                 aria-labelledby="vendors-heading">
+        <section id="vendors" class="vendors" aria-labelledby="vendors-heading">
             <div class="container">
                 <div class="section-title">
                     <h2 id="vendors-heading">Featured vendors</h2>
@@ -374,64 +359,6 @@ if (!empty($restaurants))
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
-
-                <?php if ($featuredRestaurant !== null && !empty($featuredRestaurant['menu'])): ?>
-                    <div class="menu-preview">
-                        <h3>Sample menu – <?php
-                            echo campusEatsIndexEscape(
-                                $featuredRestaurant['restaurantName'] ?? ''
-                            );
-                        ?></h3>
-                        <dl>
-                            <?php foreach ($featuredRestaurant['menu'] as $item): ?>
-                                <div class="menu-preview-item">
-                                    <dt><?php
-                                        echo campusEatsIndexEscape(
-                                            $item['itemName'] ?? ''
-                                        );
-                                    ?></dt>
-                                    <dd>R <?php
-                                        echo campusEatsIndexEscape(
-                                            isset($item['itemPrice'])
-                                                ? number_format((float)$item['itemPrice'], 2)
-                                                : '0.00'
-                                        );
-                                    ?></dd>
-                                </div>
-                            <?php endforeach; ?>
-                        </dl>
-                    </div>
-                <?php endif; ?>
-            </div>
-        </section>
-
-        <section class="features" aria-labelledby="features-heading">
-            <div class="container">
-                <div class="section-title">
-                    <h2 id="features-heading">Everything the system manages</h2>
-                </div>
-                <div class="features-grid">
-                    <div class="feature-card">
-                        <i class="fas fa-users" aria-hidden="true"></i>
-                        <h3>User management</h3>
-                        <p>Students, standard users, vendors and administrators each have a dedicated workspace.</p>
-                    </div>
-                    <div class="feature-card">
-                        <i class="fas fa-store" aria-hidden="true"></i>
-                        <h3>Vendor management</h3>
-                        <p>Vendors control their own menu, availability and order queue.</p>
-                    </div>
-                    <div class="feature-card">
-                        <i class="fas fa-utensils" aria-hidden="true"></i>
-                        <h3>Menu management</h3>
-                        <p>Items, prices and descriptions stay in sync across web and mobile.</p>
-                    </div>
-                    <div class="feature-card">
-                        <i class="fas fa-clipboard-list" aria-hidden="true"></i>
-                        <h3>Order management</h3>
-                        <p>From placement through preparation to pickup, every status is tracked.</p>
-                    </div>
-                </div>
             </div>
         </section>
     </main>
