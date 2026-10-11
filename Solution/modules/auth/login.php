@@ -2,26 +2,21 @@
 /**
  * Sign In Page
  *
- * Authenticates a user by email, username, or 16-character User ID.
- * The page also offers Google SSO when the Google OAuth credentials
- * have been configured. All user-facing strings are translated
- * through the shared __() helper.
+ * CORRECTIONS (Version 28.0 - Redirect Loop Fix):
  *
- * CORRECTIONS (Version 27.0 - Post-Login Role Dashboard Redirect):
+ * - After a successful authentication the redirect is issued once and
+ *   the script exits. A one-shot session flag prevents the
+ *   “already logged in” branch from firing again in the same
+ *   authentication cycle and breaking Firefox with
+ *   “The page isn’t redirecting properly”.
+ * - Admin users are sent to modules/admin/dashboard.php.
+ * - Vendor, student, and standard users keep their existing dashboards.
+ * - SSO block and form-label layout from earlier versions are retained.
  *
- * - Admin users are redirected to the real admin dashboard at
- *   BASE_URL/modules/admin/dashboard.php. The previous version
- *   incorrectly sent them to the public landing page because it
- *   assumed the admin dashboard file did not exist.
- * - Vendor, student, and standard destinations are unchanged.
- * - Unknown roles fall back to the landing page only.
- * - SSO presentation, form-label classes, and password-row layout
- *   from Version 26.0 are retained.
+ * SOURCE: Error log – repeated Post-authentication redirect to admin
+ *         dashboard; browser ERR_TOO_MANY_REDIRECTS on login.php.
  *
- * SOURCE: Fix – Post-Login Role Dashboard Redirect.
- * SOURCE: Clean Code, Robert C. Martin, Chapters 2–4.
- *
- * @version 27.0
+ * @version 28.0
  */
 
 require_once dirname(__DIR__, 2) . '/config/constants.php';
@@ -40,18 +35,27 @@ setSecurityHeaders();
 if (!function_exists('redirectToDashboardAfterLogin'))
 {
     /**
-     * Redirects the authenticated user to the dashboard for their role.
-     *
-     * Every known role is sent to an existing module dashboard.
-     * Admin is no longer forced onto the public landing page.
+     * Redirect the authenticated user to the dashboard for their role.
+     * Uses a one-shot session flag so a second pass through this page
+     * in the same cycle cannot re-issue the same Location header.
      *
      * @return void
      */
     function redirectToDashboardAfterLogin()
     {
+        // Loop breaker: if we already redirected once this cycle, stop.
+        if (!empty($_SESSION['_login_redirect_issued']))
+        {
+            unset($_SESSION['_login_redirect_issued']);
+            // Fall through to render the login form instead of looping.
+            return;
+        }
+
         $accountType = function_exists('getCurrentUserRole')
             ? getCurrentUserRole()
-            : (isset($_SESSION['account_type']) ? $_SESSION['account_type'] : '');
+            : (isset($_SESSION['account_type'])
+                ? $_SESSION['account_type']
+                : (isset($_SESSION['role']) ? $_SESSION['role'] : ''));
 
         $destination = ROOT_URL . '/index.php';
 
@@ -75,19 +79,31 @@ if (!function_exists('redirectToDashboardAfterLogin'))
                 break;
         }
 
+        $_SESSION['_login_redirect_issued'] = 1;
+
         writeLog(
             'Post-authentication redirect to absolute URL: ' . $destination
                 . ' (role: ' . $accountType . ')',
             'AUTH'
         );
 
+        if (session_status() === PHP_SESSION_ACTIVE)
+        {
+            session_write_close();
+        }
+
         header('HTTP/1.1 303 See Other');
         header('Location: ' . $destination);
+        header('Cache-Control: no-store, no-cache, must-revalidate');
         exit();
     }
 }
 
-if (function_exists('isLoggedIn') && isLoggedIn())
+// Only auto-redirect on GET. A POST that just authenticated will call
+// the helper directly after authenticateUser succeeds.
+if ($_SERVER['REQUEST_METHOD'] !== 'POST'
+    && function_exists('isLoggedIn')
+    && isLoggedIn())
 {
     redirectToDashboardAfterLogin();
 }
@@ -142,8 +158,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                 $submittedCsrfToken
             );
 
-            if ($result['success'])
+            if (!empty($result['success']))
             {
+                // Clear any previous loop flag before the first redirect.
+                unset($_SESSION['_login_redirect_issued']);
                 redirectToDashboardAfterLogin();
             }
 
@@ -218,7 +236,6 @@ $pageTitle = function_exists('__') ? __('login.title') : 'Sign in to Campus Eats
                                 : 'Sign in with Google';
                         ?></span>
                     </a>
-
                     <div class="auth-divider">
                         <span><?php
                             echo function_exists('__e') ? __e('common.or') : 'or';

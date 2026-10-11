@@ -2,14 +2,22 @@
 /**
  * Automatic Demo Data Seeder
  *
- * Ensures the demonstration accounts and sample coupons exist after
- * the database schema is available. The seeder is idempotent and
- * runs at most once per PHP process. Failures are logged and do not
- * break page load.
+ * Ensures demonstration accounts and sample coupons exist after the
+ * database schema is available. Idempotent; runs at most once per
+ * PHP process. Failures are logged and do not break page load.
  *
- * SOURCE: Technical Audit Update – Demo Accounts, Coupons, and SSL.
+ * CORRECTIONS (Version 2.0 - Column name fix):
  *
- * @version 1.0
+ * - Vendor lookups and inserts use vendor_user_id (the real column
+ *   name on the vendors table), not user_id. The previous version
+ *   caused SQLSTATE[42S22] Unknown column 'user_id'.
+ * - Password hash updates key on email, not user_id, for safety.
+ * - Each account is processed in its own try/catch so one failure
+ *   does not abort the rest.
+ *
+ * SOURCE: Error log – Unknown column user_id in where clause.
+ *
+ * @version 2.0
  */
 
 if (!defined('BASE_PATH'))
@@ -17,14 +25,14 @@ if (!defined('BASE_PATH'))
     define('BASE_PATH', dirname(__DIR__));
 }
 
-/**
- * Ensure demo accounts and sample coupons exist.
- *
- * @param DatabaseConnection $db Open database connection
- * @return void
- */
 if (!function_exists('campus_eats_ensure_demo_data'))
 {
+    /**
+     * Ensure demo accounts and sample coupons exist.
+     *
+     * @param object $db Open DatabaseConnection instance
+     * @return void
+     */
     function campus_eats_ensure_demo_data($db)
     {
         static $alreadyRan = false;
@@ -60,36 +68,33 @@ if (!function_exists('campus_eats_ensure_demo_data'))
     }
 }
 
-/**
- * Create the coupons table when it is absent.
- *
- * @param DatabaseConnection $db
- * @return void
- */
 if (!function_exists('campus_eats_ensure_coupons_table'))
 {
+    /**
+     * @param object $db
+     * @return void
+     */
     function campus_eats_ensure_coupons_table($db)
     {
-        $sql = "CREATE TABLE IF NOT EXISTS coupons (
-            coupon_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-            code VARCHAR(32) NOT NULL UNIQUE,
-            discount_percent DECIMAL(5,2) NOT NULL,
-            is_active TINYINT(1) NOT NULL DEFAULT 1,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
-
-        $db->executeQuery($sql);
+        $db->executeQuery(
+            "CREATE TABLE IF NOT EXISTS coupons (
+                coupon_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                code VARCHAR(32) NOT NULL UNIQUE,
+                discount_percent DECIMAL(5,2) NOT NULL,
+                is_active TINYINT(1) NOT NULL DEFAULT 1,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+              COLLATE=utf8mb4_unicode_ci"
+        );
     }
 }
 
-/**
- * Insert the three sample coupons when they are absent.
- *
- * @param DatabaseConnection $db
- * @return void
- */
 if (!function_exists('campus_eats_ensure_sample_coupons'))
 {
+    /**
+     * @param object $db
+     * @return void
+     */
     function campus_eats_ensure_sample_coupons($db)
     {
         $samples = array(
@@ -111,23 +116,20 @@ if (!function_exists('campus_eats_ensure_sample_coupons'))
             }
 
             $db->executeQuery(
-                'INSERT INTO coupons (code, discount_percent, is_active) VALUES (?, ?, 1)',
+                'INSERT INTO coupons (code, discount_percent, is_active)
+                 VALUES (?, ?, 1)',
                 array($sample[0], $sample[1])
             );
         }
     }
 }
 
-/**
- * Insert any missing demonstration accounts and keep vendor rows
- * in sync. Refreshes the bcrypt hash only when the stored hash no
- * longer verifies against the documented password.
- *
- * @param DatabaseConnection $db
- * @return void
- */
 if (!function_exists('campus_eats_ensure_demo_accounts'))
 {
+    /**
+     * @param object $db
+     * @return void
+     */
     function campus_eats_ensure_demo_accounts($db)
     {
         $accountsFile = BASE_PATH . '/config/demo_accounts.php';
@@ -146,98 +148,124 @@ if (!function_exists('campus_eats_ensure_demo_accounts'))
 
         foreach ($accounts as $account)
         {
-            $email = isset($account['email']) ? $account['email'] : '';
-
-            if ($email === '')
+            try
             {
-                continue;
-            }
+                $email = isset($account['email']) ? $account['email'] : '';
 
-            $existing = $db->fetchOne(
-                'SELECT user_id, password_hash, unique_id FROM users WHERE email = ? LIMIT 1',
-                array($email)
-            );
-
-            $plainPassword = isset($account['password']) ? $account['password'] : '';
-            $uniqueId = isset($account['unique_id'])
-                ? substr($account['unique_id'], 0, 16)
-                : '';
-
-            if ($existing)
-            {
-                // Refresh hash only when the documented password no longer matches.
-                if ($plainPassword !== ''
-                    && !password_verify($plainPassword, $existing['password_hash']))
+                if ($email === '')
                 {
-                    $newHash = password_hash(
+                    continue;
+                }
+
+                $existing = $db->fetchOne(
+                    'SELECT user_id, password_hash FROM users
+                     WHERE email = ? LIMIT 1',
+                    array($email)
+                );
+
+                $plainPassword = isset($account['password'])
+                    ? $account['password']
+                    : '';
+                $uniqueId = isset($account['unique_id'])
+                    ? substr((string)$account['unique_id'], 0, 16)
+                    : '';
+
+                if ($existing)
+                {
+                    if ($plainPassword !== ''
+                        && !password_verify(
+                            $plainPassword,
+                            $existing['password_hash']
+                        ))
+                    {
+                        $newHash = password_hash(
+                            $plainPassword,
+                            PASSWORD_DEFAULT,
+                            array('cost' => 12)
+                        );
+
+                        $db->executeQuery(
+                            'UPDATE users
+                             SET password_hash = ?, unique_id = ?
+                             WHERE email = ?',
+                            array($newHash, $uniqueId, $email)
+                        );
+                    }
+
+                    $userId = (int)$existing['user_id'];
+                }
+                else
+                {
+                    $hash = password_hash(
                         $plainPassword,
                         PASSWORD_DEFAULT,
                         array('cost' => 12)
                     );
 
                     $db->executeQuery(
-                        'UPDATE users SET password_hash = ?, unique_id = ? WHERE user_id = ?',
-                        array($newHash, $uniqueId, $existing['user_id'])
+                        'INSERT INTO users (
+                            unique_id, full_name, username, email,
+                            password_hash, account_type, is_verified, is_active
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                        array(
+                            $uniqueId,
+                            $account['full_name'],
+                            $account['username'],
+                            $email,
+                            $hash,
+                            $account['account_type'],
+                            (int)$account['is_verified'],
+                            (int)$account['is_active']
+                        )
                     );
+
+                    $row = $db->fetchOne(
+                        'SELECT user_id FROM users WHERE email = ? LIMIT 1',
+                        array($email)
+                    );
+
+                    $userId = $row ? (int)$row['user_id'] : 0;
                 }
 
-                $userId = (int)$existing['user_id'];
-            }
-            else
-            {
-                $hash = password_hash(
-                    $plainPassword,
-                    PASSWORD_DEFAULT,
-                    array('cost' => 12)
-                );
-
-                $db->executeQuery(
-                    'INSERT INTO users (
-                        unique_id, full_name, username, email, password_hash,
-                        account_type, is_verified, is_active
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-                    array(
-                        $uniqueId,
-                        $account['full_name'],
-                        $account['username'],
-                        $email,
-                        $hash,
-                        $account['account_type'],
-                        (int)$account['is_verified'],
-                        (int)$account['is_active']
-                    )
-                );
-
-                $row = $db->fetchOne(
-                    'SELECT user_id FROM users WHERE email = ? LIMIT 1',
-                    array($email)
-                );
-
-                $userId = $row ? (int)$row['user_id'] : 0;
-            }
-
-            // Ensure an approved vendor row for vendor accounts.
-            if ($userId > 0
-                && isset($account['account_type'])
-                && $account['account_type'] === 'vendor'
-                && !empty($account['vendor_name']))
-            {
-                $vendor = $db->fetchOne(
-                    'SELECT vendor_id FROM vendors WHERE user_id = ? LIMIT 1',
-                    array($userId)
-                );
-
-                if (!$vendor)
+                // Vendor profile – column is vendor_user_id, not user_id.
+                if ($userId > 0
+                    && isset($account['account_type'])
+                    && $account['account_type'] === 'vendor'
+                    && !empty($account['vendor_name']))
                 {
-                    $db->executeQuery(
-                        'INSERT INTO vendors (
-                            user_id, vendor_name, description, is_open, is_approved
-                        ) VALUES (?, ?, ?, 1, 1)',
-                        array(
-                            $userId,
-                            $account['vendor_name'],
-                            isset($account['description']) ? $account['description'] : ''
-                        )
+                    $vendor = $db->fetchOne(
+                        'SELECT vendor_id FROM vendors
+                         WHERE vendor_user_id = ? LIMIT 1',
+                        array($userId)
+                    );
+
+                    if (!$vendor)
+                    {
+                        $db->executeQuery(
+                            'INSERT INTO vendors (
+                                vendor_user_id, vendor_name, description,
+                                is_open, is_approved
+                            ) VALUES (?, ?, ?, 1, 1)',
+                            array(
+                                $userId,
+                                $account['vendor_name'],
+                                isset($account['description'])
+                                    ? $account['description']
+                                    : ''
+                            )
+                        );
+                    }
+                }
+            }
+            catch (Throwable $accountError)
+            {
+                if (function_exists('writeLog'))
+                {
+                    writeLog(
+                        'Demo account seed failed for '
+                            . (isset($account['email']) ? $account['email'] : '?')
+                            . ': ' . $accountError->getMessage(),
+                        'DATABASE'
                     );
                 }
             }
