@@ -5,22 +5,31 @@
 
     "users": {
       "$campus_user_id": {
-        ".read": "auth != null && (auth.uid === $campus_user_id || root.child('users').child(auth.uid).child('role').val() === 'ADMIN')",
-        ".write": "auth != null && (auth.uid === $campus_user_id || root.child('users').child(auth.uid).child('role').val() === 'ADMIN')",
+        ".read": "auth != null && (auth.uid === $campus_user_id || root.child('users').child(auth.uid).child('role').val() === 'ADMIN' || root.child('admin_claims').child(auth.uid).val() === true)",
+        ".write": "auth != null && (auth.uid === $campus_user_id || root.child('users').child(auth.uid).child('role').val() === 'ADMIN' || root.child('admin_claims').child(auth.uid).val() === true)",
         ".validate": "newData.hasChildren(['email', 'role', 'passwordHash'])",
         "email": {
-          ".validate": "newData.isString() && newData.val().length > 0 && (!data.exists() || data.val() === newData.val())"
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 255 && (!data.exists() || data.val() === newData.val() || root.child('users').child(auth.uid).child('role').val() === 'ADMIN' || root.child('admin_claims').child(auth.uid).val() === true)"
         },
         "role": {
-          ".validate": "newData.isString() && (newData.val() === 'STUDENT' || newData.val() === 'STANDARD' || newData.val() === 'VENDOR' || newData.val() === 'ADMIN') && (!data.exists() || data.val() === newData.val() || root.child('users').child(auth.uid).child('role').val() === 'ADMIN')"
+          ".validate": "newData.isString() && (newData.val() === 'STUDENT' || newData.val() === 'STANDARD' || newData.val() === 'VENDOR' || newData.val() === 'ADMIN') && (!data.exists() || data.val() === newData.val() || root.child('users').child(auth.uid).child('role').val() === 'ADMIN' || root.child('admin_claims').child(auth.uid).val() === true)"
         },
         "passwordHash": {
-          ".validate": "newData.isString() && newData.val() === '[FIREBASE_SSO]'"
+          ".validate": "newData.isString() && (newData.val() === '[FIREBASE_SSO]' || newData.val().length > 0)"
         },
         "fullName": {
-          ".validate": "!newData.exists() || newData.isString()"
+          ".validate": "!newData.exists() || (newData.isString() && newData.val().length <= 150)"
         },
         "uniqueId": {
+          ".validate": "!newData.exists() || (newData.isString() && newData.val().length <= 16)"
+        },
+        "username": {
+          ".validate": "!newData.exists() || (newData.isString() && newData.val().length <= 50)"
+        },
+        "createdAt": {
+          ".validate": "!newData.exists() || newData.isString()"
+        },
+        "updatedAt": {
           ".validate": "!newData.exists() || newData.isString()"
         }
       }
@@ -28,16 +37,16 @@
 
     "orders": {
       "$order_id": {
-        ".read": "auth != null && (data.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'ADMIN' || root.child('users').child(auth.uid).child('role').val() === 'VENDOR')",
-        ".write": "auth != null && (newData.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'ADMIN' || root.child('users').child(auth.uid).child('role').val() === 'VENDOR')",
-        ".indexOn": ["userId", "vendorId", "status"]
+        ".read": "auth != null && (data.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'ADMIN' || root.child('users').child(auth.uid).child('role').val() === 'VENDOR' || root.child('admin_claims').child(auth.uid).val() === true)",
+        ".write": "auth != null && (newData.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'ADMIN' || root.child('users').child(auth.uid).child('role').val() === 'VENDOR' || root.child('admin_claims').child(auth.uid).val() === true)",
+        ".indexOn": ["userId", "vendorId", "status", "createdAt"]
       }
     },
 
     "feedback": {
       "$feedback_id": {
         ".read": "auth != null",
-        ".write": "auth != null && (!data.exists() || data.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'ADMIN')",
+        ".write": "auth != null && (!data.exists() || data.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'ADMIN' || root.child('admin_claims').child(auth.uid).val() === true)",
         ".indexOn": ["userId", "createdAt"]
       }
     },
@@ -45,8 +54,21 @@
     "coupons": {
       "$coupon_code": {
         ".read": "auth != null",
-        ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'ADMIN'",
-        ".validate": "newData.hasChildren(['discountPercent', 'isActive'])"
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'ADMIN' || root.child('admin_claims').child(auth.uid).val() === true)",
+        ".validate": "newData.hasChildren(['discountPercent', 'isActive'])",
+        "discountPercent": {
+          ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100"
+        },
+        "isActive": {
+          ".validate": "newData.isBoolean()"
+        }
+      }
+    },
+
+    "admin_claims": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": false
       }
     },
 
