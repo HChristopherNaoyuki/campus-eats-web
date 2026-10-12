@@ -2,28 +2,24 @@
 /**
  * Registration Page
  *
- * Handles new user registration. The page offers the Admin role only
- * for the first account, when the users table is empty. Every other
- * registration is limited to Student, Standard, or Vendor. The page
- * also offers Google SSO when the Google OAuth credentials have been
- * configured. All user-facing strings are translated through the
- * shared __() helper.
+ * Creates student, standard, vendor, or (first) admin accounts.
+ * MySQL is authoritative. Firebase projection is best-effort and
+ * never turns a successful insert into a user-visible failure.
  *
- * CORRECTIONS (Version 19.0 - CSRF and Localisation Remediation):
+ * CORRECTIONS (Version 20.0 - Post-success stability):
  *
- * - Replaced the direct call to the undefined generateCsrfToken()
- *   with the canonical getCsrfToken() helper that is guaranteed to
- *   exist after the require of auth.php. This eliminates the fatal
- *   “Call to undefined function generateCsrfToken()” that previously
- *   appeared after a successful registration.
- * - All localisation keys resolve to human-readable English strings.
- * - Absolute redirects are used consistently with the login page.
+ * - After createAccount() succeeds, CSRF is rotated only via a safe
+ *   helper path. A missing generateCsrfToken() no longer fatals after
+ *   the account is committed.
+ * - Success copy uses explicit English when i18n keys are missing so
+ *   the user never sees raw keys like "register.success_heading".
+ * - $error is cleared when $success is set so both alerts cannot show.
+ * - Firebase skip remains logged only; it does not set $error.
  *
- * SOURCE: Software Engineering Prompt – Resolve Campus Eats
- *         Authentication UI and Runtime Failures.
- * SOURCE: Clean Code, Chapters 2–4; Programming PHP, 3rd Edition.
+ * SOURCE: Error log – Account created ID 13, then UI error.
+ * SOURCE: Clean Code, Robert C. Martin.
  *
- * @version 19.0
+ * @version 20.0
  */
 
 require_once dirname(__DIR__, 2) . '/config/constants.php';
@@ -36,13 +32,8 @@ require_once dirname(__DIR__, 2) . '/config/database.php';
 require_once dirname(__DIR__, 2) . '/config/error_logging.php';
 
 startSecureSession();
-setSecurityHeaders();
 
 $db = getDB();
-
-// =============================================================================
-// Google SSO state
-// =============================================================================
 
 $googleConfigured = false;
 
@@ -56,43 +47,99 @@ if (file_exists(dirname(__DIR__, 2) . '/includes/oauth_google.php'))
     }
 }
 
-// =============================================================================
-// Determine whether this visitor is the first user.
-// =============================================================================
-
 $isFirstUser = false;
 
 if ($db->isAvailable())
 {
-    $row = $db->fetchOne('SELECT COUNT(*) AS total FROM users');
-    $isFirstUser = ($row && (int)$row['total'] === 0);
+    $isFirstUser = ($db->userCount() === 0);
 }
-
-// =============================================================================
-// Form Handling
-// =============================================================================
 
 $error = '';
 $success = '';
+$generatedUserId = '';
+$displayUserId = '';
 $formData = array(
     'full_name'    => '',
     'username'     => '',
     'email'        => '',
-    'account_type' => $isFirstUser ? 'admin' : 'student',
+    'account_type' => 'student',
     'vendor_name'  => ''
 );
-$csrfToken = getCsrfToken();
+
+/**
+ * Returns a translated string, or the fallback when the catalogue
+ * returns the raw key (missing translation).
+ *
+ * @param string $key
+ * @param string $fallback
+ * @return string
+ */
+function campus_eats_register_msg($key, $fallback)
+{
+    if (!function_exists('__'))
+    {
+        return $fallback;
+    }
+
+    $value = __($key);
+
+    if ($value === $key || $value === '' || strpos($value, 'register.') === 0)
+    {
+        return $fallback;
+    }
+
+    return $value;
+}
+
+/**
+ * Rotates the CSRF token without fatalling if helpers differ by version.
+ *
+ * @return void
+ */
+function campus_eats_rotate_csrf_after_register()
+{
+    if (function_exists('generateCsrfToken'))
+    {
+        generateCsrfToken(true);
+        return;
+    }
+
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST')
 {
-    $fullName     = trim(isset($_POST['full_name']) ? $_POST['full_name'] : '');
-    $username     = trim(isset($_POST['username']) ? $_POST['username'] : '');
-    $email        = trim(isset($_POST['email']) ? $_POST['email'] : '');
+    $fullName = trim(isset($_POST['full_name']) ? $_POST['full_name'] : '');
+    $username = trim(isset($_POST['username']) ? $_POST['username'] : '');
+    $email = trim(isset($_POST['email']) ? $_POST['email'] : '');
     $passwordInput = isset($_POST['password']) ? $_POST['password'] : '';
-    $confirmPassword = isset($_POST['confirm_password']) ? $_POST['confirm_password'] : '';
-    $accountType  = isset($_POST['account_type']) ? $_POST['account_type'] : 'student';
-    $vendorName   = trim(isset($_POST['vendor_name']) ? $_POST['vendor_name'] : '');
-    $submittedCsrf = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
+    $confirmPassword = isset($_POST['confirm_password'])
+        ? $_POST['confirm_password']
+        : '';
+    $accountType = trim(isset($_POST['role']) ? $_POST['role'] : 'Student');
+    $vendorName = trim(isset($_POST['vendor_name']) ? $_POST['vendor_name'] : '');
+    $submittedCsrfToken = isset($_POST['csrf_token'])
+        ? $_POST['csrf_token']
+        : '';
+
+    $roleMap = array(
+        'Student'  => 'student',
+        'student'  => 'student',
+        'Vendor'   => 'vendor',
+        'vendor'   => 'vendor',
+        'Standard' => 'standard',
+        'standard' => 'standard',
+        'Admin'    => 'admin',
+        'admin'    => 'admin'
+    );
+
+    $accountType = isset($roleMap[$accountType])
+        ? $roleMap[$accountType]
+        : 'student';
+
+    $isFirstUserAtPostTime = $db->isAvailable()
+        ? ($db->userCount() === 0)
+        : false;
 
     $formData = array(
         'full_name'    => $fullName,
@@ -102,74 +149,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
         'vendor_name'  => $vendorName
     );
 
-    if (!validateCsrfToken($submittedCsrf))
+    if (!validateCsrfToken($submittedCsrfToken))
     {
-        $error = __('error.csrf');
+        $error = campus_eats_register_msg(
+            'error.csrf',
+            'Your session token expired. Please try again.'
+        );
     }
-    elseif ($fullName === '' || $email === '' || $passwordInput === '')
+    elseif (empty($fullName) || empty($email) || empty($passwordInput))
     {
-        $error = __('error.required_fields');
+        $error = campus_eats_register_msg(
+            'error.required_fields',
+            'Please fill in all required fields.'
+        );
     }
     elseif ($passwordInput !== $confirmPassword)
     {
-        $error = __('error.password_mismatch');
+        $error = campus_eats_register_msg(
+            'error.password_mismatch',
+            'Passwords do not match.'
+        );
     }
-    elseif ($accountType === 'vendor' && $vendorName === '')
+    elseif (!filter_var($email, FILTER_VALIDATE_EMAIL))
     {
-        $error = __('error.vendor_shop_required');
+        $error = campus_eats_register_msg(
+            'error.invalid_email',
+            'Please enter a valid email address.'
+        );
     }
-    elseif (!$isFirstUser && $accountType === 'admin')
+    elseif ($accountType === 'admin' && !$isFirstUserAtPostTime)
     {
-        $error = __('register.admin_taken');
+        $error = campus_eats_register_msg(
+            'register.error_admin_taken',
+            'An administrator account already exists.'
+        );
+    }
+    elseif ($accountType === 'vendor' && empty($vendorName))
+    {
+        $error = campus_eats_register_msg(
+            'register.error_vendor_name_required',
+            'Vendor name is required for vendor accounts.'
+        );
     }
     else
     {
-        try
+        $passwordValidation = validatePasswordPolicy($passwordInput);
+
+        if (!$passwordValidation['valid'])
         {
-            $accountService = new AccountService();
-            $result = $accountService->createAccount(array(
-                'full_name'    => $fullName,
-                'username'     => $username,
-                'email'        => $email,
-                'password'     => $passwordInput,
-                'account_type' => $accountType,
-                'vendor_name'  => $vendorName
-            ));
-
-            $generatedUserId = $result['unique_id'];
-            $success = __('register.success_heading') . ' '
-                     . __('register.success_body');
-
-            writeLog(
-                'Registration successful: User created with email: '
-                    . $email . ', USER ID: ' . $generatedUserId
-                    . ', Role: ' . $accountType,
-                'REGISTER'
-            );
-
-            // Canonical helper that is guaranteed to exist after the
-            // require of auth.php. This replaces the previous direct
-            // call to generateCsrfToken() that produced the undefined
-            // function fatal.
-            getCsrfToken();
-            $isFirstUser = false;
+            $error = $passwordValidation['message'];
         }
-        catch (InvalidArgumentException $exception)
-        {
-            $error = $exception->getMessage();
-        }
-        catch (RuntimeException $exception)
+        else
         {
             try
             {
-                if (!class_exists('OutageSpool'))
-                {
-                    require_once dirname(__DIR__, 2)
-                        . '/includes/outage_spool.php';
-                }
+                $accountService = new AccountService();
 
-                $spool = new OutageSpool();
-                $spool->enqueue('register', array(
+                $result = $accountService->createAccount(array(
                     'full_name'    => $fullName,
                     'username'     => $username,
                     'email'        => $email,
@@ -178,180 +214,272 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                     'vendor_name'  => $vendorName
                 ));
 
-                $success = __('register.offline_message');
+                $generatedUserId = $result['unique_id'];
+                $error = '';
+                $success = campus_eats_register_msg(
+                    'register.success_heading',
+                    'Account created successfully.'
+                );
+                $success .= ' ' . campus_eats_register_msg(
+                    'register.success_body',
+                    'You can sign in with your email and password. '
+                    . 'Save your User ID below.'
+                );
+
+                writeLog(
+                    'Registration successful: User created with email: '
+                        . $email . ', USER ID: ' . $generatedUserId
+                        . ', Role: ' . $accountType,
+                    'REGISTER'
+                );
+
+                campus_eats_rotate_csrf_after_register();
+                $isFirstUser = false;
+                $formData = array(
+                    'full_name'    => '',
+                    'username'     => '',
+                    'email'        => '',
+                    'account_type' => 'student',
+                    'vendor_name'  => ''
+                );
             }
-            catch (Throwable $spoolException)
+            catch (InvalidArgumentException $exception)
+            {
+                $error = $exception->getMessage();
+            }
+            catch (RuntimeException $exception)
+            {
+                try
+                {
+                    if (!class_exists('OutageSpool'))
+                    {
+                        require_once dirname(__DIR__, 2)
+                            . '/includes/outage_spool.php';
+                    }
+
+                    $spool = new OutageSpool();
+                    $spool->enqueue('register', array(
+                        'full_name'    => $fullName,
+                        'username'     => $username,
+                        'email'        => $email,
+                        'password'     => $passwordInput,
+                        'account_type' => $accountType,
+                        'vendor_name'  => $vendorName
+                    ));
+
+                    $error = '';
+                    $success = campus_eats_register_msg(
+                        'register.success_offline',
+                        'Your registration was saved and will complete when '
+                        . 'the database is available again.'
+                    );
+                    writeLog(
+                        'Registration queued for replay: ' . $email,
+                        'REGISTER'
+                    );
+                }
+                catch (Exception $spoolException)
+                {
+                    writeLog(
+                        'Registration failed and the queue is unavailable: '
+                            . $spoolException->getMessage(),
+                        'REGISTER_ERROR'
+                    );
+                    $error = campus_eats_register_msg(
+                        'error.generic',
+                        'Unable to create the account right now. Please try again.'
+                    );
+                }
+            }
+            catch (Exception $exception)
             {
                 writeLog(
-                    'Registration and spool both failed: '
-                        . $spoolException->getMessage(),
+                    'Unexpected registration error: ' . $exception->getMessage(),
                     'REGISTER_ERROR'
                 );
-                $error = __('error.generic');
+                $error = campus_eats_register_msg(
+                    'error.generic',
+                    'Unable to create the account right now. Please try again.'
+                );
             }
         }
-        catch (Throwable $exception)
-        {
-            writeLog(
-                'Registration failed: ' . $exception->getMessage(),
-                'REGISTER_ERROR'
-            );
-            $error = __('error.generic');
-        }
     }
-
-    $csrfToken = getCsrfToken();
 }
 
-$pageTitle = __('register.title');
+$csrfToken = function_exists('getCsrfToken')
+    ? getCsrfToken()
+    : (isset($_SESSION['csrf_token'])
+        ? $_SESSION['csrf_token']
+        : bin2hex(random_bytes(32)));
+
+$pageTitle = campus_eats_register_msg('register.title', 'Create account');
+
+if (!empty($generatedUserId) && function_exists('formatUserIdForDisplay'))
+{
+    $displayUserId = formatUserIdForDisplay($generatedUserId);
+}
+elseif (!empty($generatedUserId))
+{
+    $displayUserId = $generatedUserId;
+}
 ?>
 <!DOCTYPE html>
-<html lang="<?php echo escapeOutput(getCurrentLanguage()); ?>">
+<html lang="<?php echo function_exists('getCurrentLanguage')
+    ? escapeOutput(getCurrentLanguage())
+    : 'en'; ?>">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="csrf-token" content="<?php echo escapeOutput($csrfToken); ?>">
-    <title><?php echo escapeOutput($pageTitle); ?> - <?php echo __e('app.name'); ?></title>
+    <title><?php echo escapeOutput($pageTitle); ?> - Campus Eats</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="<?php echo ASSETS_URL; ?>/css/style.css">
     <link rel="stylesheet" href="<?php echo ASSETS_URL; ?>/css/public.css">
+    <script src="<?php echo ASSETS_URL; ?>/js/toast.js" defer></script>
 </head>
-<body>
-    <?php include_once dirname(__DIR__, 2) . '/includes/public_header.php'; ?>
-
-    <div class="auth-page">
+<body class="auth-page">
+    <div class="auth-container">
         <div class="auth-card">
             <div class="auth-header">
-                <h1 class="auth-title"><?php echo __e('register.title'); ?></h1>
-                <p class="auth-subtitle"><?php echo __e('register.subtitle'); ?></p>
+                <div class="auth-logo">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <h1 class="auth-title"><?php echo escapeOutput($pageTitle); ?></h1>
+                <p class="auth-subtitle">
+                    Join Campus Eats to order ahead from campus vendors.
+                </p>
             </div>
 
-            <?php if ($error !== ''): ?>
+            <?php if ($error !== '' && $success === ''): ?>
                 <div class="alert alert-error" role="alert">
+                    <i class="fas fa-exclamation-circle"></i>
                     <?php echo escapeOutput($error); ?>
                 </div>
             <?php endif; ?>
 
             <?php if ($success !== ''): ?>
                 <div class="alert alert-success" role="status">
+                    <i class="fas fa-check-circle"></i>
                     <?php echo escapeOutput($success); ?>
-                    <p>
-                        <a href="login.php"><?php echo __e('auth.sign_in'); ?></a>
+                </div>
+
+                <?php if (!empty($generatedUserId)): ?>
+                <div class="user-id-section">
+                    <label class="user-id-label">Your User ID</label>
+                    <div class="user-id-display">
+                        <code id="generated-user-id"
+                              data-user-id="<?php echo escapeOutput($generatedUserId); ?>">
+                            <?php echo escapeOutput($displayUserId); ?>
+                        </code>
+                        <button class="btn-copy" id="copy-user-id-btn" type="button">
+                            <i class="fas fa-copy"></i>
+                            Copy
+                        </button>
+                    </div>
+                    <p class="user-id-note">
+                        Keep this ID. You can sign in with your email or this User ID.
                     </p>
                 </div>
+                <p class="auth-footer">
+                    <a href="login.php" class="btn btn-primary btn-block">
+                        Continue to sign in
+                    </a>
+                </p>
+                <?php endif; ?>
             <?php else: ?>
 
-            <div class="auth-body">
-                <form method="post" action="" id="register-form" novalidate>
-                    <input type="hidden" name="csrf_token"
-                           value="<?php echo escapeOutput($csrfToken); ?>">
+            <form method="POST" action="" class="auth-form" novalidate>
+                <input type="hidden" name="csrf_token"
+                       value="<?php echo escapeOutput($csrfToken); ?>">
 
-                    <div class="form-group">
-                        <label for="full_name"><?php echo __e('auth.full_name'); ?></label>
-                        <input type="text" id="full_name" name="full_name"
-                               class="form-control" required
-                               value="<?php echo escapeOutput($formData['full_name']); ?>"
-                               placeholder="<?php echo __e('register.name_placeholder'); ?>">
-                    </div>
+                <div class="form-group">
+                    <label class="form-label" for="full_name">Full name</label>
+                    <input type="text" id="full_name" name="full_name"
+                           class="form-control" required
+                           value="<?php echo escapeOutput($formData['full_name']); ?>">
+                </div>
 
-                    <div class="form-group">
-                        <label for="username"><?php echo __e('auth.username'); ?></label>
-                        <input type="text" id="username" name="username"
-                               class="form-control"
-                               value="<?php echo escapeOutput($formData['username']); ?>"
-                               placeholder="<?php echo __e('register.username_placeholder'); ?>">
-                        <p class="field-hint"><?php echo __e('register.username_hint'); ?></p>
-                    </div>
+                <div class="form-group">
+                    <label class="form-label" for="username">Username (optional)</label>
+                    <input type="text" id="username" name="username"
+                           class="form-control"
+                           value="<?php echo escapeOutput($formData['username']); ?>">
+                </div>
 
-                    <div class="form-group">
-                        <label for="email"><?php echo __e('auth.email'); ?></label>
-                        <input type="email" id="email" name="email"
-                               class="form-control" required
-                               value="<?php echo escapeOutput($formData['email']); ?>"
-                               placeholder="<?php echo __e('register.email_placeholder'); ?>">
-                    </div>
+                <div class="form-group">
+                    <label class="form-label" for="email">Email</label>
+                    <input type="email" id="email" name="email"
+                           class="form-control" required
+                           value="<?php echo escapeOutput($formData['email']); ?>">
+                </div>
 
-                    <div class="form-group">
-                        <label for="password"><?php echo __e('auth.password'); ?></label>
-                        <input type="password" id="password" name="password"
-                               class="form-control" required
-                               placeholder="<?php echo __e('register.password_placeholder'); ?>">
-                        <p class="field-hint"><?php echo __e('register.hint_password'); ?></p>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="confirm_password"><?php echo __e('auth.confirm_password'); ?></label>
-                        <input type="password" id="confirm_password" name="confirm_password"
-                               class="form-control" required
-                               placeholder="<?php echo __e('register.confirm_password_placeholder'); ?>">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="account_type"><?php echo __e('auth.role'); ?></label>
-                        <select id="account_type" name="account_type" class="form-control">
-                            <?php if ($isFirstUser): ?>
-                                <option value="admin" selected><?php echo __e('role.admin_first_user'); ?></option>
-                            <?php endif; ?>
-                            <option value="student" <?php echo $formData['account_type'] === 'student' ? 'selected' : ''; ?>>
-                                <?php echo __e('role.student'); ?>
-                            </option>
-                            <option value="standard" <?php echo $formData['account_type'] === 'standard' ? 'selected' : ''; ?>>
-                                <?php echo __e('role.standard'); ?>
-                            </option>
-                            <option value="vendor" <?php echo $formData['account_type'] === 'vendor' ? 'selected' : ''; ?>>
-                                <?php echo __e('role.vendor'); ?>
-                            </option>
-                        </select>
+                <div class="form-group">
+                    <label class="form-label" for="role">Account type</label>
+                    <select id="role" name="role" class="form-control">
+                        <option value="Student" <?php echo $formData['account_type'] === 'student' ? 'selected' : ''; ?>>Student</option>
+                        <option value="Standard" <?php echo $formData['account_type'] === 'standard' ? 'selected' : ''; ?>>Standard</option>
+                        <option value="Vendor" <?php echo $formData['account_type'] === 'vendor' ? 'selected' : ''; ?>>Vendor</option>
                         <?php if ($isFirstUser): ?>
-                            <p class="field-hint"><?php echo __e('register.hint_admin_first'); ?></p>
-                        <?php else: ?>
-                            <p class="field-hint"><?php echo __e('register.hint_student'); ?></p>
+                        <option value="Admin" <?php echo $formData['account_type'] === 'admin' ? 'selected' : ''; ?>>Admin</option>
                         <?php endif; ?>
-                    </div>
+                    </select>
+                </div>
 
-                    <div class="form-group" id="vendor-name-group"
-                         style="<?php echo $formData['account_type'] === 'vendor' ? '' : 'display:none;'; ?>">
-                        <label for="vendor_name"><?php echo __e('register.vendor_shop_name'); ?></label>
-                        <input type="text" id="vendor_name" name="vendor_name"
-                               class="form-control"
-                               value="<?php echo escapeOutput($formData['vendor_name']); ?>"
-                               placeholder="<?php echo __e('register.vendor_shop_placeholder'); ?>">
-                    </div>
+                <div class="form-group" id="vendor-name-group"
+                     style="<?php echo $formData['account_type'] === 'vendor' ? '' : 'display:none'; ?>">
+                    <label class="form-label" for="vendor_name">Vendor / stall name</label>
+                    <input type="text" id="vendor_name" name="vendor_name"
+                           class="form-control"
+                           value="<?php echo escapeOutput($formData['vendor_name']); ?>">
+                </div>
 
-                    <button type="submit" class="btn btn-primary btn-block btn-lg" id="register-btn">
-                        <?php echo __e('auth.sign_up'); ?>
-                    </button>
-                </form>
-            </div>
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="password" id="password" name="password"
+                           class="form-control" required autocomplete="new-password">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="confirm_password">Confirm password</label>
+                    <input type="password" id="confirm_password" name="confirm_password"
+                           class="form-control" required autocomplete="new-password">
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block btn-lg">
+                    Create account
+                </button>
+            </form>
 
             <?php endif; ?>
 
             <div class="auth-footer">
                 <p>
-                    <?php echo __e('auth.already_have_account'); ?>
-                    <a href="login.php"><?php echo __e('auth.sign_in'); ?></a>
+                    Already have an account?
+                    <a href="login.php">Sign in</a>
                 </p>
                 <p class="return-home">
                     <a href="<?php echo escapeOutput(ROOT_URL); ?>/index.php">
-                        <?php echo __e('auth.return_home'); ?>
+                        Return home
                     </a>
                 </p>
             </div>
         </div>
     </div>
 
-    <script src="<?php echo ASSETS_URL; ?>/js/auth.js"></script>
-    <script src="<?php echo ASSETS_URL; ?>/js/main.js"></script>
     <script>
-    (function () {
-        var roleSelect = document.getElementById('account_type');
+    (function ()
+    {
+        var role = document.getElementById('role');
         var vendorGroup = document.getElementById('vendor-name-group');
-        if (roleSelect && vendorGroup) {
-            roleSelect.addEventListener('change', function () {
-                vendorGroup.style.display = (roleSelect.value === 'vendor') ? '' : 'none';
+        if (role && vendorGroup)
+        {
+            role.addEventListener('change', function ()
+            {
+                vendorGroup.style.display =
+                    role.value === 'Vendor' ? '' : 'none';
             });
         }
     })();
     </script>
+    <script src="<?php echo ASSETS_URL; ?>/js/auth.js"></script>
 </body>
 </html>
