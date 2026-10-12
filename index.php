@@ -2,20 +2,29 @@
 /**
  * Campus Eats - Landing Page (Entry Point)
  *
- * CORRECTIONS (Version 19.0 - Logout Loop Fix):
+ * Serves the public home page for unauthenticated users. Displays
+ * restaurant data from the Fake Restaurant API when reachable, or the
+ * bundled fallback catalogue when the API is unreachable.
  *
- * - Logout handling no longer depends on a ?logout= query parameter
- *   that could race with a still-valid session cookie.
- * - When a residual session is detected after a failed cookie clear,
- *   the page forces a second full destruction before any dashboard
- *   redirect can run.
- * - Authenticated users of every role (including admin) are sent to
- *   their real module dashboard. Admin is no longer forced onto the
- *   landing page.
+ * CORRECTIONS (Version 16.0 - Complete vendor list display):
  *
- * SOURCE: Error log – post-logout redirect loop to admin dashboard.
+ * - Root cause: the vendors section rendered only $featuredRestaurant,
+ *   which is set only when a per-restaurant menu fetch succeeds. Under
+ *   SSL failure-pause, getRestaurantMenu() fails, $featuredRestaurant
+ *   stayed null, and the page showed "No Vendors Available" even though
+ *   getAllRestaurants() had returned three fallback records.
+ * - Fix: render a grid of every restaurant in $restaurants. Optionally
+ *   show a menu preview for the first restaurant that has a menu.
+ * - Stats use the restaurant count always. Menu-item totals are summed
+ *   only when menu fetches succeed; failed menu calls do not hide vendors.
+ * - Empty state appears only when $restaurants is empty after all sources.
+ * - Authenticated role redirects and logout handling are retained.
  *
- * @version 19.0
+ * SOURCE: Home page missing-information report and error log.
+ * SOURCE: Campus Eats process document v2.4 (landing content).
+ * SOURCE: Clean Code, Robert C. Martin.
+ *
+ * @version 16.0
  */
 
 require_once 'solution/config/constants.php';
@@ -25,87 +34,34 @@ require_once 'solution/includes/api_service.php';
 setSecurityHeaders();
 
 // =============================================================================
-// Complete Logout Helper
-// =============================================================================
-
-if (!function_exists('performLogout'))
-{
-    /**
-     * Destroy the current session completely and issue expired
-     * cookies so the browser drops CAMPUS_EATS_SESSION.
-     *
-     * @return void
-     */
-    function performLogout()
-    {
-        $_SESSION = array();
-
-        if (ini_get('session.use_cookies'))
-        {
-            $params = session_get_cookie_params();
-            $secureFlag = !empty($params['secure'])
-                || (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
-            $cookieName = session_name();
-
-            setcookie(
-                $cookieName,
-                '',
-                time() - 42000,
-                '/',
-                isset($params['domain']) ? $params['domain'] : '',
-                $secureFlag,
-                true
-            );
-
-            if (defined('ROOT_URL') && ROOT_URL !== '' && ROOT_URL !== '/')
-            {
-                setcookie(
-                    $cookieName,
-                    '',
-                    time() - 42000,
-                    ROOT_URL,
-                    isset($params['domain']) ? $params['domain'] : '',
-                    $secureFlag,
-                    true
-                );
-            }
-        }
-
-        if (session_status() === PHP_SESSION_ACTIVE)
-        {
-            session_destroy();
-        }
-
-        $GLOBALS['_SESSION_INITIALIZED'] = false;
-
-        writeLog('performLogout completed – session fully cleared', 'AUTH');
-    }
-}
-
-// =============================================================================
-// Optional legacy ?logout= support (clears and redirects to clean URL)
+// Logout query parameter
 // =============================================================================
 
 if (isset($_GET['logout']))
 {
     writeLog('Logout parameter detected in index.php', 'AUTH');
 
-    if (session_status() !== PHP_SESSION_ACTIVE)
+    if (session_status() === PHP_SESSION_ACTIVE)
     {
-        // Start only long enough to destroy the residual cookie.
-        @session_start();
+        if (function_exists('destroySession'))
+        {
+            destroySession();
+        }
+        else
+        {
+            $_SESSION = array();
+            session_destroy();
+        }
+
+        writeLog('Session destroyed due to logout parameter', 'AUTH');
     }
 
-    performLogout();
-
-    header('HTTP/1.1 303 See Other');
     header('Location: ' . ROOT_URL . '/index.php');
-    header('Cache-Control: no-cache, no-store, must-revalidate');
     exit();
 }
 
 // =============================================================================
-// Start Session for Authentication Check
+// Session
 // =============================================================================
 
 if (session_status() !== PHP_SESSION_ACTIVE)
@@ -121,22 +77,20 @@ if (session_status() !== PHP_SESSION_ACTIVE)
 }
 
 // =============================================================================
-// Redirect Authenticated Users to Role Dashboard
+// Redirect authenticated users to their role dashboard
 // =============================================================================
 
-$isAuthenticated = isset($_SESSION['user_id'])
-    && !empty($_SESSION['user_id'])
+if (isset($_SESSION['user_id'])
     && isset($_SESSION['logged_in'])
-    && $_SESSION['logged_in'] === true;
-
-if ($isAuthenticated)
+    && $_SESSION['logged_in'] === true)
 {
     $accountType = isset($_SESSION['account_type'])
         ? $_SESSION['account_type']
         : (isset($_SESSION['role']) ? $_SESSION['role'] : '');
 
     writeLog(
-        'User already logged in, redirecting to dashboard. Role: ' . $accountType,
+        'User already logged in, redirecting to dashboard. Role: '
+            . $accountType,
         'AUTH'
     );
 
@@ -158,15 +112,20 @@ if ($isAuthenticated)
         exit();
     }
 
-    // Unrecognised role – clear the broken session and stay on the landing page.
-    writeLog('Invalid session role detected, clearing session', 'AUTH');
-    performLogout();
+    writeLog('Invalid session data detected, clearing session', 'AUTH');
+
+    if (function_exists('destroySession'))
+    {
+        destroySession();
+    }
+
+    $_SESSION = array();
     header('Location: ' . ROOT_URL . '/index.php');
     exit();
 }
 
 // =============================================================================
-// Guest landing page continues below (API fetch, hero, vendors, etc.)
+// CSRF token
 // =============================================================================
 
 if (empty($_SESSION['csrf_token']))
@@ -176,49 +135,82 @@ if (empty($_SESSION['csrf_token']))
 
 $csrfToken = $_SESSION['csrf_token'];
 
+// =============================================================================
+// Fetch restaurant catalogue (live or fallback via ApiService)
+// =============================================================================
+
 $apiService = getApiService();
 $restaurants = array();
 $featuredRestaurant = null;
 $error = '';
+$dataSource = 'unknown';
 
 try
 {
     $restaurants = $apiService->getAllRestaurants();
-    writeLog('Fetched ' . count($restaurants) . ' restaurants from API', 'API');
 
-    if (!empty($restaurants))
+    if (!is_array($restaurants))
     {
-        foreach ($restaurants as $rest)
-        {
-            try
-            {
-                $menu = $apiService->getRestaurantMenu($rest['restaurantID']);
+        $restaurants = array();
+    }
 
-                if (!empty($menu))
-                {
-                    $featuredRestaurant = $rest;
-                    $featuredRestaurant['menu'] = array_slice($menu, 0, 4);
-                    break;
-                }
-            }
-            catch (Exception $e)
+    writeLog(
+        'Home page loaded ' . count($restaurants) . ' restaurants',
+        'API'
+    );
+
+    // Attempt a menu preview for the first restaurant that has items.
+    // Failures are non-fatal: the vendor grid still renders.
+    foreach ($restaurants as $rest)
+    {
+        if (!isset($rest['restaurantID']))
+        {
+            continue;
+        }
+
+        try
+        {
+            $menu = $apiService->getRestaurantMenu($rest['restaurantID']);
+
+            if (is_array($menu) && !empty($menu))
             {
-                continue;
+                $featuredRestaurant = $rest;
+                $featuredRestaurant['menu'] = array_slice($menu, 0, 4);
+                break;
             }
+        }
+        catch (Exception $menuException)
+        {
+            writeLog(
+                'Menu preview unavailable for restaurant '
+                    . $rest['restaurantID'] . ': '
+                    . $menuException->getMessage(),
+                'API'
+            );
+            continue;
         }
     }
 }
 catch (Exception $e)
 {
     writeLog(
-        'Error fetching restaurants from API: ' . $e->getMessage(),
+        'Error fetching restaurants for home page: ' . $e->getMessage(),
         'API_ERROR'
     );
     $error = 'Unable to load restaurant data. Please try again later.';
+    $restaurants = array();
 }
+
+// =============================================================================
+// Escape helpers
+// =============================================================================
 
 if (!function_exists('escapeOutput'))
 {
+    /**
+     * @param mixed $value
+     * @return string
+     */
     function escapeOutput($value)
     {
         if ($value === null)
@@ -232,26 +224,44 @@ if (!function_exists('escapeOutput'))
 
 if (!function_exists('campusEatsIndexEscape'))
 {
+    /**
+     * @param mixed $value
+     * @return string
+     */
     function campusEatsIndexEscape($value)
     {
         return escapeOutput($value);
     }
 }
 
+// =============================================================================
+// Stats (restaurant count always; menu totals when menus are available)
+// =============================================================================
+
 $totalRestaurants = count($restaurants);
 $totalItems = 0;
 
-if (!empty($restaurants))
+if ($totalRestaurants > 0)
 {
     foreach ($restaurants as $rest)
     {
+        if (!isset($rest['restaurantID']))
+        {
+            continue;
+        }
+
         try
         {
             $menu = $apiService->getRestaurantMenu($rest['restaurantID']);
-            $totalItems += count($menu);
+
+            if (is_array($menu))
+            {
+                $totalItems += count($menu);
+            }
         }
         catch (Exception $e)
         {
+            // Menu unavailable under outage; do not inflate or hide stats.
             continue;
         }
     }
@@ -272,6 +282,8 @@ if (!empty($restaurants))
     <?php include_once 'solution/includes/public_header.php'; ?>
 
     <main id="main-content">
+
+        <!-- Hero -->
         <section id="home" class="hero" aria-labelledby="hero-heading">
             <div class="container">
                 <h1 id="hero-heading">
@@ -284,7 +296,8 @@ if (!empty($restaurants))
                     to class. No delivery fee, no waiting.
                 </p>
                 <div class="hero-buttons">
-                    <a href="solution/modules/auth/register.php" class="btn btn-primary">
+                    <a href="solution/modules/auth/register.php"
+                       class="btn btn-primary">
                         <i class="fas fa-user-plus" aria-hidden="true"></i>
                         Order now
                     </a>
@@ -296,16 +309,22 @@ if (!empty($restaurants))
             </div>
         </section>
 
-        <section class="stats" aria-label="Platform statistics">
+        <!-- Stats -->
+        <section class="stats-section" aria-labelledby="stats-heading">
+            <h2 id="stats-heading" class="sr-only">Campus Eats at a glance</h2>
             <div class="container">
                 <div class="stats-grid">
                     <div class="stat-item">
-                        <div class="stat-number"><?php echo (int)$totalRestaurants; ?></div>
-                        <div class="stat-label">Vendors</div>
+                        <div class="stat-number">
+                            <?php echo number_format($totalRestaurants); ?>
+                        </div>
+                        <div class="stat-label">Campus Vendors</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-number"><?php echo (int)$totalItems; ?></div>
-                        <div class="stat-label">Menu items</div>
+                        <div class="stat-number">
+                            <?php echo number_format($totalItems); ?>
+                        </div>
+                        <div class="stat-label">Menu Items</div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-number">~8 min</div>
@@ -315,50 +334,251 @@ if (!empty($restaurants))
             </div>
         </section>
 
-        <section id="vendors" class="vendors" aria-labelledby="vendors-heading">
+        <!-- How it works -->
+        <section id="how-it-works"
+                 class="how-it-works"
+                 aria-labelledby="how-it-works-heading">
+            <div class="container">
+                <div class="section-title">
+                    <h2 id="how-it-works-heading">Pickup in three steps</h2>
+                    <p>
+                        Designed around the campus rhythm, between lectures,
+                        before practice, after the library.
+                    </p>
+                </div>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number" aria-hidden="true">1</div>
+                        <h3>Browse and order</h3>
+                        <p>
+                            Pick items from any campus vendor and confirm
+                            your order.
+                        </p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number" aria-hidden="true">2</div>
+                        <h3>Vendor prepares</h3>
+                        <p>
+                            Track status as it moves from Pending to
+                            Preparing to Completed.
+                        </p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number" aria-hidden="true">3</div>
+                        <h3>Pick it up</h3>
+                        <p>
+                            Walk over to the vendor stall and grab your bag.
+                            Done.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features -->
+        <section class="features" aria-labelledby="features-heading">
+            <div class="container">
+                <div class="section-title">
+                    <h2 id="features-heading">Everything the system manages</h2>
+                    <p>Four core modules, as defined in the process specification.</p>
+                </div>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <i class="fas fa-users" aria-hidden="true"></i>
+                        <h3>User management</h3>
+                        <p>
+                            Students, standard users, vendors and administrators
+                            each have a dedicated workspace.
+                        </p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-store" aria-hidden="true"></i>
+                        <h3>Vendor management</h3>
+                        <p>
+                            Onboard campus vendors with location and
+                            menu control, open or closed status, and approvals.
+                        </p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-utensils" aria-hidden="true"></i>
+                        <h3>Menu management</h3>
+                        <p>
+                            Items, prices and descriptions stay in sync across
+                            web and mobile clients.
+                        </p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-clipboard-list" aria-hidden="true"></i>
+                        <h3>Order management</h3>
+                        <p>
+                            From placement through preparation to pickup,
+                            every status is tracked.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Vendors: full catalogue -->
+        <section id="vendors"
+                 class="vendors"
+                 aria-labelledby="vendors-heading">
             <div class="container">
                 <div class="section-title">
                     <h2 id="vendors-heading">Featured vendors</h2>
                     <p>Order ahead from these campus stalls.</p>
                 </div>
 
-                <?php if ($error !== ''): ?>
+                <?php if ($error !== '' && empty($restaurants)): ?>
                     <div class="alert alert-error" role="alert">
                         <?php echo campusEatsIndexEscape($error); ?>
                     </div>
                 <?php endif; ?>
 
-                <?php if (empty($restaurants)): ?>
-                    <div class="empty-state">
-                        <p>No vendors are available right now. Please try again later.</p>
-                    </div>
-                <?php else: ?>
+                <?php if (!empty($restaurants)): ?>
                     <div class="vendor-grid">
                         <?php foreach ($restaurants as $restaurant): ?>
                             <article class="featured-vendor">
                                 <div class="featured-vendor-header">
                                     <h3><?php
                                         echo campusEatsIndexEscape(
-                                            $restaurant['restaurantName'] ?? 'Vendor'
+                                            isset($restaurant['restaurantName'])
+                                                ? $restaurant['restaurantName']
+                                                : 'Vendor'
                                         );
                                     ?></h3>
                                 </div>
                                 <div class="featured-vendor-body">
-                                    <p><?php
-                                        echo campusEatsIndexEscape(
-                                            $restaurant['address'] ?? ''
-                                        );
-                                    ?></p>
-                                    <p class="vendor-type"><?php
-                                        echo campusEatsIndexEscape(
-                                            $restaurant['type'] ?? ''
-                                        );
-                                    ?></p>
+                                    <?php if (!empty($restaurant['address'])): ?>
+                                        <p>
+                                            <i class="fas fa-map-marker-alt"
+                                               aria-hidden="true"></i>
+                                            <?php
+                                                echo campusEatsIndexEscape(
+                                                    $restaurant['address']
+                                                );
+                                            ?>
+                                        </p>
+                                    <?php endif; ?>
+
+                                    <?php if (!empty($restaurant['type'])): ?>
+                                        <p class="vendor-type">
+                                            <?php
+                                                echo campusEatsIndexEscape(
+                                                    $restaurant['type']
+                                                );
+                                            ?>
+                                        </p>
+                                    <?php endif; ?>
+
+                                    <?php if (isset($restaurant['parkingLot'])): ?>
+                                        <p class="vendor-parking">
+                                            <?php
+                                                echo !empty($restaurant['parkingLot'])
+                                                    ? 'Parking available'
+                                                    : 'No parking lot listed';
+                                            ?>
+                                        </p>
+                                    <?php endif; ?>
                                 </div>
                             </article>
                         <?php endforeach; ?>
                     </div>
+
+                    <?php if ($featuredRestaurant !== null
+                        && !empty($featuredRestaurant['menu'])): ?>
+                        <div class="menu-preview-block">
+                            <h3 class="menu-preview-title">
+                                Sample menu –
+                                <?php
+                                    echo campusEatsIndexEscape(
+                                        isset($featuredRestaurant['restaurantName'])
+                                            ? $featuredRestaurant['restaurantName']
+                                            : ''
+                                    );
+                                ?>
+                            </h3>
+                            <dl class="menu-preview">
+                                <?php foreach ($featuredRestaurant['menu'] as $item): ?>
+                                    <div class="menu-preview-item">
+                                        <dt><?php
+                                            echo campusEatsIndexEscape(
+                                                isset($item['itemName'])
+                                                    ? $item['itemName']
+                                                    : ''
+                                            );
+                                        ?></dt>
+                                        <dd>R <?php
+                                            echo campusEatsIndexEscape(
+                                                isset($item['itemPrice'])
+                                                    ? number_format(
+                                                        (float)$item['itemPrice'],
+                                                        2
+                                                    )
+                                                    : '0.00'
+                                            );
+                                        ?></dd>
+                                    </div>
+                                <?php endforeach; ?>
+                            </dl>
+                        </div>
+                    <?php endif; ?>
+
+                    <p class="vendors-cta">
+                        <a href="solution/modules/auth/register.php"
+                           class="btn btn-primary">
+                            <i class="fas fa-user-plus" aria-hidden="true"></i>
+                            Sign up or log in to place an order
+                        </a>
+                    </p>
+
+                <?php else: ?>
+                    <div class="empty-state" role="status">
+                        <i class="fas fa-store-slash" aria-hidden="true"></i>
+                        <h3>No Vendors Available</h3>
+                        <p>
+                            No vendors are currently available. Please check
+                            back later.
+                        </p>
+                        <a href="solution/modules/auth/register.php"
+                           class="btn btn-primary">
+                            <i class="fas fa-user-plus" aria-hidden="true"></i>
+                            Sign Up
+                        </a>
+                    </div>
                 <?php endif; ?>
+            </div>
+        </section>
+
+        <!-- Vendor CTA -->
+        <section class="cta vendor-cta"
+                 aria-labelledby="vendor-cta-heading">
+            <div class="container">
+                <h2 id="vendor-cta-heading">Run a stall on campus?</h2>
+                <p>
+                    List your menu, take pickup orders, and fulfill them
+                    with a simple status workflow. Reports for sales, vendor
+                    performance, and user activity included.
+                </p>
+                <ul>
+                    <li>
+                        <i class="fas fa-check-circle" aria-hidden="true"></i>
+                        Per-vendor menu CRUD
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle" aria-hidden="true"></i>
+                        Live order queue
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle" aria-hidden="true"></i>
+                        Sales and performance reports
+                    </li>
+                </ul>
+                <a href="solution/modules/auth/register.php"
+                   class="btn btn-secondary">
+                    <i class="fas fa-store" aria-hidden="true"></i>
+                    Become a vendor
+                </a>
             </div>
         </section>
     </main>
