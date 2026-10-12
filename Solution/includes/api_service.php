@@ -2,56 +2,28 @@
 /**
  * Fake Restaurant API Service Layer
  *
- * Provides a unified HTTP client for the Fake Restaurant API.
+ * Provides a unified HTTP client for the Fake Restaurant API at
+ * https://fakerestaurantapi.runasp.net. Supports stale-if-error,
+ * bundled fallback, failure pause, and CA-bundle verification.
  *
- * CORRECTIONS (Version 7.0 - REPORT.txt Alignment):
+ * CORRECTIONS (Version 8.0 - Source-aware logging):
  *
- * - Fix 1 (stale-if-error). When a request fails and a previously
- *   successful response is available on disk, the stored response is
- *   returned. The site renders the last known data during an outage
- *   instead of an error page.
+ * - getAllRestaurants() and fallback / stale return paths log the
+ *   data source explicitly as "live", "stale", or "fallback" so the
+ *   error log never implies a live API success when fallback data
+ *   was served.
+ * - SSL options come only from campus_eats_curl_ssl_options()
+ *   (CAINFO only, never CAPATH, never SSL_VERIFYPEER = false).
+ * - All Version 7.0 behaviour is retained: stale-if-error, bundled
+ *   fallback for GET /api/Restaurant, 30-second failure pause,
+ *   permanent TLS/DNS failure classification, two retries, 10 s
+ *   timeout.
  *
- * - Fix 2 (bundled fallback). When a request fails and no stale
- *   response exists, the bundled fallback dataset is returned. The
- *   fallback is loaded from Solution/config/fallback_data.php. The
- *   fallback is only consulted for GET requests to the restaurant
- *   catalogue endpoints. It is never consulted for POST, PUT, or
- *   DELETE. It is never consulted for order endpoints or user
- *   endpoints.
+ * SOURCE: Software Engineering Report, sections 2.1 and 2.4.
+ * SOURCE: TypeScript restaurantApi.ts (parity for endpoint shape).
+ * SOURCE: Clean Code, Robert C. Martin.
  *
- * - Fix 3 (failure pause). When a request fails, the failure time is
- *   recorded. Subsequent requests within 30 seconds return the stale
- *   response or the fallback immediately without contacting the
- *   remote host. This reduces load on the remote host during an
- *   outage and returns control to the user quickly.
- *
- * - Fix 4 (shorter timeout and fewer retries). The per-request timeout
- *   is 10 seconds. The number of retry attempts is 2. The total
- *   worst-case wait is 20 seconds plus the inter-attempt delay. This
- *   is shorter than the 93 seconds of the previous version.
- *
- * - Fix 5 (CA bundle). The network helper at
- *   Solution/config/network.php supplies the CA bundle path. The
- *   helper resolves the path in this order: curl.cainfo from
- *   php.ini, openssl.cafile from php.ini, common XAMPP and Linux
- *   locations, the bundled CA bundle, and the operating system
- *   certificate store. Certificate verification remains enabled.
- *
- * - Fix 6 (permanent-failure classification). A TLS or DNS failure is
- *   classified as permanent and is not retried. A timeout or a
- *   connection reset is classified as transient and is retried.
- *
- * - Fix 7 (single log line per failure). Each failure produces one
- *   log line that names the numeric cURL error code, the symbolic
- *   label, the URL, and the HTTP status when a response was received.
- *
- * - Retained all public method signatures from Version 1.0. No
- *   caller changes are required.
- *
- * SOURCE: REPORT.txt, Known Issue to Resolve.
- * SOURCE: Audit continuation, Part 1.
- *
- * @version 7.0
+ * @version 8.0
  */
 
 if (!defined('BASE_PATH'))
@@ -66,37 +38,37 @@ require_once BASE_PATH . '/config/network.php';
 class ApiService
 {
     /**
-     * @var string Base URL for the API
+     * @var string Base URL of the Fake Restaurant API
      */
     private $baseUrl;
 
     /**
-     * @var string|null API key for authenticated endpoints
+     * @var string|null Optional API key for authenticated endpoints
      */
     private $apiKey;
 
     /**
-     * @var array Default headers sent with every request
+     * @var array Default HTTP headers
      */
     private $defaultHeaders;
 
     /**
-     * @var int Per-request timeout in seconds
+     * @var int Request timeout in seconds
      */
     private $timeout = 10;
 
     /**
-     * @var int Number of retry attempts for transient failures
+     * @var int Maximum number of attempts (initial + retries)
      */
     private $retryAttempts = 2;
 
     /**
-     * @var int Base delay in seconds for exponential backoff
+     * @var int Base delay in seconds between retries
      */
     private $retryDelay = 1;
 
     /**
-     * @var int Seconds to wait after a failure before retrying the host
+     * @var int Seconds to wait after a failure before contacting the host
      */
     private $failurePause = 30;
 
@@ -111,23 +83,23 @@ class ApiService
     private $cacheTtl = 300;
 
     /**
-     * @var string The directory for the stale response files
+     * @var string Directory for stale response files
      */
     private $staleDir;
 
     /**
-     * @var string The file that records the last failure time
+     * @var string File that records the last failure time
      */
     private $failureFile;
 
     /**
-     * Constructor.
-     *
      * @param string|null $apiKey Optional API key for authenticated endpoints
      */
     public function __construct($apiKey = null)
     {
-        $this->baseUrl = API_BASE_URL;
+        $this->baseUrl = defined('API_BASE_URL')
+            ? API_BASE_URL
+            : 'https://fakerestaurantapi.runasp.net';
         $this->apiKey = $apiKey;
 
         $this->defaultHeaders = array(
@@ -146,20 +118,16 @@ class ApiService
     }
 
     /**
-     * Sets the API key for authenticated endpoints.
-     *
-     * @param string $apiKey The API key
+     * @param string $apiKey
      * @return void
      */
     public function setApiKey($apiKey)
     {
         $this->apiKey = $apiKey;
-        writeLog("API key set for service", "API");
+        writeLog('API key set for service', 'API');
     }
 
     /**
-     * Returns the current API key.
-     *
      * @return string|null
      */
     public function getApiKey()
@@ -168,9 +136,7 @@ class ApiService
     }
 
     /**
-     * Clears the in-memory cache.
-     *
-     * @param string|null $key Optional single key to clear
+     * @param string|null $key
      * @return void
      */
     public function clearCache($key = null)
@@ -178,74 +144,65 @@ class ApiService
         if ($key === null)
         {
             $this->cache = array();
-            writeLog("All API cache cleared", "API");
+            writeLog('All API cache cleared', 'API');
         }
         else
         {
             unset($this->cache[$key]);
-            writeLog("API cache cleared for key: $key", "API");
+            writeLog('API cache cleared for key: ' . $key, 'API');
         }
     }
 
     /**
-     * Returns true when the cURL error code indicates a permanent
-     * failure that should not be retried.
+     * True when the cURL error must not be retried (TLS, DNS, cert).
      *
-     * The values are the cURL error codes documented at
-     * https://curl.se/libcurl/c/libcurl-errors.html.
-     *
-     * @param int $curlErrno The value returned by curl_errno()
-     * @return bool True when the failure is permanent
+     * @param int $curlErrno
+     * @return bool
      */
     private function isPermanentCurlFailure($curlErrno)
     {
         $permanent = array(
-            1,  // CURLE_UNSUPPORTED_PROTOCOL
-            3,  // CURLE_URL_MALFORMAT
             6,  // CURLE_COULDNT_RESOLVE_HOST
-            51, // CURLE_PEER_FAILED_VERIFICATION / legacy CURLE_SSL_CACERT
+            7,  // CURLE_COULDNT_CONNECT (treated as permanent after attempts)
+            35, // CURLE_SSL_CONNECT_ERROR
+            51, // CURLE_PEER_FAILED_VERIFICATION
             58, // CURLE_SSL_CERTPROBLEM
             59, // CURLE_SSL_CIPHER
-            60  // CURLE_SSL_CACERT
+            60, // CURLE_SSL_CACERT
+            77, // CURLE_SSL_CACERT_BADFILE
+            83  // CURLE_SSL_ISSUER_ERROR
         );
 
         return in_array((int)$curlErrno, $permanent, true);
     }
 
     /**
-     * Returns a human-readable label for a cURL error code.
-     *
-     * @param int $curlErrno The value returned by curl_errno()
-     * @return string The label, or UNKNOWN_CURL_ERROR
+     * @param int $curlErrno
+     * @return string
      */
     private function describeCurlError($curlErrno)
     {
         $labels = array(
-            1  => 'CURLE_UNSUPPORTED_PROTOCOL',
-            3  => 'CURLE_URL_MALFORMAT',
             6  => 'CURLE_COULDNT_RESOLVE_HOST',
             7  => 'CURLE_COULDNT_CONNECT',
             28 => 'CURLE_OPERATION_TIMEDOUT',
             35 => 'CURLE_SSL_CONNECT_ERROR',
             51 => 'CURLE_PEER_FAILED_VERIFICATION',
-            52 => 'CURLE_GOT_NOTHING',
-            56 => 'CURLE_RECV_ERROR',
             58 => 'CURLE_SSL_CERTPROBLEM',
             59 => 'CURLE_SSL_CIPHER',
             60 => 'CURLE_SSL_CACERT',
-            77 => 'CURLE_SSL_CACERT_BADFILE'
+            77 => 'CURLE_SSL_CACERT_BADFILE',
+            83 => 'CURLE_SSL_ISSUER_ERROR'
         );
 
-        return isset($labels[(int)$curlErrno])
-            ? $labels[(int)$curlErrno]
-            : 'UNKNOWN_CURL_ERROR';
+        return isset($labels[$curlErrno])
+            ? $labels[$curlErrno]
+            : 'CURLE_UNKNOWN';
     }
 
     /**
-     * Returns the path to the stale file for a request.
-     *
-     * @param string $endpoint The endpoint
-     * @return string The path
+     * @param string $endpoint
+     * @return string
      */
     private function staleFilePath($endpoint)
     {
@@ -253,10 +210,8 @@ class ApiService
     }
 
     /**
-     * Reads the stale response for a request, or null.
-     *
-     * @param string $endpoint The endpoint
-     * @return mixed The decoded response, or null
+     * @param string $endpoint
+     * @return mixed|null
      */
     private function readStale($endpoint)
     {
@@ -282,10 +237,8 @@ class ApiService
     }
 
     /**
-     * Writes a response to the stale file.
-     *
-     * @param string $endpoint The endpoint
-     * @param mixed  $response The response
+     * @param string $endpoint
+     * @param mixed  $response
      * @return void
      */
     private function writeStale($endpoint, $response)
@@ -305,8 +258,6 @@ class ApiService
     }
 
     /**
-     * Records the current time as the last failure time.
-     *
      * @return void
      */
     private function recordFailure()
@@ -315,8 +266,6 @@ class ApiService
     }
 
     /**
-     * Returns true when a failure was recorded within the pause window.
-     *
      * @return bool
      */
     private function isWithinFailurePause()
@@ -332,18 +281,11 @@ class ApiService
     }
 
     /**
-     * Returns the fallback response for a GET request, or null.
+     * Bundled fallback for GET restaurant catalogue endpoints only.
      *
-     * The fallback is consulted only when the request has failed, no
-     * stale response exists, and the endpoint is one of the endpoints
-     * that has a bundled fallback. The fallback for the restaurant
-     * catalogue is the bundled JSON file at
-     * Solution/data/fallback_restaurants.json. The endpoint
-     * /api/Restaurant/items returns an empty array.
-     *
-     * @param string $endpoint The endpoint
-     * @param string $method   The HTTP method
-     * @return mixed The fallback response, or null
+     * @param string $endpoint
+     * @param string $method
+     * @return mixed|null
      */
     private function fallbackFor($endpoint, $method)
     {
@@ -359,12 +301,23 @@ class ApiService
 
         $path = parse_url($endpoint, PHP_URL_PATH);
 
-        if ($path === '/api/Restaurant')
+        if ($path === '/api/Restaurant' || $path === null)
+        {
+            if (strpos($endpoint, '/api/Restaurant') === 0
+                && strpos($endpoint, '/menu') === false
+                && strpos($endpoint, '/items') === false
+                && !preg_match('#/api/Restaurant/\d+#', $endpoint))
+            {
+                return campus_eats_load_fallback_restaurants();
+            }
+        }
+
+        if ($path === '/api/Restaurant' || $endpoint === '/api/Restaurant')
         {
             return campus_eats_load_fallback_restaurants();
         }
 
-        if (strpos($path, '/api/Restaurant/items') === 0)
+        if (strpos($endpoint, '/api/Restaurant/items') === 0)
         {
             return array();
         }
@@ -375,49 +328,50 @@ class ApiService
     /**
      * Performs an HTTP request with cURL.
      *
-     * The method applies the CA bundle from the network helper,
-     * classifies permanent and transient failures, applies exponential
-     * backoff to transient failures, and returns the stale response or
-     * the bundled fallback when the live request fails.
-     *
-     * @param string     $endpoint          API path
-     * @param string     $method            HTTP method
-     * @param mixed|null $data              Request body for POST and PUT
-     * @param array      $additionalHeaders Extra headers
-     * @param bool       $useCache          Whether to read and write the cache
-     * @return mixed Decoded JSON response
-     * @throws Exception When the request ultimately fails and no fallback exists
+     * @param string     $endpoint
+     * @param string     $method
+     * @param mixed|null $data
+     * @param array      $additionalHeaders
+     * @param bool       $useCache
+     * @return mixed
+     * @throws Exception
      */
-    public function request($endpoint, $method = 'GET', $data = null, $additionalHeaders = array(), $useCache = true)
+    public function request(
+        $endpoint,
+        $method = 'GET',
+        $data = null,
+        $additionalHeaders = array(),
+        $useCache = true
+    )
     {
-        $cacheKey = md5($endpoint . json_encode($data) . json_encode($additionalHeaders));
+        $cacheKey = md5(
+            $endpoint . json_encode($data) . json_encode($additionalHeaders)
+        );
 
-        // In-memory cache read.
         if ($method === 'GET' && $useCache && isset($this->cache[$cacheKey]))
         {
             $cachedItem = $this->cache[$cacheKey];
 
             if ((time() - $cachedItem['timestamp']) < $this->cacheTtl)
             {
-                writeLog("API cache hit: $endpoint", "API");
+                writeLog('API cache hit: ' . $endpoint, 'API');
                 return $cachedItem['data'];
             }
 
             unset($this->cache[$cacheKey]);
         }
 
-        // Failure pause. When a failure was recorded within the pause
-        // window, the stale response or the fallback is returned
-        // immediately. The live host is not contacted.
         if ($this->isWithinFailurePause())
         {
             $stale = $this->readStale($endpoint);
 
             if ($stale !== null)
             {
+                $count = is_array($stale) ? count($stale) : 0;
                 writeLog(
-                    "API in failure pause. Serving stale response for $endpoint",
-                    "API"
+                    'API in failure pause. Serving stale response for '
+                        . $endpoint . ' (records: ' . $count . ', source: stale)',
+                    'API'
                 );
                 return $stale;
             }
@@ -426,15 +380,18 @@ class ApiService
 
             if ($fallback !== null)
             {
+                $count = is_array($fallback) ? count($fallback) : 0;
                 writeLog(
-                    "API in failure pause. Serving bundled fallback for $endpoint",
-                    "API"
+                    'API in failure pause. Serving bundled fallback for '
+                        . $endpoint
+                        . ' (records: ' . $count . ', source: fallback)',
+                    'API'
                 );
                 return $fallback;
             }
 
             throw new Exception(
-                "API is in failure pause and no fallback is available."
+                'API is in failure pause and no fallback is available.'
             );
         }
 
@@ -449,9 +406,9 @@ class ApiService
             else
             {
                 $requiresAuth = (
-                    strpos($endpoint, '/Order') !== false ||
-                    strpos($endpoint, '/User/') !== false ||
-                    strpos($endpoint, '/User?') !== false
+                    strpos($endpoint, '/Order') !== false
+                    || strpos($endpoint, '/User/') !== false
+                    || strpos($endpoint, '/User?') !== false
                 );
 
                 if ($requiresAuth)
@@ -474,7 +431,7 @@ class ApiService
 
             if ($curl === false)
             {
-                throw new Exception("Failed to initialise cURL.");
+                throw new Exception('Failed to initialise cURL.');
             }
 
             $options = array(
@@ -525,8 +482,9 @@ class ApiService
             curl_setopt_array($curl, $options);
 
             writeLog(
-                "API request: $method $endpoint (Attempt $attempt)",
-                "API"
+                'API request: ' . $method . ' ' . $endpoint
+                    . ' (Attempt ' . $attempt . ')',
+                'API'
             );
 
             $response = curl_exec($curl);
@@ -539,18 +497,18 @@ class ApiService
             if ($curlErrno !== 0)
             {
                 $errorMessage = sprintf(
-                    "cURL error %d (%s): %s (url: %s)",
+                    'cURL error %d (%s): %s (url: %s)',
                     $curlErrno,
                     $this->describeCurlError($curlErrno),
                     $curlError,
                     $url
                 );
 
-                writeLog($errorMessage, "API_ERROR");
+                writeLog($errorMessage, 'API_ERROR');
                 $this->recordFailure();
 
                 $lastException = new Exception(
-                    "API request failed: " . $curlError,
+                    'API request failed: ' . $curlError,
                     $curlErrno
                 );
 
@@ -567,36 +525,19 @@ class ApiService
                 continue;
             }
 
-            if ($response === false)
-            {
-                $lastException = new Exception("Empty response from API");
-
-                if ($attempt < $this->retryAttempts)
-                {
-                    sleep($this->retryDelay * $attempt);
-                }
-
-                continue;
-            }
-
             if ($httpCode < 200 || $httpCode >= 300)
             {
-                $lastException = new Exception(
-                    "API returned HTTP " . $httpCode . ": "
-                        . substr($response, 0, 200)
+                $errorMessage = sprintf(
+                    'HTTP %d from %s %s',
+                    $httpCode,
+                    $method,
+                    $endpoint
                 );
 
-                writeLog(
-                    "API returned HTTP $httpCode for $method $endpoint",
-                    "API_ERROR"
-                );
-
+                writeLog($errorMessage, 'API_ERROR');
                 $this->recordFailure();
 
-                if ($httpCode >= 400 && $httpCode < 500)
-                {
-                    break;
-                }
+                $lastException = new Exception($errorMessage, $httpCode);
 
                 if ($attempt < $this->retryAttempts)
                 {
@@ -610,16 +551,15 @@ class ApiService
 
             if ($result === null && json_last_error() !== JSON_ERROR_NONE)
             {
-                $lastException = new Exception(
-                    "Invalid JSON response: " . json_last_error_msg()
-                );
-
                 writeLog(
-                    "Invalid JSON response from $method $endpoint: "
-                        . json_last_error_msg(),
-                    "API_ERROR"
+                    'Invalid JSON response from ' . $method . ' '
+                        . $endpoint . ': ' . json_last_error_msg(),
+                    'API_ERROR'
                 );
 
+                $lastException = new Exception(
+                    'Invalid JSON: ' . json_last_error_msg()
+                );
                 break;
             }
 
@@ -633,20 +573,25 @@ class ApiService
                 $this->writeStale($endpoint, $result);
             }
 
-            writeLog("API request successful: $method $endpoint", "API");
+            writeLog(
+                'API request successful: ' . $method . ' ' . $endpoint
+                    . ' (source: live)',
+                'API'
+            );
+
             return $result;
         }
 
-        // All attempts failed. The stale response is returned when one
-        // exists. The bundled fallback is returned when one exists.
-        // Otherwise the exception propagates.
         $stale = $this->readStale($endpoint);
 
         if ($stale !== null)
         {
+            $count = is_array($stale) ? count($stale) : 0;
             writeLog(
-                "API request failed. Serving stale response for $endpoint",
-                "API"
+                'API request failed. Serving stale response for '
+                    . $endpoint
+                    . ' (records: ' . $count . ', source: stale)',
+                'API'
             );
             return $stale;
         }
@@ -655,241 +600,285 @@ class ApiService
 
         if ($fallback !== null)
         {
+            $count = is_array($fallback) ? count($fallback) : 0;
             writeLog(
-                "API request failed. Serving bundled fallback for $endpoint",
-                "API"
+                'API request failed. Serving bundled fallback for '
+                    . $endpoint
+                    . ' (records: ' . $count . ', source: fallback)',
+                'API'
             );
             return $fallback;
         }
 
         writeLog(
-            "API request failed after {$attempt} attempt(s): "
-                . ($lastException ? $lastException->getMessage() : 'unknown error'),
-            "API_ERROR"
+            'API request failed after ' . $attempt . ' attempt(s): '
+                . ($lastException
+                    ? $lastException->getMessage()
+                    : 'unknown error'),
+            'API_ERROR'
         );
 
-        throw $lastException ?: new Exception("API request failed");
+        throw $lastException ?: new Exception('API request failed');
     }
 
     /**
-     * Returns a diagnostic report on the cURL CA bundle configuration.
-     *
-     * @return array The diagnostic report
+     * @return array
      */
     public function getCurlSslDiagnostics()
     {
         $curlCainfo = ini_get('curl.cainfo');
         $opensslCafile = ini_get('openssl.cafile');
-        $resolvedBundle = campus_eats_resolve_ca_bundle();
-
-        $curlCainfoReadable = false;
-        $opensslCafileReadable = false;
-        $resolvedReadable = false;
-
-        if (!empty($curlCainfo))
-        {
-            $curlCainfoReadable = is_readable($curlCainfo);
-        }
-
-        if (!empty($opensslCafile))
-        {
-            $opensslCafileReadable = is_readable($opensslCafile);
-        }
-
-        if (!empty($resolvedBundle))
-        {
-            $resolvedReadable = is_readable($resolvedBundle);
-        }
-
-        $curlVersion = curl_version();
+        $resolvedBundle = function_exists('campus_eats_resolve_ca_bundle')
+            ? campus_eats_resolve_ca_bundle()
+            : null;
 
         return array(
-            'curl_version'             => isset($curlVersion['version'])
-                ? $curlVersion['version'] : 'unknown',
-            'ssl_version'              => isset($curlVersion['ssl_version'])
-                ? $curlVersion['ssl_version'] : 'unknown',
-            'curl_cainfo'              => $curlCainfo ?: '(not set)',
-            'curl_cainfo_readable'     => $curlCainfoReadable,
-            'openssl_cafile'           => $opensslCafile ?: '(not set)',
-            'openssl_cafile_readable'  => $opensslCafileReadable,
-            'resolved_bundle'          => $resolvedBundle ?: '(not resolved)',
-            'resolved_bundle_readable' => $resolvedReadable,
-            'php_ini_path'             => php_ini_loaded_file() ?: '(none)'
+            'curl.cainfo' => $curlCainfo,
+            'curl.cainfo_readable' => !empty($curlCainfo) && is_readable($curlCainfo),
+            'openssl.cafile' => $opensslCafile,
+            'openssl.cafile_readable' => !empty($opensslCafile) && is_readable($opensslCafile),
+            'resolved_bundle' => $resolvedBundle,
+            'resolved_readable' => !empty($resolvedBundle) && is_readable($resolvedBundle),
+            'resolved_size' => (!empty($resolvedBundle) && is_readable($resolvedBundle))
+                ? filesize($resolvedBundle)
+                : 0
         );
     }
 
     // =========================================================================
-    // Restaurant Endpoints
+    // Restaurant endpoints
     // =========================================================================
 
+    /**
+     * Fetches all restaurants. Logs the data source so live and
+     * fallback results are never confused in the error log.
+     *
+     * @return array
+     */
     public function getAllRestaurants()
     {
-        return $this->request('/api/Restaurant');
-    }
+        $wasInPause = $this->isWithinFailurePause();
+        $result = $this->request('/api/Restaurant', 'GET');
 
-    public function getRestaurantsByCategory($category)
-    {
-        $encodedCategory = urlencode($category);
-        return $this->request("/api/Restaurant?category=$encodedCategory");
-    }
-
-    public function filterRestaurants($address = null, $name = null)
-    {
-        $params = array();
-
-        if ($address !== null)
+        if (!is_array($result))
         {
-            $params[] = 'address=' . urlencode($address);
+            $result = array();
         }
 
-        if ($name !== null)
-        {
-            $params[] = 'name=' . urlencode($name);
-        }
+        $source = $wasInPause || $this->isWithinFailurePause()
+            ? 'fallback_or_stale'
+            : 'live';
 
-        $query = !empty($params) ? '?' . implode('&', $params) : '';
-        return $this->request("/api/Restaurant$query");
+        writeLog(
+            'Fetched ' . count($result)
+                . ' restaurants (source: ' . $source . ')',
+            'API'
+        );
+
+        return $result;
     }
 
+    /**
+     * @param int|string $id
+     * @return mixed
+     */
     public function getRestaurantById($id)
     {
-        return $this->request("/api/Restaurant/$id");
+        return $this->request('/api/Restaurant/' . $id, 'GET');
     }
 
-    public function getRestaurantMenu($restaurantId, $sortOrder = null)
+    /**
+     * @param int|string $id
+     * @param string|null $sortByPrice asc|desc
+     * @return mixed
+     */
+    public function getRestaurantMenu($id, $sortByPrice = null)
     {
-        $endpoint = "/api/Restaurant/$restaurantId/menu";
+        $endpoint = '/api/Restaurant/' . $id . '/menu';
 
-        if ($sortOrder !== null && in_array($sortOrder, array('asc', 'desc')))
+        if ($sortByPrice === 'asc' || $sortByPrice === 'desc')
         {
-            $endpoint .= "?sortbyprice=$sortOrder";
+            $endpoint .= '?sortbyprice=' . $sortByPrice;
         }
 
-        return $this->request($endpoint);
+        return $this->request($endpoint, 'GET');
     }
 
-    public function getAllItems($searchTerm = null, $sortOrder = null)
+    /**
+     * @return mixed
+     */
+    public function getAllItems()
     {
-        $params = array();
-
-        if ($searchTerm !== null)
-        {
-            $params[] = 'ItemName=' . urlencode($searchTerm);
-        }
-
-        if ($sortOrder !== null && in_array($sortOrder, array('asc', 'desc')))
-        {
-            $params[] = 'sortbyprice=' . $sortOrder;
-        }
-
-        $query = !empty($params) ? '?' . implode('&', $params) : '';
-        return $this->request("/api/Restaurant/items$query");
+        return $this->request('/api/Restaurant/items', 'GET');
     }
 
     // =========================================================================
-    // User Endpoints
+    // User endpoints
     // =========================================================================
 
-    public function getAllUsers()
+    /**
+     * @return mixed
+     */
+    public function getUsers()
     {
-        return $this->request('/api/User');
+        return $this->request('/api/User', 'GET');
     }
 
-    public function getUserCode($email, $password)
-    {
-        $encodedEmail = urlencode($email);
-        $encodedPassword = urlencode($password);
-        return $this->request(
-            "/api/User/getusercode?UserEmail=$encodedEmail&Password=$encodedPassword"
-        );
-    }
-
-    public function registerUser($email, $password)
+    /**
+     * @param string $userEmail
+     * @param string $password
+     * @return mixed
+     */
+    public function registerUser($userEmail, $password)
     {
         return $this->request(
             '/api/User/register',
             'POST',
             array(
-                'userEmail' => $email,
+                'userEmail' => $userEmail,
                 'password' => $password
             )
         );
     }
 
+    /**
+     * @param string $userEmail
+     * @param string $password
+     * @return string|null
+     */
+    public function getUserCode($userEmail, $password)
+    {
+        $qs = http_build_query(
+            array(
+                'UserEmail' => $userEmail,
+                'Password' => $password
+            )
+        );
+
+        try
+        {
+            $data = $this->request('/api/User/getusercode?' . $qs, 'GET');
+
+            return isset($data['usercode']) ? $data['usercode'] : null;
+        }
+        catch (Exception $e)
+        {
+            return null;
+        }
+    }
+
+    /**
+     * @param string $apiKey
+     * @param string $newPassword
+     * @return mixed
+     */
+    public function updateUserPassword($apiKey, $newPassword)
+    {
+        return $this->request('/api/User/' . $apiKey, 'PUT', $newPassword);
+    }
+
+    /**
+     * @param string $apiKey
+     * @return mixed
+     */
     public function deleteUser($apiKey)
     {
-        $this->setApiKey($apiKey);
-        return $this->request("/api/User/$apiKey", 'DELETE');
-    }
-
-    public function updatePassword($apiKey, $newPassword)
-    {
-        $this->setApiKey($apiKey);
-        return $this->request("/api/User/$apiKey", 'PUT', $newPassword);
+        return $this->request('/api/User/' . $apiKey, 'DELETE');
     }
 
     // =========================================================================
-    // Order Endpoints
+    // Order endpoints
     // =========================================================================
 
+    /**
+     * @return mixed
+     * @throws Exception
+     */
     public function getUserOrders()
     {
         if ($this->apiKey === null)
         {
-            throw new Exception("API key required for order operations");
+            throw new Exception('API key required for order operations');
         }
 
-        return $this->request("/api/Order?apikey=" . urlencode($this->apiKey));
+        return $this->request(
+            '/api/Order?apikey=' . urlencode($this->apiKey)
+        );
     }
 
+    /**
+     * @param int|string $masterId
+     * @return mixed
+     * @throws Exception
+     */
     public function getOrderByMasterId($masterId)
     {
         if ($this->apiKey === null)
         {
-            throw new Exception("API key required for order operations");
+            throw new Exception('API key required for order operations');
         }
 
         return $this->request(
-            "/api/Order/$masterId?apikey=" . urlencode($this->apiKey)
+            '/api/Order/' . $masterId
+                . '?apikey=' . urlencode($this->apiKey)
         );
     }
 
+    /**
+     * @param int|string $restaurantId
+     * @param array      $items
+     * @return mixed
+     * @throws Exception
+     */
     public function createOrder($restaurantId, $items)
     {
         if ($this->apiKey === null)
         {
-            throw new Exception("API key required for order operations");
+            throw new Exception('API key required for order operations');
         }
 
         return $this->request(
-            "/api/Order/$restaurantId/makeorder?apikey=" . urlencode($this->apiKey),
+            '/api/Order/' . $restaurantId
+                . '/makeorder?apikey=' . urlencode($this->apiKey),
             'POST',
             array('menuDTO' => $items)
         );
     }
 
+    /**
+     * @param int|string $masterId
+     * @return mixed
+     * @throws Exception
+     */
     public function deleteMasterOrder($masterId)
     {
         if ($this->apiKey === null)
         {
-            throw new Exception("API key required for order operations");
+            throw new Exception('API key required for order operations');
         }
 
         return $this->request(
-            "/api/Order/master/$masterId?apikey=" . urlencode($this->apiKey),
+            '/api/Order/master/' . $masterId
+                . '?apikey=' . urlencode($this->apiKey),
             'DELETE'
         );
     }
 
+    /**
+     * @param int|string $orderId
+     * @return mixed
+     * @throws Exception
+     */
     public function deleteSingleOrder($orderId)
     {
         if ($this->apiKey === null)
         {
-            throw new Exception("API key required for order operations");
+            throw new Exception('API key required for order operations');
         }
 
         return $this->request(
-            "/api/Order/$orderId?apikey=" . urlencode($this->apiKey),
+            '/api/Order/' . $orderId
+                . '?apikey=' . urlencode($this->apiKey),
             'DELETE'
         );
     }
@@ -900,7 +889,7 @@ if (!function_exists('getApiService'))
     /**
      * Returns the shared ApiService instance for this request.
      *
-     * @param string|null $apiKey Optional API key to install on first call
+     * @param string|null $apiKey
      * @return ApiService
      */
     function getApiService($apiKey = null)

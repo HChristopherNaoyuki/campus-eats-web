@@ -2,19 +2,26 @@
 /**
  * Network Helper for Campus Eats
  *
- * Provides the CA-bundle resolution and cURL SSL options used by
- * every outbound HTTPS caller.
+ * Resolves a CA bundle for outbound HTTPS and returns cURL SSL options.
+ * Certificate verification is never disabled.
  *
- * CORRECTIONS (Version 5.0 - CA size guard):
+ * CORRECTIONS (Version 6.0 - SSL Remediation):
  *
- * - A candidate CA file is accepted only when it is readable and
- *   larger than 1 024 bytes. An empty or one-byte cacert.pem is
- *   skipped so cURL never receives a bad CURLOPT_CAINFO path that
- *   produces CURLE_SSL_CACERT_BADFILE (error 77).
+ * - A candidate file is accepted only when it is readable and larger
+ *   than 1 024 bytes. An empty or truncated cacert.pem is skipped.
+ * - CURLOPT_CAPATH is not set. Pointing CAPATH at the directory that
+ *   holds cacert.pem (without OpenSSL hashed names) causes verification
+ *   failures on many Windows / WAMP hosts even when CAINFO is valid.
+ * - Resolution order: php.ini curl.cainfo, php.ini openssl.cafile,
+ *   common WAMP / XAMPP / Linux paths, then Solution/config/cacert.pem.
+ * - When no usable file is found, an empty options array is returned
+ *   so cURL uses the PHP / OS defaults. Peer verification stays on.
  *
- * SOURCE: Technical Audit Update – Demo Accounts, Coupons, and SSL.
+ * SOURCE: Software Engineering Report, section 2.1 SSL Certificate.
+ * SOURCE: Programming PHP, 3rd Edition (cURL and OpenSSL).
+ * SOURCE: Clean Code, Robert C. Martin (clear names, single purpose).
  *
- * @version 5.0
+ * @version 6.0
  */
 
 if (!defined('BASE_PATH'))
@@ -25,7 +32,7 @@ if (!defined('BASE_PATH'))
 if (!function_exists('campus_eats_ca_bundle_candidates'))
 {
     /**
-     * Returns an ordered list of possible CA-bundle paths.
+     * Ordered list of possible CA-bundle paths on this host.
      *
      * @return array
      */
@@ -47,16 +54,21 @@ if (!function_exists('campus_eats_ca_bundle_candidates'))
             $candidates[] = $opensslCafile;
         }
 
-        $candidates[] = 'C:/xampp/php/extras/ssl/cacert.pem';
-        $candidates[] = 'C:/xampp/apache/bin/curl-ca-bundle.crt';
+        // Common WAMP / XAMPP locations (Windows).
         $candidates[] = 'C:/wamp64/bin/php/php8.3.14/extras/ssl/cacert.pem';
         $candidates[] = 'C:/wamp64/bin/php/php8.3.6/extras/ssl/cacert.pem';
         $candidates[] = 'C:/wamp64/bin/php/php8.2.0/extras/ssl/cacert.pem';
         $candidates[] = 'C:/wamp64/bin/php/php8.1.0/extras/ssl/cacert.pem';
+        $candidates[] = 'C:/xampp/php/extras/ssl/cacert.pem';
+        $candidates[] = 'C:/xampp/apache/bin/curl-ca-bundle.crt';
+
+        // Common Linux locations.
         $candidates[] = '/etc/ssl/certs/ca-certificates.crt';
         $candidates[] = '/etc/pki/tls/certs/ca-bundle.crt';
         $candidates[] = '/etc/ssl/ca-bundle.pem';
         $candidates[] = '/usr/local/share/ca-certificates/cacert.pem';
+
+        // Bundled project copy (must be a real Mozilla CA file, not empty).
         $candidates[] = BASE_PATH . '/config/cacert.pem';
 
         return $candidates;
@@ -66,11 +78,10 @@ if (!function_exists('campus_eats_ca_bundle_candidates'))
 if (!function_exists('campus_eats_resolve_ca_bundle'))
 {
     /**
-     * Returns the path to a CA bundle that cURL can use, or null
-     * when no usable bundle is found.
+     * Returns the path to a usable CA bundle, or null.
      *
-     * A file is accepted only when it is readable and larger than
-     * 1 024 bytes. This rejects an empty or truncated cacert.pem.
+     * A file is usable only when it is readable and larger than 1 024
+     * bytes. This rejects an empty or one-byte cacert.pem.
      *
      * @return string|null
      */
@@ -88,7 +99,12 @@ if (!function_exists('campus_eats_resolve_ca_bundle'))
 
         foreach (campus_eats_ca_bundle_candidates() as $candidate)
         {
-            if (empty($candidate) || !is_readable($candidate))
+            if ($candidate === null || $candidate === '')
+            {
+                continue;
+            }
+
+            if (!is_readable($candidate))
             {
                 continue;
             }
@@ -112,10 +128,11 @@ if (!function_exists('campus_eats_resolve_ca_bundle'))
 if (!function_exists('campus_eats_curl_ssl_options'))
 {
     /**
-     * Returns the cURL options that apply the resolved CA bundle.
-     * Returns an empty array when no usable bundle exists so the
-     * caller proceeds with the PHP defaults and never receives a
-     * bad CURLOPT_CAINFO value.
+     * cURL options that apply the resolved CA bundle.
+     *
+     * Only CURLOPT_CAINFO is set. CURLOPT_CAPATH is intentionally
+     * omitted. Peer and host verification remain the caller's
+     * responsibility (they must stay enabled).
      *
      * @return array
      */
@@ -125,7 +142,9 @@ if (!function_exists('campus_eats_curl_ssl_options'))
 
         $bundle = campus_eats_resolve_ca_bundle();
 
-        if (!empty($bundle) && is_readable($bundle) && filesize($bundle) >= 1024)
+        if (!empty($bundle)
+            && is_readable($bundle)
+            && filesize($bundle) >= 1024)
         {
             $options[CURLOPT_CAINFO] = $bundle;
         }

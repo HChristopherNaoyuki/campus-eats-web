@@ -2,27 +2,22 @@
 /**
  * Logout Page
  *
- * Securely destroys the current session and redirects to the
- * public landing page. Cookie deletion uses the same path (`/`)
- * that startSecureSession() sets, so the browser actually drops
- * the session cookie.
+ * Destroys the session and redirects to the public landing page.
+ * Tolerates a guest session (empty user id) without treating it as an
+ * error. Cookie deletion uses path `/` to match startSecureSession().
  *
- * CORRECTIONS (Version 7.0 - Session Clear Fix):
+ * CORRECTIONS (Version 8.0 - Guest-safe logout):
  *
- * - Cookie is expired with path `/` (matching startSecureSession)
- *   and also with ROOT_URL path as a safety net for hosts that
- *   set a more specific path.
- * - $_SESSION is emptied, session is destroyed, and the process
- *   flag `_SESSION_INITIALIZED` is cleared so a later request
- *   cannot treat the old session as still active.
- * - Redirect goes to a clean index.php URL (no query string) so
- *   index.php does not re-enter logout handling.
- * - 303 See Other prevents the browser from replaying a POST.
+ * - Logs "guest" when no user is present instead of empty strings.
+ * - Clears the session cookie on path `/` and on ROOT_URL so the
+ *   browser drops CAMPUS_EATS_SESSION regardless of how it was set.
+ * - Redirects to a clean index.php URL with 303 See Other and
+ *   cache-busting headers.
  *
- * SOURCE: Error log – infinite post-logout redirect loop.
- * SOURCE: Clean Code, Robert C. Martin, Chapters 2–4.
+ * SOURCE: Software Engineering Report, section 2.2 Authentication.
+ * SOURCE: Clean Code, Robert C. Martin.
  *
- * @version 7.0
+ * @version 8.0
  */
 
 require_once dirname(__DIR__, 2) . '/config/constants.php';
@@ -35,17 +30,20 @@ if (!defined('BASE_URL') || !defined('ROOT_URL'))
 
 startSecureSession();
 
-$userId = function_exists('getCurrentUserId') ? getCurrentUserId() : '';
-$username = function_exists('getCurrentUserName') ? getCurrentUserName() : '';
+$userId = function_exists('getCurrentUserId') ? getCurrentUserId() : null;
+$username = function_exists('getCurrentUserName') ? getCurrentUserName() : null;
 
-writeLog(
-    "Logout requested for user: $username (ID: $userId)",
-    'AUTH'
-);
-
-// ---------------------------------------------------------------------------
-// Full session destruction
-// ---------------------------------------------------------------------------
+if ($userId === null || $userId === '' || $userId === 0)
+{
+    writeLog('Logout requested for guest session', 'AUTH');
+}
+else
+{
+    writeLog(
+        'Logout requested for user: ' . $username . ' (ID: ' . $userId . ')',
+        'AUTH'
+    );
+}
 
 $_SESSION = array();
 
@@ -56,7 +54,6 @@ if (ini_get('session.use_cookies'))
         || (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
     $cookieName = session_name();
 
-    // Path must match the path used when the cookie was set (`/`).
     setcookie(
         $cookieName,
         '',
@@ -67,7 +64,6 @@ if (ini_get('session.use_cookies'))
         true
     );
 
-    // Safety: also expire under the application base path.
     if (defined('ROOT_URL') && ROOT_URL !== '' && ROOT_URL !== '/')
     {
         setcookie(
@@ -89,23 +85,15 @@ if (session_status() === PHP_SESSION_ACTIVE)
 
 $GLOBALS['_SESSION_INITIALIZED'] = false;
 
-writeLog("User logged out successfully: $username", 'AUTH');
-
-// ---------------------------------------------------------------------------
-// Redirect to a clean landing page (no ?logout= query)
-// ---------------------------------------------------------------------------
+writeLog('User logged out successfully', 'AUTH');
 
 while (ob_get_level() > 0)
 {
     ob_end_clean();
 }
 
-$redirectUrl = ROOT_URL . '/index.php';
-
-writeLog('Redirecting to: ' . $redirectUrl, 'AUTH');
-
 header('HTTP/1.1 303 See Other');
-header('Location: ' . $redirectUrl);
+header('Location: ' . ROOT_URL . '/index.php');
 header('Cache-Control: no-cache, no-store, must-revalidate');
 header('Pragma: no-cache');
 header('Expires: Thu, 01 Jan 1970 00:00:00 GMT');
