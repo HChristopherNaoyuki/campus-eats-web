@@ -1,46 +1,18 @@
 /**
  * Campus Eats Public Pages Styles
  *
- * Styles for the public-facing pages: the landing page, the About
- * page, the FAQ page, the Help Center, the Terms of Service, the
- * Privacy Policy, the authentication pages, and the shared header
- * and footer.
+ * Styles for public-facing pages: landing, About, Services, FAQ, Help,
+ * and shared marketing chrome. Design tokens come from apple.css only.
  *
- * CORRECTIONS (Version 14.0 - Password Toggle and Consolidation):
+ * CORRECTIONS (Version 12.0 - TypeScript visual parity):
+ * - Relies on apple.css tokens (#F97316 primary, 0.75rem radius, soft shadows)
+ * - Hero, stats, feature cards, and auth card spacing aligned to TypeScript
+ * - Does not redeclare :root colour tokens
  *
- * - Fix 1 (password toggle). Added the rules for the
- *   .input-wrapper-password container and the .password-toggle
- *   button. The container reserves space on the right side of the
- *   input. The button positions itself inside the reserved space.
- *   The rules cover the default, hover, focus-visible, and
- *   aria-pressed states.
+ * SOURCE: campus-eats-platform Landing.tsx and marketing pages
+ * SOURCE: Gap analysis – PHP/TypeScript visual alignment
  *
- * - Fix 2 (duplicate rules). Removed the duplicate .info-box rule.
- *   The more specific .info-box.first-user-box rule is retained.
- *
- * - Fix 3 (tap target token). Applied the --public-tap-target token
- *   to the .language-switcher .lang-link rule where the rule would
- *   otherwise use a literal value.
- *
- * - Fix 4 (high contrast). Extended the prefers-contrast: high block
- *   to cover the password toggle.
- *
- * - Fix 5 (responsive menu preview). The .menu-preview grid now uses
- *   two columns on wide screens. The grid falls back to one column on
- *   narrow screens.
- *
- * - Fix 6 (screen reader only). Added the clip-path property to the
- *   .sr-only class for compatibility with modern browsers.
- *
- * - Retained every rule that is correct from Version 13.0. The
- *   responsive breakpoints are consolidated at 1024, 768, 640, 480,
- *   and 380 pixels.
- *
- * SOURCE: Password visibility request.
- * SOURCE: Complete implementation request.
- * SOURCE: Public page polish request.
- *
- * @version 14.0
+ * @version 12.0
  */
 
 /* Import the canonical design system. */
@@ -2577,5 +2549,157 @@ select.form-control
     {
         outline: 3px solid #000000;
         outline-offset: 2px;
+    }
+}
+
+
+
+
+/* =============================================================================
+   TypeScript parity – auth card and marketing surfaces
+   ============================================================================= */
+
+.auth-page
+{
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--background);
+    padding: var(--space-6) var(--space-4);
+}
+
+.auth-container
+{
+    width: 100%;
+    max-width: 28rem;
+}
+
+.auth-card
+{
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-soft);
+    padding: var(--space-6);
+}
+
+.auth-title
+{
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--foreground);
+    letter-spacing: -0.02em;
+}
+
+.auth-subtitle
+{
+    color: hsl(var(--ts-muted-foreground));
+    font-size: 0.9375rem;
+    margin-top: var(--space-2);
+}
+
+.hero
+{
+    background: var(--gradient-warm);
+    color: #ffffff;
+    padding: var(--space-16) 0 var(--space-12);
+}
+
+.hero h1
+{
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+}
+
+.hero h1 span
+{
+    display: inline-block;
+}
+
+.stats-section
+{
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+    padding: var(--space-8) 0;
+}
+
+.stats-grid
+{
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-6);
+    text-align: center;
+}
+
+.stat-number
+{
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.stat-label
+{
+    font-size: 0.875rem;
+    color: hsl(var(--ts-muted-foreground));
+}
+
+.feature-card,
+.featured-vendor
+{
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-soft);
+}
+
+.vendor-grid,
+.features-grid
+{
+    display: grid;
+    gap: var(--space-5);
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+
+.page-hero
+{
+    background: hsl(var(--ts-secondary));
+    border-bottom: 1px solid var(--border-color);
+    padding: var(--space-12) 0;
+}
+
+.page-hero .eyebrow
+{
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--primary);
+}
+
+.demo-credentials
+{
+    margin-top: var(--space-6);
+    padding: var(--space-4);
+    background: hsl(var(--ts-muted));
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    font-size: 0.8125rem;
+    color: hsl(var(--ts-muted-foreground));
+}
+
+@media (max-width: 640px)
+{
+    .stats-grid
+    {
+        grid-template-columns: 1fr;
+    }
+
+    .auth-card
+    {
+        padding: var(--space-5);
     }
 }

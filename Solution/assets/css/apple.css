@@ -3,64 +3,91 @@
  *
  * CANONICAL SOURCE OF TRUTH FOR CSS VARIABLES.
  * All other stylesheets must NOT redeclare :root variables.
- * This file must be imported first in any page that uses the design system.
+ * This file must be imported first on any page that uses the design system.
  *
- * CORRECTIONS (Version 20.0 - Visual Parity with Reference Website):
- * - Refined color palette to match mockup designs
- * - Updated sidebar styles for consistency with mockups
- * - Added proper card, button, and form styling
- * - Improved responsive breakpoints
- * - Added proper spacing and typography
+ * CORRECTIONS (Version 21.0 - TypeScript visual parity):
+ * - Primary colour aligned to TypeScript hsl(16 88% 52%) ≈ #F97316
+ * - Legacy --orange* aliases map to the new primary
+ * - Added HSL tokens, soft/glow shadows, gradient-primary, dark sidebar tokens
+ * - Radius base set to 0.75rem to match TypeScript --radius
  *
- * SOURCE: campus-eats-process-document.pdf (Section 10 - User Interface Design)
- * SOURCE: Mockups - 1.png through 34.png
- * SOURCE: WCAG 2.1 Accessibility Guidelines
+ * SOURCE: campus-eats-platform src/index.css
+ * SOURCE: Gap analysis – PHP/TypeScript visual alignment
  *
- * @version 20.0
+ * @version 21.0
  */
-
-/* =============================================================================
-   CSS Variables - Apple-Inspired Color Palette
-   ============================================================================= */
 
 :root
 {
-    /* Primary brand colors - Orange theme from mockups */
-    --orange: #FF9500;
-    --orange-dark: #E68200;
-    --orange-light: #FFF3E0;
-    --orange-hover: #F58900;
-    --orange-gradient: linear-gradient(135deg, #FF9500, #E68200);
+    /* TypeScript HSL design tokens (campus-eats-platform src/index.css) */
+    --ts-background: 30 40% 98%;
+    --ts-foreground: 20 30% 12%;
+    --ts-card: 0 0% 100%;
+    --ts-card-foreground: 20 30% 12%;
+    --ts-primary: 16 88% 52%;
+    --ts-primary-foreground: 0 0% 100%;
+    --ts-primary-glow: 28 95% 60%;
+    --ts-secondary: 35 50% 94%;
+    --ts-secondary-foreground: 20 30% 12%;
+    --ts-muted: 30 25% 94%;
+    --ts-muted-foreground: 20 10% 42%;
+    --ts-accent: 145 55% 42%;
+    --ts-accent-foreground: 0 0% 100%;
+    --ts-destructive: 0 84.2% 60.2%;
+    --ts-border: 30 20% 88%;
+    --ts-input: 30 20% 88%;
+    --ts-ring: 16 88% 52%;
+    --ts-radius: 0.75rem;
+    --ts-sidebar-background: 20 30% 12%;
+    --ts-sidebar-foreground: 30 25% 90%;
+    --ts-sidebar-accent: 20 25% 18%;
+    --ts-sidebar-border: 20 25% 20%;
 
-    /* Secondary brand colors - Blue accents */
+    /* Resolved primary ≈ hsl(16 88% 52%) */
+    --primary-hex: #F97316;
+    --primary-hex-dark: #EA6A0A;
+    --primary-hex-light: #FFF4ED;
+    --primary-hex-hover: #EA6A0A;
+    --primary-glow-hex: #FBB040;
+
+    /* Legacy orange aliases map to TypeScript primary */
+    --orange: var(--primary-hex);
+    --orange-dark: var(--primary-hex-dark);
+    --orange-light: var(--primary-hex-light);
+    --orange-hover: var(--primary-hex-hover);
+    --orange-gradient: linear-gradient(
+        135deg,
+        hsl(var(--ts-primary)),
+        hsl(var(--ts-primary-glow))
+    );
+
+    /* Secondary brand colours */
     --blue: #007AFF;
     --blue-dark: #0055CC;
     --blue-light: #E3F2FD;
-
-    /* Accent colors */
-    --green: #34C759;
+    --green: #34A853;
     --red: #FF3B30;
     --purple: #AF52DE;
     --teal: #5AC8FA;
 
-    /* Neutral grays - Apple's elegant gray scale */
-    --gray-50: #F9F9FB;
-    --gray-100: #F2F2F5;
-    --gray-200: #E5E5EA;
-    --gray-300: #D1D1D6;
+    /* Neutral grays – warm off-white background family */
+    --gray-50: #FBF9F7;
+    --gray-100: #F5F2EF;
+    --gray-200: #E8E4DF;
+    --gray-300: #D4CFC8;
     --gray-400: #C6C6C8;
     --gray-500: #AEAEB2;
     --gray-600: #8E8E93;
     --gray-700: #636366;
     --gray-800: #48484A;
-    --gray-900: #2C2C2E;
+    --gray-900: #2C241C;
     --gray-950: #1C1C1E;
 
-    /* Semantic colors */
+    /* Semantic colours */
     --primary: var(--orange);
     --primary-dark: var(--orange-dark);
     --primary-light: var(--orange-light);
-    --success: var(--green);
+    --success: hsl(var(--ts-accent));
     --success-bg: #E8F5E9;
     --success-text: #1B7A3D;
     --warning: var(--orange);
@@ -73,56 +100,81 @@
     --info-bg: var(--blue-light);
     --info-text: #0055CC;
 
-    /* Shadows - Apple-style subtle elevation */
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+    /* Surfaces */
+    --background: hsl(var(--ts-background));
+    --foreground: hsl(var(--ts-foreground));
+    --card-bg: hsl(var(--ts-card));
+    --border-color: hsl(var(--ts-border));
 
-    /* Border radius - matched to mockups */
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 16px;
-    --radius-xl: 24px;
+    /* Shadows */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.03);
+    --shadow-soft: 0 4px 20px -8px hsl(20 30% 12% / 0.1);
+    --shadow-glow: 0 10px 40px -10px hsl(var(--ts-primary) / 0.4);
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(
+        135deg,
+        hsl(var(--ts-primary)),
+        hsl(var(--ts-primary-glow))
+    );
+    --gradient-warm: linear-gradient(
+        135deg,
+        hsl(16 88% 52%),
+        hsl(45 95% 58%)
+    );
+
+    /* Radius – TypeScript 0.75rem base */
+    --radius: 0.75rem;
+    --radius-sm: 0.5rem;
+    --radius-md: 0.75rem;
+    --radius-lg: 1rem;
+    --radius-xl: 1.5rem;
     --radius-full: 9999px;
 
     /* Typography */
-    --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    --font-mono: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-    /* Spacing scale (8px base) - matched to mockups */
-    --space-1: 0.25rem;   /* 4px */
-    --space-2: 0.5rem;    /* 8px */
-    --space-3: 0.75rem;   /* 12px */
-    --space-4: 1rem;      /* 16px */
-    --space-5: 1.25rem;   /* 20px */
-    --space-6: 1.5rem;    /* 24px */
-    --space-8: 2rem;      /* 32px */
-    --space-10: 2.5rem;   /* 40px */
-    --space-12: 3rem;     /* 48px */
-    --space-16: 4rem;     /* 64px */
-    --space-20: 5rem;     /* 80px */
-    --space-24: 6rem;     /* 96px */
+    /* Spacing */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.25rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-10: 2.5rem;
+    --space-12: 3rem;
+    --space-16: 4rem;
+    --space-20: 5rem;
+    --space-24: 6rem;
 
     /* Transitions */
     --transition-fast: 0.15s ease;
     --transition-base: 0.2s ease;
     --transition-slow: 0.3s ease;
 
-    /* Z-index layers */
+    /* Z-index */
     --z-negative: -1;
     --z-low: 10;
     --z-medium: 100;
     --z-high: 1000;
     --z-modal: 2000;
 
-    /* Touch target minimum size (WCAG 2.1 Success Criterion 2.5.5) */
     --touch-target-min: 44px;
 
-    /* Sidebar Widths */
+    /* Sidebar – TypeScript dark chrome */
+    --sidebar-bg: hsl(var(--ts-sidebar-background));
+    --sidebar-fg: hsl(var(--ts-sidebar-foreground));
+    --sidebar-accent-bg: hsl(var(--ts-sidebar-accent));
+    --sidebar-border: hsl(var(--ts-sidebar-border));
     --sidebar-width-expanded: 260px;
     --sidebar-width-collapsed: 80px;
 }
+
 
 /* =============================================================================
    Animation Keyframes
@@ -191,7 +243,8 @@ body
     font-size: 0.9375rem;
     line-height: 1.6;
     color: var(--gray-900);
-    background-color: var(--gray-100);
+    background-color: var(--background);
+    color: var(--foreground);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     display: flex;
@@ -449,7 +502,7 @@ footer,
 
 .sidebar-nav a:hover
 {
-    background: rgba(255, 149, 0, 0.12);
+    background: hsla(16, 88%, 52%, 0.12);
     color: var(--orange);
 }
 
@@ -460,7 +513,7 @@ footer,
 
 .sidebar-nav a.active
 {
-    background: rgba(255, 149, 0, 0.2);
+    background: hsla(16, 88%, 52%, 0.2);
     color: white;
 }
 
@@ -503,7 +556,7 @@ footer,
 {
     outline: 2px solid var(--orange);
     outline-offset: -2px;
-    background: rgba(255, 149, 0, 0.15);
+    background: hsla(16, 88%, 52%, 0.15);
 }
 
 /* =============================================================================
@@ -926,9 +979,9 @@ a:focus-visible
 
 .btn-primary
 {
-    background: var(--orange-gradient);
-    color: white;
-    box-shadow: 0 2px 8px rgba(255, 149, 0, 0.25);
+    background: var(--gradient-primary);
+    color: #ffffff;
+    box-shadow: var(--shadow-glow);
 }
 
 .btn-primary:hover,
@@ -936,7 +989,8 @@ a:focus-visible
 {
     background: var(--orange-dark);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(255, 149, 0, 0.35);
+    box-shadow: var(--shadow-glow), var(--shadow-soft);
+    filter: brightness(1.03);
 }
 
 .btn-secondary
@@ -1591,11 +1645,11 @@ textarea.form-control
 
 .footer-nav-btn:hover
 {
-    background: rgba(255, 149, 0, 0.15);
+    background: hsla(16, 88%, 52%, 0.15);
     border-color: var(--orange);
     color: var(--orange);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(255, 149, 0, 0.15);
+    box-shadow: 0 4px 12px hsla(16, 88%, 52%, 0.15);
     text-decoration: none;
 }
 
