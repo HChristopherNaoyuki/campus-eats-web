@@ -336,6 +336,7 @@ campus-eats-web/
 ├── help.php
 ├── index.php
 ├── privacy.php
+├── services.php
 ├── terms.php
 ├── .github/
 │   └── workflows/
@@ -401,6 +402,7 @@ campus-eats-web/
     │   ├── constants.php
     │   ├── database.php
     │   ├── demo_accounts.php
+    │   ├── ensure_demo_data.php
     │   ├── error_logging.php
     │   ├── fallback_data.php
     │   ├── firebase_sync_helper.php
