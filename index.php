@@ -2,15 +2,26 @@
 /**
  * Campus Eats - Landing Page (Entry Point)
  *
- * CORRECTIONS (Version 17.0):
- * - Caches each restaurant menu in $menuByRestaurantId so featured
- *   preview and stats share one fetch per restaurant (log showed
- *   restaurant 1/menu requested twice).
- * - Renders full vendor grid from $restaurants; empty state only when
- *   the list is empty.
- * - Menu fallback remains in ApiService / fallback_data.php.
+ * CORRECTIONS (Version 18.0 - Timeout fix):
  *
- * @version 17.0
+ * - Removed the loop that called getRestaurantMenu() for every restaurant.
+ *   With 31 live restaurants and a 10 s cURL timeout, sequential menu
+ *   fetches exceeded PHP's 120 s max_execution_time (fatal on
+ *   api_service.php line 377).
+ * - Home page now performs:
+ *     1 x getAllRestaurants()
+ *     1 x getAllItems() when available (stats band item count)
+ *     At most 3 x getRestaurantMenu() until the first non-empty menu
+ *     is found (featured sample only)
+ * - Vendor grid still lists every restaurant from getAllRestaurants()
+ *   without per-row menu requests.
+ * - Added id="services" on the features section for nav deep-links.
+ *
+ * SOURCE: Error log 2026-10-13 – Maximum execution time of 120 seconds
+ *         exceeded while loading home page menus.
+ * SOURCE: Clean Code – do not do unnecessary work in a request.
+ *
+ * @version 18.0
  */
 
 require_once 'solution/config/constants.php';
@@ -102,9 +113,16 @@ if (empty($_SESSION['csrf_token']))
 $csrfToken = $_SESSION['csrf_token'];
 $apiService = getApiService();
 $restaurants = array();
-$menuByRestaurantId = array();
 $featuredRestaurant = null;
 $error = '';
+$totalRestaurants = 0;
+$totalItems = 0;
+
+/**
+ * Cap on sequential menu probes used only to find one featured sample.
+ * Must stay small so worst-case remote time stays under PHP limits.
+ */
+$featuredMenuProbeLimit = 3;
 
 try
 {
@@ -115,47 +133,89 @@ try
         $restaurants = array();
     }
 
+    $totalRestaurants = count($restaurants);
+
     writeLog(
-        'Home page loaded ' . count($restaurants) . ' restaurants',
+        'Home page loaded ' . $totalRestaurants . ' restaurants',
         'API'
     );
 
-    // One menu fetch per restaurant; reused for featured + stats.
+    // Optional single catalogue call for the stats band (not per restaurant).
+    if (method_exists($apiService, 'getAllItems'))
+    {
+        try
+        {
+            $allItems = $apiService->getAllItems();
+
+            if (is_array($allItems))
+            {
+                $totalItems = count($allItems);
+            }
+        }
+        catch (Exception $itemsException)
+        {
+            writeLog(
+                'Home page getAllItems skipped: '
+                    . $itemsException->getMessage(),
+                'API'
+            );
+            $totalItems = 0;
+        }
+    }
+
+    // At most N menu fetches to populate one featured preview.
+    $probes = 0;
+
     foreach ($restaurants as $rest)
     {
+        if ($featuredRestaurant !== null)
+        {
+            break;
+        }
+
+        if ($probes >= $featuredMenuProbeLimit)
+        {
+            break;
+        }
+
         if (!isset($rest['restaurantID']))
         {
             continue;
         }
 
         $rid = (int)$rest['restaurantID'];
+        $probes++;
 
         try
         {
             $menu = $apiService->getRestaurantMenu($rid);
-            $menuByRestaurantId[$rid] = is_array($menu) ? $menu : array();
         }
         catch (Exception $menuException)
         {
-            $menuByRestaurantId[$rid] = array();
             writeLog(
                 'Menu unavailable for restaurant ' . $rid . ': '
                     . $menuException->getMessage(),
                 'API'
             );
+            continue;
         }
 
-        if ($featuredRestaurant === null
-            && !empty($menuByRestaurantId[$rid]))
+        if (!is_array($menu) || empty($menu))
         {
-            $featuredRestaurant = $rest;
-            $featuredRestaurant['menu'] = array_slice(
-                $menuByRestaurantId[$rid],
-                0,
-                4
-            );
+            continue;
         }
+
+        $featuredRestaurant = $rest;
+        $featuredRestaurant['menu'] = array_slice($menu, 0, 4);
     }
+
+    writeLog(
+        'Home page menu probes=' . $probes
+            . ', featured='
+            . ($featuredRestaurant !== null ? 'yes' : 'no')
+            . ', totalItems=' . $totalItems,
+        'API'
+    );
 }
 catch (Exception $e)
 {
@@ -165,10 +225,16 @@ catch (Exception $e)
     );
     $error = 'Unable to load restaurant data. Please try again later.';
     $restaurants = array();
+    $totalRestaurants = 0;
+    $totalItems = 0;
 }
 
 if (!function_exists('escapeOutput'))
 {
+    /**
+     * @param mixed $value
+     * @return string
+     */
     function escapeOutput($value)
     {
         if ($value === null)
@@ -182,18 +248,14 @@ if (!function_exists('escapeOutput'))
 
 if (!function_exists('campusEatsIndexEscape'))
 {
+    /**
+     * @param mixed $value
+     * @return string
+     */
     function campusEatsIndexEscape($value)
     {
         return escapeOutput($value);
     }
-}
-
-$totalRestaurants = count($restaurants);
-$totalItems = 0;
-
-foreach ($menuByRestaurantId as $menuItems)
-{
-    $totalItems += count($menuItems);
 }
 ?>
 <!DOCTYPE html>
@@ -290,7 +352,7 @@ foreach ($menuByRestaurantId as $menuItems)
             </div>
         </section>
 
-        <section class="features" aria-labelledby="features-heading">
+        <section id="services" class="features" aria-labelledby="features-heading">
             <div class="container">
                 <div class="section-title">
                     <h2 id="features-heading">Everything the system manages</h2>
