@@ -47,7 +47,6 @@ if (!function_exists('redirectToDashboardAfterLogin'))
         if (!empty($_SESSION['_login_redirect_issued']))
         {
             unset($_SESSION['_login_redirect_issued']);
-            // Fall through to render the login form instead of looping.
             return;
         }
 
@@ -79,22 +78,26 @@ if (!function_exists('redirectToDashboardAfterLogin'))
                 break;
         }
 
-        $_SESSION['_login_redirect_issued'] = 1;
+        $_SESSION['_login_redirect_issued'] = true;
 
-        writeLog(
-            'Post-authentication redirect to absolute URL: ' . $destination
-                . ' (role: ' . $accountType . ')',
-            'AUTH'
-        );
-
-        if (session_status() === PHP_SESSION_ACTIVE)
+        if (function_exists('writeLog'))
         {
-            session_write_close();
+            writeLog(
+                'Post-authentication redirect to absolute URL: '
+                    . $destination
+                    . ' (role: '
+                    . $accountType
+                    . ')',
+                'AUTH'
+            );
         }
 
-        header('HTTP/1.1 303 See Other');
-        header('Location: ' . $destination);
-        header('Cache-Control: no-store, no-cache, must-revalidate');
+        if (!headers_sent())
+        {
+            header('Location: ' . $destination, true, 303);
+            header('Cache-Control: no-store, no-cache, must-revalidate');
+        }
+
         exit();
     }
 }
@@ -355,7 +358,7 @@ $pageTitle = function_exists('__') ? __('login.title') : 'Sign in to Campus Eats
                     </a>
                 </p>
                 <p class="return-home">
-                    <a href="<?php echo htmlspecialchars(ROOT_URL, ENT_QUOTES, 'UTF-8'); ?>/index.php">
+                    <a href="<?php echo htmlspecialchars(ROOT_URL . '/index.php', ENT_QUOTES, 'UTF-8'); ?>">
                         <?php
                             echo function_exists('__e')
                                 ? __e('auth.return_home')

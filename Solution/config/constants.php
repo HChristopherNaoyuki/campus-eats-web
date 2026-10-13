@@ -227,12 +227,63 @@ if (!defined('SQL_PATH'))
 
 if (!defined('ROOT_URL'))
 {
-    $rootUrl = getenv('ROOT_URL') ?: '/campus-eats-web';
-    $rootUrl = '/' . trim($rootUrl, '/');
+    /**
+     * Resolve the public application root URL.
+     *
+     * Priority:
+     *   1. ROOT_URL environment variable (explicit override)
+     *   2. Derive from SCRIPT_NAME by stripping /Solution/... when present
+     *   3. Fallback /campus-eats-web for the documented WAMP layout
+     *
+     * This keeps Return Home and post-login redirects valid when the
+     * project is deployed under a non-default folder name.
+     */
+    $envRoot = getenv('ROOT_URL');
 
-    if (strlen($rootUrl) > 1 && substr($rootUrl, -1) === '/')
+    if ($envRoot !== false && $envRoot !== '')
     {
-        $rootUrl = rtrim($rootUrl, '/');
+        $rootUrl = $envRoot;
+    }
+    else
+    {
+        $scriptName = isset($_SERVER['SCRIPT_NAME'])
+            ? str_replace('\\', '/', (string)$_SERVER['SCRIPT_NAME'])
+            : '';
+
+        $rootUrl = '/campus-eats-web';
+
+        if ($scriptName !== '')
+        {
+            $solutionPos = stripos($scriptName, '/Solution/');
+
+            if ($solutionPos !== false)
+            {
+                $candidate = substr($scriptName, 0, $solutionPos);
+                $rootUrl = ($candidate === '' || $candidate === false)
+                    ? ''
+                    : $candidate;
+            }
+            else
+            {
+                $dir = str_replace('\\', '/', dirname($scriptName));
+
+                if ($dir !== '/' && $dir !== '.' && $dir !== '')
+                {
+                    $rootUrl = $dir;
+                }
+                elseif ($dir === '/')
+                {
+                    $rootUrl = '';
+                }
+            }
+        }
+    }
+
+    $rootUrl = '/' . trim((string)$rootUrl, '/');
+
+    if ($rootUrl === '/')
+    {
+        $rootUrl = '';
     }
 
     define('ROOT_URL', $rootUrl);

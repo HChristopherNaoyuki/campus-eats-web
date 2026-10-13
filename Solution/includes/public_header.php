@@ -6,6 +6,13 @@
  * When a valid user is present in the session the header renders
  * exactly the five links: Home, About, Services, FAQ, Help Center.
  *
+ * CORRECTIONS (Version 15.0 - Services route + Return Home):
+ *
+ * - Services links point to services.php (dedicated page) instead of
+ *   index.php#vendors, which did not match a Services section id.
+ * - Return Home and logo continue to use ROOT_URL/index.php; ROOT_URL
+ *   is now derived from SCRIPT_NAME when unset (see constants.php).
+ *
  * CORRECTIONS (Version 14.0 - Header Links and Logout):
  *
  * - Added pure helper isUserLoggedIn() that returns true only when a
@@ -21,7 +28,7 @@
  * SOURCE: SOFTWARE ENGINEER PROMPT – Fix Header Links and Logout.
  * SOURCE: Clean Code, Robert C. Martin, Chapters 2–4.
  *
- * @version 14.0
+ * @version 15.0
  */
 
 require_once dirname(__DIR__) . '/config/constants.php';
@@ -205,7 +212,7 @@ if (session_status() === PHP_SESSION_ACTIVE && function_exists('getCsrfToken'))
                         </a>
                     </li>
                     <li>
-                        <a href="<?php echo ROOT_URL; ?>/index.php#vendors">
+                        <a href="<?php echo ROOT_URL; ?>/services.php">
                             Services
                         </a>
                     </li>
@@ -258,7 +265,7 @@ if (session_status() === PHP_SESSION_ACTIVE && function_exists('getCsrfToken'))
             <ul>
                 <li><a href="<?php echo ROOT_URL; ?>/index.php#home">Home</a></li>
                 <li><a href="<?php echo ROOT_URL; ?>/about.php">About</a></li>
-                <li><a href="<?php echo ROOT_URL; ?>/index.php#vendors">Services</a></li>
+                <li><a href="<?php echo ROOT_URL; ?>/services.php">Services</a></li>
                 <li><a href="<?php echo ROOT_URL; ?>/faq.php">FAQ</a></li>
                 <li><a href="<?php echo ROOT_URL; ?>/help.php">Help Center</a></li>
                 <?php if (isUserLoggedIn()): ?>

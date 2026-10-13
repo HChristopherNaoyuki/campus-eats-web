@@ -17,7 +17,7 @@
  * SOURCE: API Documentation - Fake Restaurant API
  * SOURCE: Mockups - 26.png, 26a.png, 26b.png
  *
- * @version 21.0
+ * @version 22.0
  */
 
 // Load required dependencies
@@ -47,30 +47,54 @@ $apiService = getApiService();
 
 try
 {
-    // Fetch all restaurants from the API
+    // One catalogue request for the vendor list.
     $apiRestaurants = $apiService->getAllRestaurants();
-    
-    // Count total menu items across all restaurants
-    foreach ($apiRestaurants as $restaurant)
+
+    if (!is_array($apiRestaurants))
+    {
+        $apiRestaurants = array();
+    }
+
+    // Item count from a single items endpoint when available.
+    // Do not call getRestaurantMenu() for every restaurant: with 31
+    // live venues that exceeds PHP max_execution_time (120 s) and
+    // makes the post-login dashboard appear to "never open".
+    $apiTotalItems = 0;
+
+    if (method_exists($apiService, 'getAllItems'))
     {
         try
         {
-            $menu = $apiService->getRestaurantMenu($restaurant['restaurantID']);
-            $apiTotalItems += count($menu);
+            $allItems = $apiService->getAllItems();
+
+            if (is_array($allItems))
+            {
+                $apiTotalItems = count($allItems);
+            }
         }
-        catch (Exception $e)
+        catch (Exception $itemsException)
         {
-            // Skip restaurants that don't have a menu
-            continue;
+            writeLog(
+                'Admin dashboard getAllItems skipped: '
+                    . $itemsException->getMessage(),
+                'API'
+            );
         }
     }
-    
-    writeLog("Admin dashboard: Fetched " . count($apiRestaurants) . " restaurants with $apiTotalItems items", "API");
+
+    writeLog(
+        'Admin dashboard: Fetched '
+            . count($apiRestaurants)
+            . ' restaurants with '
+            . $apiTotalItems
+            . ' items',
+        'API'
+    );
 }
 catch (Exception $e)
 {
-    writeLog("Admin dashboard API error: " . $e->getMessage(), "API_ERROR");
-    $error = "Unable to load restaurant data from API.";
+    writeLog('Admin dashboard API error: ' . $e->getMessage(), 'API_ERROR');
+    $error = 'Unable to load restaurant data from API.';
 }
 
 // =============================================================================
