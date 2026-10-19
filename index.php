@@ -63,9 +63,25 @@ if (session_status() !== PHP_SESSION_ACTIVE)
     }
 }
 
-if (isset($_SESSION['user_id'])
-    && isset($_SESSION['logged_in'])
-    && $_SESSION['logged_in'] === true)
+// Accept either explicit logged_in flag or isLoggedIn() / user_id+role.
+$indexUserAuthenticated = false;
+
+if (function_exists('isLoggedIn') && isLoggedIn())
+{
+    $indexUserAuthenticated = true;
+}
+elseif (!empty($_SESSION['user_id'])
+    && (!empty($_SESSION['account_type']) || !empty($_SESSION['role'])))
+{
+    $indexUserAuthenticated = true;
+}
+elseif (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true
+    && !empty($_SESSION['user_id']))
+{
+    $indexUserAuthenticated = true;
+}
+
+if ($indexUserAuthenticated)
 {
     $accountType = isset($_SESSION['account_type'])
         ? $_SESSION['account_type']

@@ -47,6 +47,7 @@ if (!function_exists('redirectToDashboardAfterLogin'))
         if (!empty($_SESSION['_login_redirect_issued']))
         {
             unset($_SESSION['_login_redirect_issued']);
+            // Fall through to render the login form instead of looping.
             return;
         }
 
@@ -78,26 +79,22 @@ if (!function_exists('redirectToDashboardAfterLogin'))
                 break;
         }
 
-        $_SESSION['_login_redirect_issued'] = true;
+        $_SESSION['_login_redirect_issued'] = 1;
 
-        if (function_exists('writeLog'))
+        writeLog(
+            'Post-authentication redirect to absolute URL: ' . $destination
+                . ' (role: ' . $accountType . ')',
+            'AUTH'
+        );
+
+        if (session_status() === PHP_SESSION_ACTIVE)
         {
-            writeLog(
-                'Post-authentication redirect to absolute URL: '
-                    . $destination
-                    . ' (role: '
-                    . $accountType
-                    . ')',
-                'AUTH'
-            );
+            session_write_close();
         }
 
-        if (!headers_sent())
-        {
-            header('Location: ' . $destination, true, 303);
-            header('Cache-Control: no-store, no-cache, must-revalidate');
-        }
-
+        header('HTTP/1.1 303 See Other');
+        header('Location: ' . $destination);
+        header('Cache-Control: no-store, no-cache, must-revalidate');
         exit();
     }
 }
@@ -151,15 +148,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
             ? __('error.required_fields')
             : 'Please fill in all required fields.';
     }
+    elseif (function_exists('validateCsrfToken')
+        && !validateCsrfToken($submittedCsrfToken))
+    {
+        $error = function_exists('__')
+            ? __('error.csrf')
+            : 'Your session token expired. Please try again.';
+        writeLog('Login CSRF validation failed', 'AUTH');
+    }
     else
     {
         try
         {
-            $result = authenticateUser(
-                $identifier,
-                $passwordInput,
-                $submittedCsrfToken
-            );
+            $result = authenticateUser($identifier, $passwordInput);
 
             if (!empty($result['success']))
             {
@@ -358,7 +359,7 @@ $pageTitle = function_exists('__') ? __('login.title') : 'Sign in to Campus Eats
                     </a>
                 </p>
                 <p class="return-home">
-                    <a href="<?php echo htmlspecialchars(ROOT_URL . '/index.php', ENT_QUOTES, 'UTF-8'); ?>">
+                    <a href="<?php echo htmlspecialchars(ROOT_URL, ENT_QUOTES, 'UTF-8'); ?>/index.php">
                         <?php
                             echo function_exists('__e')
                                 ? __e('auth.return_home')

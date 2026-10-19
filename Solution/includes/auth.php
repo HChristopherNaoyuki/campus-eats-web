@@ -600,6 +600,10 @@ if (!function_exists('createAuthenticatedSession'))
         $_SESSION['username']         = $user['username'];
         $_SESSION['email']            = $user['email'];
         $_SESSION['account_type']     = $user['account_type'];
+        // role alias kept for older checks that read $_SESSION['role']
+        $_SESSION['role']             = $user['account_type'];
+        // Explicit flag required by index.php and some public pages
+        $_SESSION['logged_in']        = true;
         $_SESSION['is_verified']      = (int)$user['is_verified'];
         $_SESSION['authenticated_at'] = time();
 
@@ -640,7 +644,19 @@ if (!function_exists('isLoggedIn'))
     function isLoggedIn()
     {
         startSecureSession();
-        return !empty($_SESSION['user_id']) && !empty($_SESSION['account_type']);
+
+        if (empty($_SESSION['user_id']))
+        {
+            return false;
+        }
+
+        // Prefer explicit flag when present; fall back to account_type.
+        if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true)
+        {
+            return true;
+        }
+
+        return !empty($_SESSION['account_type']);
     }
 }
 
