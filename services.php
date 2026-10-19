@@ -5,7 +5,22 @@
  * Mirrors the TypeScript marketing/Services page: hero, six platform
  * modules, and a live/fallback vendor catalogue with menu counts.
  *
- * @version 1.0
+ * CORRECTIONS (Version 2.0 - Timeout fix):
+ *
+ * - Removed the loop that called getRestaurantMenu() for every
+ *   restaurant. With 31 live venues that produced 20+ sequential
+ *   HTTPS calls and hung the Services navigation the same way the
+ *   old home page exceeded PHP's 120 s limit.
+ * - Loads the vendor list once via getAllRestaurants().
+ * - Derives per-vendor menu counts from a single getAllItems() call
+ *   when available, grouping by restaurantID. No per-restaurant
+ *   menu HTTP requests on this page.
+ *
+ * SOURCE: Technical audit 19 October 2026 – Services sequential menu
+ *         loop after home/admin were already capped.
+ * SOURCE: Clean Code – do not do unnecessary work in a request.
+ *
+ * @version 2.0
  */
 
 require_once 'solution/config/constants.php';
@@ -39,34 +54,76 @@ try
         $restaurants = array();
     }
 
-    foreach ($restaurants as $rest)
+    // Single items catalogue call – group counts by restaurant id.
+    // Do not call getRestaurantMenu() in a loop on this page.
+    if (method_exists($apiService, 'getAllItems'))
     {
-        if (!isset($rest['restaurantID']))
-        {
-            continue;
-        }
-
-        $rid = (int)$rest['restaurantID'];
-
         try
         {
-            $menu = $apiService->getRestaurantMenu($rid);
-            $menuCounts[$rid] = is_array($menu) ? count($menu) : 0;
+            $allItems = $apiService->getAllItems();
+
+            if (is_array($allItems))
+            {
+                foreach ($allItems as $item)
+                {
+                    $rid = 0;
+
+                    if (isset($item['restaurantID']))
+                    {
+                        $rid = (int)$item['restaurantID'];
+                    }
+                    elseif (isset($item['restaurantId']))
+                    {
+                        $rid = (int)$item['restaurantId'];
+                    }
+
+                    if ($rid <= 0)
+                    {
+                        continue;
+                    }
+
+                    if (!isset($menuCounts[$rid]))
+                    {
+                        $menuCounts[$rid] = 0;
+                    }
+
+                    $menuCounts[$rid]++;
+                }
+            }
         }
-        catch (Exception $e)
+        catch (Exception $itemsException)
         {
-            $menuCounts[$rid] = 0;
+            writeLog(
+                'Services page getAllItems skipped: '
+                    . $itemsException->getMessage(),
+                'API'
+            );
         }
     }
+
+    writeLog(
+        'Services page loaded '
+            . count($restaurants)
+            . ' restaurants, menu count keys='
+            . count($menuCounts),
+        'API'
+    );
 }
 catch (Exception $e)
 {
-    writeLog('Services page restaurant load failed: ' . $e->getMessage(), 'API_ERROR');
+    writeLog(
+        'Services page restaurant load failed: ' . $e->getMessage(),
+        'API_ERROR'
+    );
     $restaurants = array();
 }
 
 if (!function_exists('escapeOutput'))
 {
+    /**
+     * @param mixed $value
+     * @return string
+     */
     function escapeOutput($value)
     {
         return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
