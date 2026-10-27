@@ -23,8 +23,7 @@
 19. [Commit Message Format](#19-commit-message-format)
 20. [Testing Requirements](#20-testing-requirements)
 21. [Documentation Standards](#21-documentation-standards)
-22. [Team](#22-team)
-23. [Disclaimer](#23-disclaimer)
+22. [Disclaimer](#22-disclaimer)
 
 ---
 
@@ -1093,16 +1092,7 @@ same pull request as the change.
 
 ---
 
-## 22. Team
-
-| Name                      | Role                                      | Student Number |
-|---------------------------|-------------------------------------------|----------------|
-| Naoyuki Christopher H.    | Lead Full Stack Engineer, UI/UX Designer  | ST10462415     |
-| Makaya G.                 | Tester / QA, Project Manager              | ST10404851     |
-
----
-
-## 23. Disclaimer
+## 22. Disclaimer
 
 ```
 UNDER NO CIRCUMSTANCES SHOULD IMAGES OR EMOJIS BE INCLUDED DIRECTLY
